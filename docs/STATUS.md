@@ -15,7 +15,7 @@
 ## Test results (last run)
 
 - `npm run build`: succeeds, no warnings printed.
-- `npm test`: 5 files, 56 tests passed (click engine 25, canvas 3, parse 6, template 12, emit 10).
+- `npm test`: 5 files, 56 tests passed (click engine 23, canvas 3, parse 6, template 12, emit 12).
 - `npm run test:e2e`: 39 passed, 0 failed (navigation, clicks of every variant, deep links, code literal text,
   all four layouts, frontmatter class, hidden slide, canvas scaling at 1920x1080 and 800x800, no console errors or warnings).
 - `npm run test:dev`: 5 of 5 edits to `slides.md` updated the open page with the `window` marker surviving (no full reload),
