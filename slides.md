@@ -69,7 +69,7 @@ This slide has `class: text-center`.
 
 <div id="a" v-click>A: v-click (click 1)</div>
 
-<div id="b" v-click="'+1'">B: relative +1 (click 2)</div>
+<div id="b" v-click="+1">B: relative +1 (click 2)</div>
 
 <div id="r" [v-click]="[3,4]">R: range [3,4], only at click 3</div>
 
