@@ -1,0 +1,42 @@
+{
+  "name": "slide-ng",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "generate": "node scripts/generate.mjs && unocss",
+    "start": "node scripts/dev.mjs",
+    "build": "npm run generate && ng build",
+    "test": "npm run generate && ng test --no-watch",
+    "test:e2e": "node tests/e2e/run.mjs",
+    "test:dev": "node tests/e2e/dev-hmr.mjs"
+  },
+  "private": true,
+  "packageManager": "npm@10.9.4",
+  "dependencies": {
+    "@angular/common": "^22.2.0",
+    "@angular/compiler": "^22.2.0",
+    "@angular/core": "^22.2.0",
+    "@angular/forms": "^22.2.0",
+    "@angular/platform-browser": "^22.2.0",
+    "@angular/router": "^22.2.0",
+    "@slidev/parser": "^53.0.0",
+    "marked": "^18.1.1",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@angular/build": "^22.2.3",
+    "@angular/cli": "^22.2.3",
+    "@angular/compiler-cli": "^22.2.0",
+    "jsdom": "^30.0.0",
+    "playwright-core": "^1.64.1",
+    "prettier": "^3.8.1",
+    "typescript": "~6.0.2",
+    "unocss": "^66.11.0",
+    "vitest": "^5.0.0"
+  },
+  "description": "Slides written in markdown with Angular templates",
+  "engines": {
+    "node": ">=22.22.3"
+  }
+}
