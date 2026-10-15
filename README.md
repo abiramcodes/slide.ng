@@ -1,59 +1,67 @@
-# SlideNg
+# slide.ng
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.3.
+Presentations written in markdown, with real Angular template syntax inside.
+Inspired by [Slidev](https://sli.dev), built for Angular.
 
-## Development server
+You write one file, `slides.md`. Each slide in it becomes a small Angular
+component that is compiled ahead of time with the rest of your app.
 
-To start a local development server, run:
+```md
+---
+layout: center
+---
 
-```bash
-ng serve
+# Hello
+
+Count is {{ c.n() }}.
+
+<app-counter #c [start]="5" />
+
+<div v-click>Appears on the first click</div>
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Run it
 
-## Code scaffolding
+You need Node 22.22.3 or newer.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
+```sh
+npm install
+npm start          # dev server at http://localhost:4200, reloads when you edit slides.md
+npm run build      # production build in dist/slide-ng/browser
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Keys: right arrow / space / page down = next click or slide, left arrow / page up = back.
+The URL is the state: `/7?clicks=2` is slide 7 at click 2.
 
-```bash
-ng generate --help
+## Tests
+
+```sh
+npm test             # unit tests (generator and click engine)
+npm run test:e2e     # builds, serves dist/ and checks it in a real browser
+npm run test:dev     # starts the dev server and edits slides.md to check live updates
 ```
 
-## Building
+The browser tests use Chromium through `playwright-core`. Set `CHROME_PATH` if
+Chromium is not in `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`.
 
-To build the project run:
+## How it works, in short
 
-```bash
-ng build
-```
+1. `scripts/generate.mjs` reads `slides.md` and splits it into slides with
+   Slidev's markdown parser (`@slidev/parser`).
+2. Each slide's markdown becomes an Angular template. Angular syntax is
+   protected so the markdown converter cannot break it.
+3. The generator writes one component per slide into `src/slides/generated/`.
+   Those files are not committed.
+4. The app (`src/app`) shows one slide per route and handles keys, clicks and
+   scaling.
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full picture,
+[docs/SYNTAX.md](docs/SYNTAX.md) for how to write slides, and
+[docs/DECISIONS.md](docs/DECISIONS.md) for why things are the way they are.
+Current state: [docs/STATUS.md](docs/STATUS.md).
 
-## Running unit tests
+## Credits
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+slide.ng is not a fork of Slidev, but it uses Slidev's published parser
+and ports its click logic. See [NOTICE](NOTICE). Licensed under the MIT
+license, see [LICENSE](LICENSE).

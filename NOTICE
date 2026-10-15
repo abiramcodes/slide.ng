@@ -1,0 +1,20 @@
+slide.ng
+Copyright (c) 2026 slide.ng contributors, MIT License (see LICENSE).
+
+This project builds on ideas and code from Slidev (https://github.com/slidevjs/slidev),
+which is licensed under the MIT License:
+
+  Copyright (c) 2020-PRESENT Anthony Fu <https://github.com/antfu> and Slidev contributors
+
+What we use from Slidev:
+
+- The published npm package `@slidev/parser` (MIT) splits slides.md into slides and
+  reads frontmatter and notes. It is a dependency, not copied code.
+- The click logic in src/app/lib/clicks.ts, v-click.ts and v-clicks.ts is a port of
+  Slidev's packages/client/composables/useClicks.ts and its v-click / v-after / v-clicks
+  modules, rewritten for Angular.
+- The layout names and structure (default, cover, center, two-cols), the first-slide-is-cover
+  rule, the 16:9 canvas scaling formula and the click CSS classes follow Slidev's design.
+
+The full text of the MIT License applies to the Slidev parts as it does to this project;
+see LICENSE.
