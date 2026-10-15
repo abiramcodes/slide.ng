@@ -36,8 +36,7 @@ Short notes on choices made, and why. Newest at the bottom.
 9. **UnoCSS is run from `generate.mjs` with `@unocss/core`, not with the `unocss` command.** The Angular dev server
    does a full page reload whenever the UnoCSS command rewrites its output file (found by testing: 0 of 5 live
    updates). Writing the file only when its content changed gives 5 of 5. Output goes to
-   `src/slides/generated/uno.css`, listed in `angular.json` `styles`. A PostCSS plugin was not used because the esbuild builder
-   only supports PostCSS configuration in limited ways.
+   `src/slides/generated/uno.css`, listed in `angular.json` `styles`. A PostCSS plugin was not tried.
 10. **Canvas is 960 x 540** (16:9) and scaled with CSS `transform`, using Slidev's formula `min(w/width, h/height)`.
     Slidev's default is 980 wide; 960 is a rounder number and the exact value does not matter.
 11. **First slide defaults to `cover`**, like Slidev. `hide`/`disabled` remove a slide at generation time, so slide
