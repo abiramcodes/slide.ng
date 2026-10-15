@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "generate": "node scripts/generate.mjs && unocss",
+    "generate": "node scripts/generate.mjs",
     "start": "node scripts/dev.mjs",
     "build": "npm run generate && ng build",
     "test": "npm run generate && ng test --no-watch",
@@ -28,11 +28,12 @@
     "@angular/build": "^22.2.3",
     "@angular/cli": "^22.2.3",
     "@angular/compiler-cli": "^22.2.0",
+    "@unocss/core": "^66.11.0",
+    "@unocss/preset-wind3": "^66.11.0",
     "jsdom": "^30.0.0",
     "playwright-core": "^1.64.1",
     "prettier": "^3.8.1",
     "typescript": "~6.0.2",
-    "unocss": "^66.11.0",
     "vitest": "^5.0.0"
   },
   "description": "Slides written in markdown with Angular templates",
