@@ -47,10 +47,11 @@ export const SETUP_PROVIDERS: (Provider | EnvironmentProviders)[] = [${list.join
 }
 
 /** `src/slides/generated/theme.css`: the deck's `fonts`, then the style sheets of the roots (`styles/index.css`), weakest first. */
-export function themeCss(roots, headmatter = {}) {
+/** @param {{ id: string, dir: string }[]} roots @param {Record<string, any>} [headmatter] @param {string | null} [fontFaces] */
+export function themeCss(roots, headmatter = {}, fontFaces = null) {
   const imports = roots.filter((r) => existsSync(join(r.dir, 'styles', 'index.css'))).map((r) => `@import './roots/${r.id}/styles/index.css';`);
   // An @import must come before the rules, so the font @import is written first and the font rules after the roots' imports.
-  const lines = fontsCss(headmatter).split('\n').filter(Boolean);
+  const lines = fontsCss(headmatter, fontFaces).split('\n').filter(Boolean);
   const text = [...lines.filter((l) => l.startsWith('@import')), ...imports, ...lines.filter((l) => !l.startsWith('@import'))].join('\n');
   return text ? `${text}\n` : '/* no theme styles */\n';
 }
@@ -75,7 +76,7 @@ export async function applyRoots(deck, out, write, warn) {
   deck.layers = Object.keys(layerFiles);
   write(`${out}layers.ts`, layersSource(layerFiles));
   write(`${out}setup.ts`, setupSource(deck.roots));
-  write(`${out}theme.css`, themeCss(deck.roots, deck.headmatter));
+  write(`${out}theme.css`, themeCss(deck.roots, deck.headmatter, deck.fontFaces));
 
   // A root's uno.config.mjs is plain JavaScript that default-exports (part of) a UnoCSS config.
   const unoConfigs = [];

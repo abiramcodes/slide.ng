@@ -43,7 +43,8 @@ export function resolveFonts(fonts = {}) {
 
 /** The address of the style sheet that loads the web fonts, or null. */
 export function fontsUrl({ webfonts, provider, italic, weights }) {
-  const base = PROVIDERS[provider];
+  // `provider` can also be the address of a Google-compatible `css2` endpoint (a mirror inside a company, or a test server).
+  const base = PROVIDERS[provider] ?? (/^https?:\/\/\S+$/.test(String(provider)) ? String(provider) : null);
   if (!base || !webfonts.length) return null;
   const axis = italic
     ? `ital,wght@${[0, 1].flatMap((i) => weights.map((w) => `${i},${w}`)).join(';')}`
@@ -55,13 +56,17 @@ export function fontsUrl({ webfonts, provider, italic, weights }) {
 /**
  * The CSS for the deck's `fonts` (empty without it, so a deck that does not set fonts looks as before).
  * The classes `font-sans`, `font-serif` and `font-mono` use the lists, the page text uses `sans`, code uses `mono`.
+ * `faces` is the provider's style sheet with the font files already downloaded (see font-bundle.mjs); it replaces the @import.
+ * @param {Record<string, any>} headmatter
+ * @param {string | null} [faces]
  */
-export function fontsCss(headmatter) {
+export function fontsCss(headmatter, faces = null) {
   if (!headmatter.fonts || typeof headmatter.fonts !== 'object') return '';
   const fonts = resolveFonts(headmatter.fonts);
   const url = fontsUrl(fonts);
   const lines = [];
-  if (url) lines.push(`@import url("${url}");`);
+  if (faces) lines.push(faces.trim());
+  else if (url) lines.push(`@import url("${url}");`);
   lines.push(`:root { --slidev-font-sans: ${fonts.sans.join(',')}; --slidev-font-serif: ${fonts.serif.join(',')}; --slidev-font-mono: ${fonts.mono.join(',')}; --slidev-code-font-family: var(--slidev-font-mono); }`);
   lines.push('html, body { font-family: var(--slidev-font-sans); }');
   lines.push(':root .font-sans { font-family: var(--slidev-font-sans); }');

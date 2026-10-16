@@ -617,8 +617,15 @@ export:                           # defaults for `slide-ng export`; command line
 remoteAssets: true                # a build downloads pictures with http(s) addresses and serves them itself
 pwa: true                         # a build adds a manifest, install icons and a service worker: the deck opens offline after one visit
                                   # (icon: public/icon.png, public/icon.svg or a local favicon, else a letter from the title)
+fonts:                            # web fonts, as in Slidev (sans, serif, mono, local, weights, italic, fallbacks, provider)
+  sans: Inter
+  selfHost: true                  # a build downloads the font files and serves them itself (default on with `pwa` and `build --offline`; false turns it off)
+  provider: google                # google, coollabs, none, or the address of a Google-compatible css2 endpoint
 ---
 ```
+
+A build (`slide-ng build`) writes files of `public/` that slides name with a leading slash (`![](/photo.png)`, `<img src>`, `<video src poster>`, inline `url()`) with the deck's base in front (`/talk/photo.png`), and
+`build --offline` makes them relative to the page. In the dev server nothing changes. `url()` inside a slide's `<style>` gets the base too, except in an offline folder (see [OFFLINE.md](OFFLINE.md)).
 
 `export:` takes `format`, `range`, `withClicks`, `dark`, `timeout`, `wait`, `waitUntil`, `withToc`, `perSlide`, `scale` and `omitBackground`. It cannot name an output folder or
 a browser program: a deck may come from someone else, so those only come from the command line or the environment.

@@ -8,11 +8,16 @@ import { SyncState } from './sync-state';
 // Slidev's TRUST_ORIGINS: only these hosts may send navigation as a viewer.
 const LOCAL_HOSTS = ['localhost', '127.0.0.1', '[::1]'];
 
+/** A viewer may drive when the page is on this machine: a local host name, or a folder opened from disk (file://). */
+export function isLocalPage(loc: Pick<Location, 'protocol' | 'hostname'>): boolean {
+  return loc.protocol === 'file:' || LOCAL_HOSTS.includes(loc.hostname);
+}
+
 /** Call once, in the constructor of a page that has a Nav (the deck or the presenter). */
 export function startNavSync(nav: Nav) {
   const sync = inject(SyncState);
   const type = nav.isPresenter ? 'presenter' : 'viewer';
-  const mayShare = nav.isPresenter || LOCAL_HOSTS.includes(location.hostname);
+  const mayShare = nav.isPresenter || isLocalPage(location);
   let applied = ''; // "page:clicks" of the last move that came from outside: it is not sent back
   let first = true;
 

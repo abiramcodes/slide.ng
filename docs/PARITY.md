@@ -45,7 +45,7 @@ Slidev is Vue and Vite; slide.ng is Angular. Anything that is about Vue, Vite pl
 | Canvas size (`canvasWidth`, `aspectRatio`) | features/canvas-size.md | done | default 980 wide, 16/9, height rounded up (Slidev's); test: canvasWidth and aspectRatio set the canvas |
 | `selectable` (text selection of the slide) | HeadmatterConfig.selectable | not done | text is selectable only in code blocks |
 | `themeConfig` passed to the theme | HeadmatterConfig.themeConfig | not done | a theme reads the headmatter itself (`HEADMATTER` is not exposed to themes yet) |
-| `fonts` (web fonts, sans/serif/mono) | custom/config-fonts.md | partial | `sans`, `serif`, `mono`, `local`, `weights`, `italic`, `fallbacks`, `provider` (google, coollabs, none) like Slidev; `webfonts` and `custom` are read; fonts are not downloaded into the build (a remote @import, like Slidev); test: fonts.spec.ts, and the mono font becomes the code font in the browser |
+| `fonts` (web fonts, sans/serif/mono) | custom/config-fonts.md | partial | `sans`, `serif`, `mono`, `local`, `weights`, `italic`, `fallbacks`, `provider` (google, coollabs, none) like Slidev; `webfonts` and `custom` are read; by default the fonts are a remote @import, like Slidev; slide.ng adds `selfHost` (downloads them into the build, on for `pwa` and `build --offline`, tested against a fake provider, not against real Google Fonts); test: fonts.spec.ts, and the mono font becomes the code font in the browser |
 | `css: unocss`, UnoCSS in slides | custom/config-unocss.md | done | preset wind3 + icons + a few Slidev shortcuts; a root can add settings in `uno.config.mjs`; test: the UnoCSS shortcut of the theme works |
 
 ## Code
@@ -192,7 +192,11 @@ Slidev is Vue and Vite; slide.ng is Angular. Anything that is about Vue, Vite pl
 | SPA build, 404.html, `_redirects`, `--base` sub-path | guide/hosting.md | done | test: _redirects sends every address under the base to index.html |
 | Hash routing for hosts without rewrites | guide/hosting.md | done | test: hash routing under /sub/dir/ |
 | Download button with a PDF made at build (`download`) | features/build-with-pdf.md | done | test: clicking it downloads talk.pdf |
-| Bundle remote assets (`remoteAssets`) | features/bundle-remote-assets.md | done | images only; test: remoteAssets: both pictures were downloaded into the build |
+| Bundle remote assets (`remoteAssets`) | features/bundle-remote-assets.md | done | images only; on by default for `build --offline`; test: remoteAssets: both pictures were downloaded into the build |
+| `/public` files written as `/photo.png` in slides under `--base` | guide/hosting.md | done | the base goes in front in a build (`<img src>`, `<video>`, inline `url()`, slide `<style>`); test: a /public picture written as /favicon.ico gets the base in front (/talk/favicon.ico) and loads |
+| Offline folder that opens from disk (`build --offline`, not in Slidev) | docs/OFFLINE.md | done | Chromium only, see OFFLINE.md for limits; test: from file:// the first slide opens |
+| Window sync, presenter and notes with the network off | features/pwa.md | done | test: offline: the presenter moves and the audience window follows |
+| Fonts served from the build (`fonts.selfHost`, not in Slidev) | docs/HOSTING.md | done | fake provider only; test: the web font came from the folder: declared, loaded, and used by the page |
 | Build size budgets | ng build | partial | raised to 1.5MB warn / 3MB error (decks measure 450-945 kB); the numbers are in DECISIONS.md, not enforced by a test |
 
 ## Head, SEO, PWA
@@ -203,7 +207,7 @@ Slidev is Vue and Vite; slide.ng is Angular. Anything that is about Vue, Vite pl
 | `favicon`, `htmlAttrs`, `lang` | HeadmatterConfig | done | test: the lang and attributes are on <html> |
 | `seoMeta` (Open Graph, Twitter) | features/seo-meta.md | done | test: index.html: ${label} |
 | Open Graph image `auto` (screenshot of slide 1) | features/og-image.md | done | test: og-image.png is a screenshot of slide 1 (1470x828) |
-| PWA: manifest and offline service worker (`pwa`) | features/pwa.md | done | test: the service worker is registered with the base as scope; the manifest lists real 192, 512 and maskable PNG icons; the badge shows Available offline and Offline |
+| PWA: manifest and offline service worker (`pwa`) | features/pwa.md | done | test: the service worker is registered with the base as scope; the manifest lists real 192, 512 and maskable PNG icons; the badge shows Available offline and Offline; the first visit must be online (a fresh browser with no network cannot open the deck), see OFFLINE.md; test also: first visit with no network fails: the deck is not there (the service worker only stores it after one online visit) |
 
 ## Themes, addons, setup files
 
@@ -246,13 +250,13 @@ browser exporter page and `overviewSnapshots`. (They are also listed in the rows
 
 1. **Community Slidev themes and addons cannot be used.** They are Vue packages. slide.ng has its own contract (docs/THEMES.md), the five official themes rebuilt on it (`themes/`) and one example theme; there is no ecosystem.
 2. **Setup hooks are there (docs/SETUP.md)**, with these gaps: Monaco type loading (`monacoTypes*`, so Monaco does not know package types), markdown-it plugins in transformers, and a run context for code runners.
-3. **`fonts`** is read (names, local, weights, italic, fallbacks, provider) but the fonts are loaded from the provider at run time, not copied into the build.
+3. **`fonts`** is read (names, local, weights, italic, fallbacks, provider) and loaded from the provider at run time, as in Slidev; `selfHost` copies them into the build (default for `pwa` and `build --offline`), tested with a fake provider only.
 4. **Export**: editable PPTX is not made, `export` takes one entry, PDF/PNG need a local Chromium (`--executable-path` or `CHROME_PATH`).
 5. **Animations**: custom transition objects, `clickAnimation`, `preloadImages`, slide `preload` and the slide hooks (`onSlideEnter`, `onSlideLeave`) do not exist; `v-motion` has no motion presets.
 6. **Touch**: swipe navigation works; pinch zoom and touch handling for drawing and `v-drag` were not tried on a real device.
 7. **UI**: `selectable`, `themeConfig`, `TitleRenderer` and `notesAutoRuby` are not there.
 8. **Syntax**: MDC/Comark syntax is not parsed.
 9. **CLI**: dev `--base`, `--tunnel`, build `--router-mode`, `--inspect`; the dev server's default port differs (4230).
-10. **Recording and PWA**: no separate camera file and no mp4 or mkv; the PWA part is done.
+10. **Recording and PWA**: no separate camera file and no mp4 or mkv; the PWA part is done (its first visit must be online, like Slidev's; `build --offline` is the answer for talks with no network).
 11. **Size**: the first load of a deck with Monaco and KaTeX is about 850 kB (budget raised to 1.5 MB warning, 3 MB error).
 12. **Unverified ground**: Firefox and Safari, real devices over a LAN, a real screen-share picker, wake lock behaviour and hosts that need hash routing were not tried (STATUS.md, NOT VERIFIED).

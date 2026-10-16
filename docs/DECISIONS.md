@@ -343,7 +343,7 @@ The owner decided "do it like Slidev" for every open choice. For each one, Slide
    (`run` instead of `fn`), `main` returns Angular providers, `root` runs at start without a component, and `pre`, `preCodeblock`, `postCodeblock` are one pass. `setup/providers.ts` keeps working. Tests: `node-setups.spec.ts`,
    `browser-setups.spec.ts`, `setup.spec.ts`, and `tests/e2e/phase5` (a deck with one file per hook; each check is about changed output).
 9. **Cheap leftovers of PARITY.md finished the Slidev way.** `fonts` (`lib/fonts.mjs`, a port of `resolveFonts`: sans, serif, mono, local, weights, italic, fallbacks, provider google, coollabs or none; the fonts are an @import
-   from the provider, as Slidev, not copied into the build); the `contextMenu`, `presenter` and `editor` headmatter switches (`true`, `false`, `dev`, `build`; `lib/switches.ts`); touch swipes with Slidev's thresholds
+   from the provider, as Slidev, not copied into the build; since then `fonts.selfHost` copies them, see Offline use 8); the `contextMenu`, `presenter` and `editor` headmatter switches (`true`, `false`, `dev`, `build`; `lib/switches.ts`); touch swipes with Slidev's thresholds
    (`composables/useSwipeControls.ts`: 30% of the width or 75px for clicks, 40% of the height or 200px for slides, off while drawing). Left listed in PARITY.md: `selectable`, `themeConfig`, `TitleRenderer`, `notesAutoRuby`,
    MDC, slide hooks, custom transition objects, `clickAnimation`, `preloadImages`; `--tunnel` stays refused.
 10. **The official themes are folders in `themes/`, looked up before `node_modules`.** Options: (a) separate npm packages `slide-ng-theme-seriph` and so on, (b) a built-in table inside `src/app`,
@@ -363,3 +363,29 @@ The owner decided "do it like Slidev" for every open choice. For each one, Slide
     - **Naming:** a layout the original names (`default-2`, `3-images`) keeps its name; the Angular selector is new (`shibainu-default-2`, `apple-three-images`). The bricks shapes are `<polygon-1 />` to `<polygon-11 />` (kebab case: an Angular
       selector cannot be matched case-insensitively from markdown), sized with classes instead of the original's `w="20"` attributes.
     - **Simplified:** `themeConfig` (not in slide.ng yet), Prism style sheets (code colours come from Shiki), the original's random cover photo, and the exact shapes of the background illustrations.
+
+## Offline use (the owner said it matters: talks with no internet)
+
+Verified by running the built decks in Chromium; the tests are `tests/export/offline.mjs` and `offline-net.mjs`.
+
+1. **`slide-ng build --offline` makes a folder for `file://`.** First finding: a normal build opened from disk is a blank page, for two reasons. Chromium refuses `<script type="module">` and `import()` over `file://` (the page's
+   origin is "null", the request counts as cross-origin), and addresses starting with `/` point at the root of the disk. We looked at three ways out: inlining everything into `index.html` (one huge file, slow to edit and open), a loader
+   that fetches chunks (needs a request, which `file://` also refuses), and bundling to a classic script. The last one is 60 lines with esbuild (already a dependency): the built entry script and all its lazy chunks become one `iife`
+   (`scripts/build/offline.mjs`), the page loads it with `defer`. Cost: lazy loading is gone, so a deck with Monaco and Mermaid is one big script (27 MB folder, 2.5 s to open on the test machine); a plain deck is not affected (about 450 kB).
+2. **No `<base>` in the offline page, hash routing forced.** With `<base href="./">`, Angular's `replaceState('#/1')` resolves to the folder, not to `index.html`, and Chromium throws a SecurityError. Without a base, every relative address is
+   relative to the page itself. `--base` is refused with `--offline`; `pwa` is switched off (no service worker on `file://`); `remoteAssets` and `fonts.selfHost` are on unless the deck says `false`.
+3. **Workers from blobs.** `new Worker('file:///...')` is refused from a page opened from disk, which is what Monaco does. The offline build bundles each worker file as a classic script, writes the sources into `workers.js` as text, and a small
+   wrapper around `window.Worker` (only on `file://`) starts them from `Blob` URLs (`scripts/build/offline-workers.mjs`). Tested: the editor is styled, has syntax colours and no console warning (without the fix Monaco warned that it fell back to the main thread).
+4. **A viewer opened from a folder may drive the presenter.** The sync code only let `localhost` viewers send, so from `file://` (host name empty) only the presenter drove. A folder is on this machine by definition, so `file:` counts as local (`isLocalPage`).
+   BroadcastChannel works between `file://` pages in Chromium; this was measured, not assumed.
+5. **Two offline decks in one browser must not mix.** All `file://` pages share one `localStorage` and every BroadcastChannel name, so drawings and the slide position of one deck showed up in another. Drawings and the sync channel now carry the
+   folder's path (`lib/disk-scope.ts`); web addresses keep the old names. Dark mode and presenter preferences stay shared on purpose.
+6. **`/public` addresses in slides were never base-aware.** `![](/photo.png)` stayed `/photo.png`, so it broke under `--base /talk/` as well, not only from disk. A build now writes `/talk/photo.png` (`<img src>`, `<video src poster>`, inline `url()`,
+   slide `<style>`), the offline build writes `photo.png`. The `<style>` case is left alone for `./` because the Angular build would try to bundle a relative `url()` of a component's style. The dev server is unchanged.
+7. **The PDF button opens a new tab from `file://`** (the `download` attribute is ignored there, and the same tab would show the PDF in place of the deck). It is enabled without asking the server (a `HEAD` request cannot be made from disk).
+8. **Fonts: `fonts.selfHost`.** Slidev loads web fonts with an `@import` from the provider and never copies them; slide.ng did the same, so the fonts failed offline. Now the build can fetch the provider's style sheet, download each font file, and
+   serve them from `media/` (`lib/font-bundle.mjs`). Default on with `pwa: true` and `--offline`; `selfHost: false` turns it off; a failed download warns and keeps the `@import`. The request pretends to be a current Chrome, because Google answers
+   TrueType files to unknown clients. `fonts.local` already means "installed on the system" in Slidev, so the new switch has another name. `provider` also takes the address of a css2 endpoint (needed to test against a fake provider, and useful
+   for a mirror). Tested against a local fake provider; real Google Fonts were not contacted.
+9. **The service worker's first-visit limit is stated, not hidden.** A browser that never opened the deck has nothing in its store; with the network off, it cannot open the deck (tested: `net::ERR_INTERNET_DISCONNECTED`). docs/OFFLINE.md says so first and
+   gives the offline folder and the PDF as the answers.

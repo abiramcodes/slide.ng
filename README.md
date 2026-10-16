@@ -39,6 +39,7 @@ A deck is a markdown file; the default is `slides.md`. Decks outside this reposi
 node bin/slide-ng.mjs create my-deck           # a new deck folder (slides.md, package.json that depends on slide-ng)
 node bin/slide-ng.mjs [dev] [slides.md]        # dev server
 node bin/slide-ng.mjs build  [slides.md]       # a static site in ./dist, ready for any web server
+node bin/slide-ng.mjs build --offline          # a folder you open from disk (index.html), no server needed
 node bin/slide-ng.mjs export [slides.md]       # PDF, PNG, PPTX or Markdown (needs Chromium)
 node bin/slide-ng.mjs export-notes [slides.md] # a PDF of the speaker notes
 node bin/slide-ng.mjs format [slides.md]       # tidy the markdown file
@@ -49,7 +50,7 @@ node bin/slide-ng.mjs mcp [slides.md]          # MCP server on stdio: read and e
 | command | flags |
 | --- | --- |
 | `dev` | `--port`/`-p` (4230), `--open`/`-o`, `--remote[=password]`, `--bind <address>`, `--log error\|warn\|info\|silent`, `--force`/`-f` (clear the build cache), `--theme`/`-t`. `--tunnel` and `--base` are refused with a message |
-| `build` | `--out`/`-o` (`dist`), `--base /talk/`, `--download` (also make the PDF and a download button), `--without-notes`, `--theme`/`-t`, `--executable-path`, `--timeout` |
+| `build` | `--out`/`-o` (`dist`), `--base /talk/`, `--offline` (a folder that opens from disk; no `--base`), `--download` (also make the PDF and a download button), `--without-notes`, `--theme`/`-t`, `--executable-path`, `--timeout` |
 | `export` | `--format pdf\|png\|pptx\|md`, `--output`/`-o`, `--range 1,4-5`, `--with-clicks`/`-c`, `--dark`, `--timeout`, `--wait`, `--wait-until`, `--executable-path`, `--per-slide`, `--scale`, `--omit-background`, `--with-toc`, `--theme`/`-t`, and `--dist <folder>` / `--url <address>` to export an existing build or a running server |
 | `create` | `<folder>`, `--force` (add the missing files to a folder that has files) |
 
@@ -89,6 +90,16 @@ The URL is the state: `/7?clicks=2` is slide 7 at click 2.
 
 How it compares with Slidev, row by row: [docs/PARITY.md](docs/PARITY.md). What is missing or not checked: [docs/STATUS.md](docs/STATUS.md).
 Pictures of the layouts and of every feature slide (light and dark) are in `docs/screenshots/`; `npm run screenshots` makes them again.
+
+## Offline use
+
+Presenting where there is no internet is a goal of its own. Three ways, from most to least convenient (the full checklist is [docs/OFFLINE.md](docs/OFFLINE.md)):
+
+- `slide-ng build --offline`: a folder that opens by double click on `index.html`, in Chrome or Edge, with no server and no first visit online. Pictures from other servers and web fonts are downloaded into it. The presenter and a second window sync from disk.
+- `pwa: true`: the deck stores itself in the browser, but only after **one visit online**; a browser that never opened it cannot get it offline.
+- `slide-ng export`: a PDF.
+
+Tested in Chromium only; Firefox and Safari from `file://` are not verified (use `python3 -m http.server` in a normal build for them).
 
 ## Remote use
 

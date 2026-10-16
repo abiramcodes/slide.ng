@@ -6,12 +6,14 @@ import { saveDrawings } from '../dev/dev-persist';
 import { DRAWINGS } from '../../slides/generated';
 import { SyncState } from '../sync/sync-state';
 import { DrawingsState, cleanDrawings } from '../sync/shared-state';
+import { diskScope } from '../lib/disk-scope';
 
-const KEY = 'slide-ng-drawings';
+/** The localStorage key; an offline folder (file://) adds its own path, see disk-scope.ts. */
+export const drawingsKey = () => `slide-ng-drawings${diskScope()}`;
 
 /** Drawings saved in this browser. Storage may be blocked, then there are none. */
 export function readStored(): DrawingsState {
-  try { return cleanDrawings(JSON.parse(localStorage.getItem(KEY) ?? '{}')); } catch { return {}; }
+  try { return cleanDrawings(JSON.parse(localStorage.getItem(drawingsKey()) ?? '{}')); } catch { return {}; }
 }
 
 /** What to start with: the drawings baked in by the generator, then whatever this browser saved on top. */
@@ -26,7 +28,7 @@ export function startPersistence(persist: boolean) {
     const state = sync.drawings();
     clearTimeout(timer);
     timer = setTimeout(() => {
-      try { localStorage.setItem(KEY, JSON.stringify(state)); } catch { /* the drawing just is not remembered */ }
+      try { localStorage.setItem(drawingsKey(), JSON.stringify(state)); } catch { /* the drawing just is not remembered */ }
     }, 300);
   });
 

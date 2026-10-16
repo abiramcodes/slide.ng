@@ -6,6 +6,7 @@ import { splitSlots } from './slots.mjs';
 import { attr } from './protect.mjs';
 import { toTemplate } from './to-template.mjs';
 import { tagDragSites } from './drag-sites.mjs';
+import { rebaseCss, rebaseHtml } from './asset-paths.mjs';
 
 const pad = (no) => String(no).padStart(3, '0');
 export const slideName = (no) => `slide-${pad(no)}`;
@@ -39,8 +40,9 @@ function body(markdown, def, no, ctx, layout) {
 
 /**
  * @param {any} slide @param {number} no
- * @param {{ root?: string, headmatter?: any, layers?: string[], layouts?: Record<string, any>, components?: any[] }} [deck]
- *   where `@/` is, the deck-wide settings, and the layouts and components to use (the built-in ones unless a theme adds more)
+ * @param {{ root?: string, headmatter?: any, layers?: string[], layouts?: Record<string, any>, components?: any[], assetBase?: string }} [deck]
+ *   where `@/` is, the deck-wide settings, the layouts and components to use (the built-in ones unless a theme adds more),
+ *   and the base that `/public` addresses get in a build (`/talk/`, `./`; default `/`, no change)
  */
 export function slideSource(slide, no, deck = {}) {
   const layouts = deck.layouts ?? LAYOUTS;
@@ -49,7 +51,8 @@ export function slideSource(slide, no, deck = {}) {
   const { markdown, css } = extractStyles(tagDragSites(slide.content));
   const layer = (name) => (deck.layers?.includes(name) ? `<app-slide-layer name="${name}"></app-slide-layer>` : '');
   const layout = `${openTag(def, slide.frontmatter)}${body(markdown, def, no, { file: slide.file, root: deck.root, headmatter: deck.headmatter, codeblocks: deck.transformers?.codeblocks, slide: slideInfo(slide, no) }, layoutKey)}</${def.tag}>`;
-  const html = layer('slide-bottom') + layout + layer('slide-top');
+  const base = deck.assetBase ?? '/'; // where the deck is served from in a build; `/public` files get it in front
+  const html = rebaseHtml(layer('slide-bottom') + layout + layer('slide-top'), base);
 
   // Look for components outside code samples only (code is just text).
   const markup = html.replace(/<pre[\s\S]*?<\/pre>/g, '').replace(/<code(?:\s[^>]*)?>[\s\S]*?<\/code>/g, '');
@@ -61,7 +64,7 @@ export function slideSource(slide, no, deck = {}) {
   const providers = ['ClicksContext'];
   if (clicksStart) providers.push(`{ provide: CLICKS_START, useValue: ${+clicksStart} }`);
   if (clicks) providers.push(`{ provide: CLICKS_TOTAL, useValue: ${+clicks} }`);
-  const styles = scopeCss(css, slideName(no));
+  const styles = scopeCss(rebaseCss(css, base), slideName(no));
 
   return `// GENERATED from slides.md (slide ${no}) - do not edit
 import { Component${styles ? ', ViewEncapsulation' : ''} } from '@angular/core';

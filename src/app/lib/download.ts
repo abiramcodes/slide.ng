@@ -15,7 +15,9 @@ export class Download {
 
   constructor() {
     if (!this.url || isDevMode()) return;
-    if (!DOWNLOAD!.startsWith('http') && !DOWNLOAD!.startsWith('/')) void this.check(this.url);
+    // From a folder opened on disk (`build --offline`) a request cannot be asked; the build wrote the file next to the page.
+    if (location.protocol === 'file:') this.available.set(!DOWNLOAD!.startsWith('http'));
+    else if (!DOWNLOAD!.startsWith('http') && !DOWNLOAD!.startsWith('/')) void this.check(this.url);
     else this.available.set(true); // somebody else's address: take their word for it
   }
 
@@ -23,6 +25,9 @@ export class Download {
   save() {
     if (!this.url) return;
     const link = Object.assign(document.createElement('a'), { href: this.url, download: '' });
+    // A page opened from disk cannot make the browser save a file (`download` is ignored there), and showing the PDF in this tab
+    // would take the deck away. A new tab keeps the deck where it is; the browser's PDF viewer has a save button.
+    if (location.protocol === 'file:') Object.assign(link, { target: '_blank', rel: 'noopener' });
     link.click();
   }
 

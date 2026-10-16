@@ -10,7 +10,7 @@ Usage: slide-ng [command] [slides.md] [flags]
 
 Commands:
   dev (default)   start the dev server       --port --open --remote[=password] --bind --log --force
-  build           make a static site          --base --out --download --without-notes
+  build           make a static site          --base --out --download --without-notes --offline
   export          make a PDF, PNG, PPTX or Markdown file    --format --output --range --with-clicks --dark --scale ...
   export-notes    make a PDF of the speaker notes
   format          tidy slides.md
