@@ -102,6 +102,7 @@ export async function run({ t, open, press, hud, pathOf, style, base, browser, p
   await page.waitForTimeout(100);
   t.ok('Shift + right click leaves the native menu alone', (await page.locator('#context-menu').count()) === 0);
   await page.mouse.click(400, 300, { button: 'right' });
+  await page.waitForTimeout(150); // the menu opens one tick later
   await page.mouse.click(100, 100);
   await page.waitForTimeout(100);
   t.ok('a click elsewhere closes the menu', (await page.locator('#context-menu').count()) === 0);

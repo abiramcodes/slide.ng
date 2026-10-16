@@ -11,11 +11,24 @@ export function findLayers(dir = 'src/app/layers') {
   return LAYER_NAMES.filter((name) => existsSync(`${dir}/${name}.ts`));
 }
 
-/** The source of generated/layers.ts. */
+/**
+ * Layer files by name -> import path (relative to src/slides/generated/). Folders are given from the weakest to the
+ * strongest, so a deck's `layers/` beats a theme's. `src/app/layers` is the older place and stays supported.
+ * @param {{ dir: string, importDir: string }[]} sources
+ * @returns {Record<string, string>}
+ */
+export function findLayerFiles(sources) {
+  const files = {};
+  for (const { dir, importDir } of sources) for (const name of findLayers(dir)) files[name] = `${importDir}/${name}`;
+  return files;
+}
+
+/** The source of generated/layers.ts. `found` is a list of names in src/app/layers, or a map from name to import path. */
 export function layersSource(found) {
-  const imports = found.map((n) => `import ${camel(n)} from '../../app/layers/${n}';`);
-  const entries = LAYER_NAMES.map((n) => `  '${n}': ${found.includes(n) ? camel(n) : 'null'},`);
-  return `// GENERATED: the layer components found in src/app/layers - do not edit
+  const files = Array.isArray(found) ? Object.fromEntries(found.map((n) => [n, `../../app/layers/${n}`])) : found;
+  const imports = Object.keys(files).map((n) => `import ${camel(n)} from '${files[n]}';`);
+  const entries = LAYER_NAMES.map((n) => `  '${n}': ${files[n] ? camel(n) : 'null'},`);
+  return `// GENERATED: the layer components found in layers folders - do not edit
 import type { Type } from '@angular/core';
 ${imports.join('\n')}
 

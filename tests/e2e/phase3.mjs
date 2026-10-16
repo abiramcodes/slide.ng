@@ -1,7 +1,6 @@
 // `npm run test:e2e` (fourth part): builds tests/e2e/phase3/slides.md (presenter, drawing, drag, camera ...)
 // and checks it in a real browser, one file per topic. `node tests/e2e/phase3.mjs sync` runs one topic.
 import { execSync } from 'node:child_process';
-import { copyFileSync, mkdirSync, readdirSync, rmSync } from 'node:fs';
 import { launch, reporter, serve } from './browser.mjs';
 import { makeContext } from './helpers.mjs';
 
@@ -11,12 +10,9 @@ const build = (out, slides) => execSync(`node scripts/generate.mjs && ${ng(out)}
 if (!process.env.SKIP_BUILD) {
   try {
     build('phase3', 'tests/e2e/phase3/slides.md');
-    // The second deck has its own size, zoom, hash routing and the four layer components (copied in only for this build).
-    mkdirSync('src/app/layers', { recursive: true });
-    for (const f of readdirSync('tests/e2e/phase3/layers')) copyFileSync(`tests/e2e/phase3/layers/${f}`, `src/app/layers/${f}`);
-    build('phase3-layout', 'tests/e2e/phase3/layout-deck.md');
+    // The second deck has its own size, zoom, hash routing and the four layer components (its own layers/ folder).
+    build('phase3-layout', 'tests/e2e/phase3/layout/slides.md');
   } finally {
-    rmSync('src/app/layers', { recursive: true, force: true });
     execSync('node scripts/generate.mjs', { stdio: 'ignore' });
   }
 }

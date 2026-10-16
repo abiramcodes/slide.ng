@@ -1,6 +1,7 @@
 import { ApplicationConfig, inject, isDevMode, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter, withHashLocation } from '@angular/router';
 import { HEADMATTER } from '../slides/generated';
+import { SETUP_PROVIDERS } from '../slides/generated/setup';
 import { routes } from './app.routes';
 import { DevApi } from './dev/dev-api';
 import { DRAG_SAVER } from './drag/drag-state';
@@ -11,6 +12,8 @@ import { SYNC_TRANSPORTS } from './sync/transport';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    // Providers of themes, addons and the deck's own setup/providers.ts.
+    ...SETUP_PROVIDERS,
     // Headmatter `routerMode: hash` puts the slide after a # (/#/3), for hosts that cannot send every path to index.html.
     provideRouter(routes, ...(HEADMATTER['routerMode'] === 'hash' ? [withHashLocation()] : [])),
     // Windows of the same browser stay in step through a BroadcastChannel.

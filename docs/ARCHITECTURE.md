@@ -205,6 +205,6 @@ reset and `src/styles/` (variables, the layouts' typography ported from Slidev's
 - `tests/e2e/phase2.mjs` + `phase2/`: builds `tests/e2e/phase2/slides.md` (every code and content feature) into `dist/phase2` and runs one file per topic
   (`code`, `magic`, `math`, `diagrams`, `monaco`, `twoslash`, `components`, `mark`, `markdown`). `node tests/e2e/phase2.mjs mark` runs one topic.
   It answers the PlantUML server and the tweet / Bluesky scripts with stand-ins, so no network is needed.
-- `tests/e2e/phase3.mjs` + `phase3/`: builds `tests/e2e/phase3/slides.md` and `layout-deck.md`, one file per topic (`sync`, `presenter`, `laser`, `drawing`, `camera`, `settings`, `drag`, `layout`), with Chromium's fake camera and microphone.
+- `tests/e2e/phase3.mjs` + `phase3/`: builds `tests/e2e/phase3/slides.md` and `layout/slides.md`, one file per topic (`sync`, `presenter`, `laser`, `drawing`, `camera`, `settings`, `drag`, `layout`), with Chromium's fake camera and microphone.
 - `tests/e2e/dev-hmr.mjs`: dev server live-update check. `tests/e2e/dev-server.mjs`: starts the real dev server on a small deck: v-drag write-back, drawings, side editor, `{monaco-write}`, refused requests, and `--remote` with a password (HTTP, WebSocket, two browsers).
 - `tests/e2e/screenshots.mjs` and `screenshots-features.mjs`: not tests; write `docs/screenshots/` (layouts, controls, and every feature slide).

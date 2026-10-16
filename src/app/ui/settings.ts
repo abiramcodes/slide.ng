@@ -60,7 +60,7 @@ import { FilterSettings } from './filter-settings';
         @if (download.available()) {
           <button type="button" id="download-pdf" class="text-left" (click)="download.save()">Download as PDF</button>
         } @else {
-          <span id="download-pdf" class="text-left op40 cursor-not-allowed" title="The PDF is added by: slide-ng build --download">Download as PDF</span>
+          <button type="button" id="download-pdf" class="text-left op40 cursor-not-allowed" disabled title="The PDF is added by: slide-ng build --download">Download as PDF</button>
         }
       }
     </div>

@@ -1,0 +1,74 @@
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { describe, expect, it } from 'vitest';
+import { declarations, scanRoots, selectorTest } from './scan-roots.mjs';
+
+describe('declarations', () => {
+  it('finds selector and class of components and directives', () => {
+    const source = `
+      @Component({ selector: 'my-box', template: '' })
+      export class MyBox {}
+      @Directive({
+        selector: '[v-glow]',
+      })
+      export class Glow {}`;
+    expect(declarations(source)).toEqual([{ selector: 'my-box', className: 'MyBox' }, { selector: '[v-glow]', className: 'Glow' }]);
+  });
+  it('ignores classes that are not exported or not decorated', () => {
+    expect(declarations("@Component({ selector: 'a-b' }) class Hidden {}")).toEqual([]);
+    expect(declarations('export class Plain {}')).toEqual([]);
+  });
+});
+
+describe('selectorTest', () => {
+  it('matches a tag in a slide', () => {
+    expect(selectorTest('my-box').test('<my-box class="x">')).toBe(true);
+    expect(selectorTest('my-box').test('<my-boxes>')).toBe(false);
+  });
+  it('matches an attribute', () => {
+    expect(selectorTest('[v-glow]').test('<p v-glow>')).toBe(true);
+    expect(selectorTest('[v-glow]').test('<p [v-glow]="x">')).toBe(true);
+    expect(selectorTest('[v-glow]').test('<p v-glowing>')).toBe(false);
+  });
+});
+
+function root(id: string, files: Record<string, string>, layouts = {}) {
+  const dir = mkdtempSync(join(tmpdir(), 'slide-ng-scan-'));
+  for (const [path, text] of Object.entries(files)) {
+    mkdirSync(join(dir, path, '..'), { recursive: true });
+    writeFileSync(join(dir, path), text);
+  }
+  return { id, dir, manifest: { headmatter: {}, layouts } };
+}
+
+describe('scanRoots', () => {
+  it('adds a new layout with props from theme.json', () => {
+    const r = root('theme-x', { 'layouts/hero.ts': "@Component({ selector: 'x-hero', template: '' }) export class HeroLayout {}" }, { hero: { props: ['image'], slots: ['right'], classProp: false } });
+    const { layouts } = scanRoots([r]);
+    expect(layouts['hero']).toMatchObject({ className: 'HeroLayout', tag: 'x-hero', importPath: './roots/theme-x/layouts/hero', props: ['image'], slots: ['right'] });
+  });
+  it('lets a layout replace a built-in one and keep its inputs', () => {
+    const r = root('theme-x', { 'layouts/two-cols.ts': "@Component({ selector: 'sn-two-cols', template: '' }) export class MyCols {}" });
+    const { layouts } = scanRoots([r]);
+    expect(layouts['two-cols'].className).toBe('MyCols');
+    expect(layouts['two-cols'].slots).toEqual(['left', 'right']);
+    expect(layouts['default'].className).toBe('DefaultLayout');
+  });
+  it('lets a later root win', () => {
+    const a = root('theme-a', { 'layouts/center.ts': "@Component({ selector: 'a-center' }) export class ACenter {}" });
+    const b = root('deck', { 'layouts/center.ts': "@Component({ selector: 'b-center' }) export class BCenter {}" });
+    expect(scanRoots([a, b]).layouts['center'].className).toBe('BCenter');
+  });
+  it('adds components, tests for their use, and reports unusable files', () => {
+    const r = root('deck', {
+      'components/box.ts': "@Component({ selector: 'my-box' }) export class MyBox {}",
+      'layouts/broken.ts': 'export const nothing = 1;',
+    });
+    const { components, problems } = scanRoots([r]);
+    const box = components.find((c: any) => c.className === 'MyBox');
+    expect(box.importPath).toBe('./roots/deck/components/box');
+    expect(box.test.test('<my-box>')).toBe(true);
+    expect(problems[0]).toContain('broken.ts');
+  });
+});

@@ -21,12 +21,12 @@ function openTag(def, frontmatter) {
 }
 
 // The slide body. `::name::` lines cut it into slots; a named slot is projected into the layout.
-function body(markdown, def, no, ctx) {
+function body(markdown, def, no, ctx, layout) {
   return splitSlots(markdown)
     .map(([name, text]) => {
       if (name === 'default') return toTemplate(text, ctx);
       if (!def.slots.includes(name)) {
-        console.warn(`[slides] slide ${no}: layout "${def.tag.slice(3)}" has no slot "${name}", showing it as normal content`);
+        console.warn(`[slides] slide ${no}: layout "${layout}" has no slot "${name}", showing it as normal content`);
         return toTemplate(text, ctx);
       }
       return `<ng-container ngProjectAs="[${name}]">${toTemplate(text, ctx)}</ng-container>`;
@@ -34,19 +34,25 @@ function body(markdown, def, no, ctx) {
     .join('');
 }
 
-/** @param {any} slide @param {number} no @param {{ root?: string, headmatter?: any, layers?: string[] }} [deck] where `@/` is, and the deck-wide settings */
+/**
+ * @param {any} slide @param {number} no
+ * @param {{ root?: string, headmatter?: any, layers?: string[], layouts?: Record<string, any>, components?: any[] }} [deck]
+ *   where `@/` is, the deck-wide settings, and the layouts and components to use (the built-in ones unless a theme adds more)
+ */
 export function slideSource(slide, no, deck = {}) {
-  const def = LAYOUTS[slide.layout ?? layoutName(slide.frontmatter, no - 1)];
+  const layouts = deck.layouts ?? LAYOUTS;
+  const layoutKey = slide.layout ?? layoutName(slide.frontmatter, no - 1, layouts);
+  const def = layouts[layoutKey];
   const { markdown, css } = extractStyles(tagDragSites(slide.content));
   const layer = (name) => (deck.layers?.includes(name) ? `<app-slide-layer name="${name}"></app-slide-layer>` : '');
-  const layout = `${openTag(def, slide.frontmatter)}${body(markdown, def, no, { file: slide.file, root: deck.root, headmatter: deck.headmatter })}</${def.tag}>`;
+  const layout = `${openTag(def, slide.frontmatter)}${body(markdown, def, no, { file: slide.file, root: deck.root, headmatter: deck.headmatter }, layoutKey)}</${def.tag}>`;
   const html = layer('slide-bottom') + layout + layer('slide-top');
 
   // Look for components outside code samples only (code is just text).
   const markup = html.replace(/<pre[\s\S]*?<\/pre>/g, '').replace(/<code(?:\s[^>]*)?>[\s\S]*?<\/code>/g, '');
-  const used = COMPONENTS.filter((c) => c.test.test(markup));
+  const used = (deck.components ?? COMPONENTS).filter((c) => c.test.test(markup));
   const imports = [def, ...used];
-  const importLines = [...new Set(imports.map((c) => `import { ${c.className} } from '../../app/${c.file}';`))];
+  const importLines = [...new Set(imports.map((c) => `import { ${c.className} } from '${c.importPath ?? `../../app/${c.file}`}';`))];
 
   const { clicksStart, clicks } = slide.frontmatter;
   const providers = ['ClicksContext'];

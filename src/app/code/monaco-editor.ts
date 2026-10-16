@@ -5,6 +5,7 @@ import { DevApi } from '../dev/dev-api';
 import { Dark } from '../lib/dark';
 import { CodeRunner } from './code-runner';
 import { runJs } from './monaco/run-js';
+import { CODE_RUNNERS } from './runners';
 import { unpack } from './unpack';
 import type * as Monaco from 'monaco-editor';
 
@@ -122,8 +123,13 @@ export class MonacoEditor {
   }
 
   // Runs the editor's text: TypeScript is turned into JavaScript by Monaco's own TypeScript worker.
+  private runners = Object.assign({}, ...(inject(CODE_RUNNERS, { optional: true }) ?? []));
+
   protected execute = async (code: string) => {
     await this.ready;
+    // A runner from a theme replaces the built-in one for its language.
+    const custom = this.runners[this.model?.getLanguageId() ?? ''];
+    if (custom) return custom(code);
     let js = code;
     if (this.model && this.model.getLanguageId() === 'typescript') {
       const worker = await this.monaco!.typescript.getTypeScriptWorker();

@@ -3,12 +3,17 @@
 // over the imported one, so we get one flat list of slides.
 import { dirname, resolve } from 'node:path';
 import { load } from '@slidev/parser/fs';
+import { mergeHeadmatter, resolveRoots } from './roots.mjs';
 
 // `sources` is optional: a { path: text } map that replaces reading files (used by tests).
-export async function parseDeck(file = 'slides.md', sources) {
+// `options.theme` is the `--theme` flag. The result has `roots` (theme, addons, the deck's own folder) and a headmatter
+// with the themes' defaults under it (see roots.mjs).
+export async function parseDeck(file = 'slides.md', sources, options = {}) {
   const entry = resolve(file);
   const data = await load({ userRoot: dirname(entry), roots: [dirname(entry)] }, entry, sources);
-  const headmatter = data.headmatter;
+  const problems = [];
+  const roots = resolveRoots({ deckRoot: dirname(entry), headmatter: data.headmatter, themeOverride: options.theme, warn: (m) => problems.push(m) });
+  const headmatter = mergeHeadmatter(roots, data.headmatter);
   // `defaults:` in the headmatter is the starting point of every slide's frontmatter.
   const defaults = headmatter.defaults ?? {};
 
@@ -24,8 +29,6 @@ export async function parseDeck(file = 'slides.md', sources) {
   }));
 
   // Import problems (missing file, circular import, bad range) are collected by the parser.
-  const problems = Object.values(data.markdownFiles).flatMap((md) =>
-    (md.errors ?? []).map((e) => `${md.filepath}:${e.row}: ${e.message}`),
-  );
-  return { headmatter, entry, root: dirname(entry), slides, files: Object.keys(data.markdownFiles), problems };
+  for (const md of Object.values(data.markdownFiles)) for (const e of md.errors ?? []) problems.push(`${md.filepath}:${e.row}: ${e.message}`);
+  return { headmatter, entry, roots, root: dirname(entry), slides, files: Object.keys(data.markdownFiles), problems };
 }

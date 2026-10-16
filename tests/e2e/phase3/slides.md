@@ -6,6 +6,7 @@ drawings:
   persist: true
 record: true
 wakeLock: true
+download: true
 ---
 
 # Phase 3

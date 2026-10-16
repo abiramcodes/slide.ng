@@ -8,7 +8,7 @@ export async function run({ t, open, press }) {
   for (const id of ['settings-dark', 'scale-fit', 'hide-idle-cursor', 'wake-lock', 'settings-cursor', 'cursor-style-laser', 'filter-brightness', 'filter-reset', 'camera-select', 'mic-select', 'record-screen', 'download-pdf']) {
     t.ok(`settings has #${id}`, ids.includes(id), ids.join());
   }
-  t.ok('the PDF entry is disabled', await page.locator('#download-pdf').isDisabled());
+  t.ok('the PDF entry is disabled while the deck has no PDF next to it', await page.locator('#download-pdf').isDisabled());
 
   // dark mode
   await page.locator('#settings-dark').check();

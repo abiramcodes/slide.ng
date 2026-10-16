@@ -1,11 +1,10 @@
 // Where the Angular app and the generator live, and how to run them for one deck.
 import { spawnSync } from 'node:child_process';
-import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
+import { packageRoot } from './package-root.mjs';
 import { claimDirectory, markDirectory } from './safe-dir.mjs';
 
-/** The folder of this package: `src/` (the app), `scripts/` (the generator), `angular.json`. */
-export const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+export { packageRoot };
 
 function run(args, { cwd, env, quiet }) {
   const result = spawnSync(process.execPath, args, { cwd, env: { ...process.env, ...env }, stdio: quiet ? 'pipe' : 'inherit', encoding: 'utf8' });

@@ -9,13 +9,16 @@ import { makeCss, tsFiles } from './lib/make-css.mjs';
 import { detectFeatures } from './lib/features.mjs';
 import { initHighlighter } from './lib/code/highlighter.mjs';
 import { readDrawings } from './lib/drawings.mjs';
-import { findLayers, layersSource } from './lib/layers.mjs';
+import { applyRoots } from './lib/theme-files.mjs';
 import { monacoWriteTargets, resetMonacoWriteTargets } from './lib/code/monaco.mjs';
 import { buildOptions, wantsRemoteAssets } from './lib/build-options.mjs';
 import { headParts, renderIndexHtml } from './lib/head.mjs';
 import { bundleRemoteAssets, emptyFolder } from './lib/remote-assets.mjs';
 import { ogImageAddress, ogImagePlan } from './build/og-image.mjs';
 import { pwaEnabled } from './build/pwa.mjs';
+
+// `slide-ng --theme <name|path>` reaches the generator through this variable.
+const THEME = process.env.SLIDE_NG_THEME || undefined;
 
 // SLIDES_FILE lets tests build another deck.
 const INPUT = process.env.SLIDES_FILE ?? 'slides.md';
@@ -57,7 +60,7 @@ function writeIndexHtml(deck, base) {
 }
 
 async function generate() {
-  const deck = await parseDeck(INPUT);
+  const deck = await parseDeck(INPUT, undefined, { theme: THEME });
   const build = buildOptions();
   deck.problems.forEach((p) => console.warn(`[slides] ${p}`));
   // Options of `slide-ng build` (see lib/build-options.mjs).
@@ -71,22 +74,22 @@ async function generate() {
   } else emptyFolder(`${OUT}remote-assets`);
   writeIndexHtml(deck, build.base);
   deck.drawings = readDrawings(deck.root, deck.headmatter);
-  deck.layers = findLayers();
+  // Themes and addons: copies them into the app, finds their layouts, components and layers (see lib/theme-files.mjs).
+  const { unoConfigs } = await applyRoots(deck, OUT, write, (m) => console.warn(`[slides] ${m}`));
   // Decide each layout once, so that an unknown name is reported once.
-  deck.slides.forEach((s, i) => (s.layout = layoutName(s.frontmatter, i)));
+  deck.slides.forEach((s, i) => (s.layout = layoutName(s.frontmatter, i, deck.layouts)));
   const features = detectFeatures(deck.slides);
   await initHighlighter({ langs: features.langs, headmatter: deck.headmatter, twoslash: features.twoslash });
-  const wanted = new Set(deck.slides.map((_, i) => `${slideName(i + 1)}.ts`).concat('index.ts', 'index.html', 'layers.ts', 'uno.css', 'features.css', 'remote-assets'));
-  for (const f of readdirSync(OUT)) if (!wanted.has(f)) rmSync(OUT + f);
+  const wanted = new Set(deck.slides.map((_, i) => `${slideName(i + 1)}.ts`).concat('index.ts', 'index.html', 'layers.ts', 'setup.ts', 'theme.css', 'uno.css', 'features.css', 'remote-assets', 'roots', 'public'));
+  for (const f of readdirSync(OUT)) if (!wanted.has(f)) rmSync(OUT + f, { recursive: true });
   resetMonacoWriteTargets();
   deck.slides.forEach((s, i) => write(`${OUT}${slideName(i + 1)}.ts`, slideSource(s, i + 1, deck)));
   writeMonacoTargets(deck.root);
   write(`${OUT}index.ts`, indexSource(deck));
-  write(`${OUT}layers.ts`, layersSource(deck.layers));
   write(`${OUT}features.css`, featureCss(features));
   // The generated slides are scanned too: icon tags and alerts only become class names there.
   const slideFiles = deck.slides.map((_, i) => `${OUT}${slideName(i + 1)}.ts`);
-  write(`${OUT}uno.css`, await makeCss([...deck.files, ...slideFiles, ...tsFiles('src/app')]));
+  write(`${OUT}uno.css`, await makeCss([...deck.files, ...slideFiles, ...tsFiles('src/app'), ...tsFiles(`${OUT}roots`)], unoConfigs));
   console.log(`[slides] generated ${deck.slides.length} slides`);
   return deck.files;
 }

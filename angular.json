@@ -42,12 +42,17 @@
                 "glob": "**/*",
                 "input": "src/slides/generated/remote-assets",
                 "output": "remote-assets"
+              },
+              {
+                "glob": "**/*",
+                "input": "src/slides/generated/public"
               }
             ],
             "styles": [
               "src/slides/generated/uno.css",
               "src/slides/generated/features.css",
-              "src/styles.css"
+              "src/styles.css",
+              "src/slides/generated/theme.css"
             ],
             "index": "src/slides/generated/index.html"
           },

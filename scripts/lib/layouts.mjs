@@ -46,9 +46,10 @@ export const LAYOUTS = {
 
 // Slidev's rule: the first slide is a cover, the others use `default`.
 // A name we do not know falls back to `default`, with a warning that lists the real names.
-export function layoutName(frontmatter, index) {
+// `layouts` is the table to look in: the built-in one, or that table plus the layouts of themes (scan-roots.mjs).
+export function layoutName(frontmatter, index, layouts = LAYOUTS) {
   const wanted = frontmatter.layout ?? (index === 0 ? 'cover' : 'default');
-  if (LAYOUTS[wanted]) return wanted;
-  console.warn(`[slides] slide ${index + 1}: unknown layout "${wanted}", using "default". Available: ${Object.keys(LAYOUTS).join(', ')}`);
+  if (layouts[wanted]) return wanted;
+  console.warn(`[slides] slide ${index + 1}: unknown layout "${wanted}", using "default". Available: ${Object.keys(layouts).join(', ')}`);
   return 'default';
 }

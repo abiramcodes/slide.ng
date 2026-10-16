@@ -12,8 +12,22 @@ export function tsFiles(dir) {
     .map((f) => `${f.parentPath}/${f.name}`);
 }
 
-export async function makeCss(files) {
-  const uno = await createGenerator(config);
+// A theme's uno.config.mjs adds to the base settings: presets, rules and safelist are appended, shortcuts and theme are merged.
+export function mergeUnoConfigs(base, extras) {
+  const merged = { ...base, presets: [...(base.presets ?? [])], rules: [...(base.rules ?? [])], safelist: [...(base.safelist ?? [])], variants: [...(base.variants ?? [])], shortcuts: { ...base.shortcuts }, theme: { ...base.theme } };
+  for (const extra of extras) {
+    merged.presets.push(...(extra.presets ?? []));
+    merged.rules.push(...(extra.rules ?? []));
+    merged.safelist.push(...(extra.safelist ?? []));
+    merged.variants.push(...(extra.variants ?? []));
+    Object.assign(merged.shortcuts, extra.shortcuts);
+    Object.assign(merged.theme, extra.theme);
+  }
+  return merged;
+}
+
+export async function makeCss(files, extraConfigs = []) {
+  const uno = await createGenerator(mergeUnoConfigs(config, extraConfigs));
   // UnoCSS finds class names in plain text, so we hand it the files as one string.
   const text = files.map((f) => readFileSync(f, 'utf8')).join('\n');
   const { css } = await uno.generate(text);

@@ -1,7 +1,7 @@
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { findLayers, layersSource } from './layers.mjs';
+import { findLayerFiles, findLayers, layersSource } from './layers.mjs';
 
 describe('findLayers', () => {
   it('finds only the files that exist, in a fixed order', () => {
@@ -24,5 +24,23 @@ describe('layersSource', () => {
   });
   it('is valid with no layers at all', () => {
     expect(layersSource([])).not.toContain('import globalTop');
+  });
+});
+
+describe('findLayerFiles', () => {
+  it('lets a later folder win over an earlier one, per layer', () => {
+    const a = mkdtempSync(join(tmpdir(), 'slide-ng-layers-'));
+    const b = mkdtempSync(join(tmpdir(), 'slide-ng-layers-'));
+    for (const n of ['global-top', 'slide-top']) writeFileSync(join(a, `${n}.ts`), '');
+    writeFileSync(join(b, 'slide-top.ts'), '');
+    expect(findLayerFiles([{ dir: a, importDir: './roots/theme/layers' }, { dir: b, importDir: './roots/deck/layers' }])).toEqual({
+      'global-top': './roots/theme/layers/global-top',
+      'slide-top': './roots/deck/layers/slide-top',
+    });
+  });
+  it('makes layers.ts from a map of import paths', () => {
+    const src = layersSource({ 'slide-top': './roots/deck/layers/slide-top' });
+    expect(src).toContain("import slideTop from './roots/deck/layers/slide-top';");
+    expect(src).toContain("'slide-top': slideTop,");
   });
 });
