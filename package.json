@@ -1,6 +1,6 @@
 {
   "name": "slide-ng",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Presentations written in markdown, with Angular templates inside. A Slidev port for Angular.",
   "keywords": [
     "slides",
@@ -19,7 +19,6 @@
     "type": "git",
     "url": "git+https://github.com/slide-ng/slide.ng.git"
   },
-  "private": true,
   "bin": {
     "slide-ng": "./bin/slide-ng.mjs"
   },
