@@ -1,15 +1,20 @@
 // `slide-ng mcp [slides.md]`: an MCP server on stdio. A tool client (an editor, a chat app) can read the outline, get and edit
 // slides of the deck. Nothing else is read or written: the tools only touch the deck's markdown files.
+import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { parseFlags } from '../cli/flags.mjs';
 import { TOOLS } from './tools.mjs';
 
+const VERSION = JSON.parse(
+  readFileSync(new URL('../../package.json', import.meta.url), 'utf8'),
+).version;
+
 /** The server, with the tools of one deck. Tests connect it to a pipe instead of stdio. */
 export function createMcpServer(entry) {
   const ctx = { entry, root: dirname(entry) };
-  const server = new McpServer({ name: 'slide-ng', version: '0.0.0' });
+  const server = new McpServer({ name: 'slide-ng', version: VERSION });
   for (const tool of TOOLS) {
     server.registerTool(
       tool.name,
