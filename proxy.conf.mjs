@@ -9,6 +9,7 @@ export default port
         target: `http://127.0.0.1:${port}`,
         ws: true,
         changeOrigin: false,
+        xfwd: true, // adds the real client address (X-Forwarded-For), which the companion uses to limit wrong passwords
         secure: false,
       },
     }

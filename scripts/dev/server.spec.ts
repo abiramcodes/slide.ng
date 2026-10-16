@@ -357,6 +357,37 @@ describe('--remote with a password', () => {
     expect(String(r.headers['set-cookie'])).toMatch(/HttpOnly.*SameSite=Strict/);
     expect(cookie).not.toContain('pw');
   });
+  it('the cookie is short lived and different for every login', async () => {
+    const a = await ask('POST', '/__slide-ng/login', { password: 'pw' });
+    const b = await ask('POST', '/__slide-ng/login', { password: 'pw' });
+    const header = String(a.headers['set-cookie']);
+    expect(Number(/Max-Age=(\d+)/.exec(header)?.[1])).toBeLessThanOrEqual(8 * 3600);
+    expect(Number(/Max-Age=(\d+)/.exec(header)?.[1])).toBeGreaterThan(0);
+    expect(String(a.headers['set-cookie']).split(';')[0]).not.toBe(
+      String(b.headers['set-cookie']).split(';')[0],
+    );
+  });
+  it('locks a client out after repeated wrong passwords, also for the right one, but not others', async () => {
+    const from = (ip: string) => ({ 'x-forwarded-for': ip });
+    for (let i = 0; i < 5; i++)
+      expect(
+        (await ask('POST', '/__slide-ng/login', { password: `bad${i}` }, from('9.9.9.9'))).status,
+      ).toBe(401);
+    const locked = await ask('POST', '/__slide-ng/login', { password: 'pw' }, from('9.9.9.9'));
+    expect(locked.status).toBe(429);
+    expect(Number(locked.headers['retry-after'])).toBeGreaterThan(0);
+    expect(locked.headers['set-cookie']).toBeUndefined();
+    // What the client wrote before the last entry is ignored: the proxy adds the real address last.
+    const dodge = await ask(
+      'POST',
+      '/__slide-ng/login',
+      { password: 'pw' },
+      from('1.2.3.4, 9.9.9.9'),
+    );
+    expect(dodge.status).toBe(429);
+    const other = await ask('POST', '/__slide-ng/login', { password: 'pw' }, from('8.8.8.8'));
+    expect(other.status).toBe(200);
+  });
   it('then hands out the token and accepts writes that have it', async () => {
     expect((await ask('GET', '/__slide-ng/session', undefined, { cookie })).json.token).toBe(
       'tok2',

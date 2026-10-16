@@ -2,6 +2,7 @@
 // server; nothing here comes from a web request.
 import { randomBytes } from 'node:crypto';
 import { dirname, resolve } from 'node:path';
+import { createLoginGuard, createSessions } from './login-guard.mjs';
 
 export const randomSecret = () => randomBytes(24).toString('hex');
 
@@ -21,8 +22,9 @@ export function readConfig(env, cwd = process.cwd()) {
     token: env.SLIDE_NG_TOKEN || randomSecret(),
     /** `--remote` password; empty only without --remote. */
     password: env.SLIDE_NG_PASSWORD ?? '',
-    /** What the cookie holds once the password was right. Different from the password, new every start. */
-    auth: randomSecret(),
+    /** The logins that are valid (one random cookie value each, 8 hours) and the limit on wrong passwords. */
+    sessions: createSessions(),
+    loginGuard: createLoginGuard(),
     remote: env.SLIDE_NG_REMOTE === '1',
     /** Host names the machine is reached by (besides localhost and addresses). */
     hostnames: (env.SLIDE_NG_HOSTNAMES ?? '').split(',').filter(Boolean),

@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { Readable } from 'node:stream';
 import {
   check,
+  clientAddress,
   confine,
   hostAllowed,
   originAllowed,
@@ -13,8 +14,11 @@ import {
   safeNext,
   safeWrite,
 } from './auth.mjs';
+import { createSessions } from './login-guard.mjs';
 
-const ctx = { token: 'tok123', password: '', auth: 'cookie456', remote: false, hostnames: [] };
+const sessions = createSessions();
+const login = sessions.issue();
+const ctx = { token: 'tok123', password: '', sessions, remote: false, hostnames: [] };
 const req = (headers: Record<string, string>, url = '/__slide-ng/slide/1') =>
   ({ headers, url }) as any;
 const good = {
@@ -93,7 +97,7 @@ describe('check', () => {
     const withPw = { ...ctx, password: 'secret' };
     expect(check(req(good), withPw)?.status).toBe(401);
     expect(check(req({ ...good, cookie: 'slide-ng-auth=wrong' }), withPw)?.status).toBe(401);
-    expect(check(req({ ...good, cookie: 'a=b; slide-ng-auth=cookie456' }), withPw)).toBeNull();
+    expect(check(req({ ...good, cookie: `a=b; slide-ng-auth=${login}` }), withPw)).toBeNull();
   });
   it('the login address works without the cookie, and still checks Host and Origin', () => {
     const withPw = { ...ctx, password: 'secret' };
@@ -196,5 +200,15 @@ describe('safeNext', () => {
       '/a\r\nSet-Cookie: x=1',
     ])
       expect(safeNext(n as string)).toBe('/');
+  });
+});
+
+describe('clientAddress', () => {
+  it('uses the last X-Forwarded-For entry (the proxy adds it) and not what the client claimed', () => {
+    const r = (headers: object, remote = '127.0.0.1') =>
+      ({ headers, socket: { remoteAddress: remote } }) as any;
+    expect(clientAddress(r({ 'x-forwarded-for': '6.6.6.6, 192.168.1.9' }))).toBe('192.168.1.9');
+    expect(clientAddress(r({ 'x-forwarded-for': '::ffff:10.0.0.4' }))).toBe('10.0.0.4');
+    expect(clientAddress(r({}, '::ffff:127.0.0.1'))).toBe('127.0.0.1');
   });
 });

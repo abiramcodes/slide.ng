@@ -1,6 +1,6 @@
 // The companion server's answers. Every request goes through `check` (auth.mjs) first; nothing is done for a request
 // that fails it. Writes need a JSON body, so a plain HTML form from another site cannot send one.
-import { API, COOKIE, check, readBody, safeEqual } from './auth.mjs';
+import { API, COOKIE, check, clientAddress, readBody, safeEqual } from './auth.mjs';
 import { writeDrawing, MAX_DRAWING } from './drawings-store.mjs';
 import { HttpError } from './http-error.mjs';
 import { MAX_FILE, writeMonaco } from './monaco-write.mjs';
@@ -47,17 +47,24 @@ export function createHandler(ctx) {
       return json(res, 200, { token: ctx.token, remote: ctx.remote });
 
     if (path === '/login' && method === 'POST') {
+      const client = clientAddress(req);
+      const wait = ctx.loginGuard.wait(client);
+      if (wait > 0)
+        return json(
+          res,
+          429,
+          { error: 'too many wrong passwords, try again later' },
+          { 'retry-after': String(Math.ceil(wait / 1000)) },
+        );
       const { password } = await body(req, 1_000);
       if (!ctx.password || !safeEqual(password, ctx.password)) {
+        ctx.loginGuard.fail(client);
         await sleep(400);
         throw new HttpError(401, 'wrong password');
       }
-      return json(
-        res,
-        200,
-        { ok: true },
-        { 'set-cookie': `${COOKIE}=${ctx.auth}; HttpOnly; SameSite=Strict; Path=${API}` },
-      );
+      ctx.loginGuard.ok(client);
+      const cookie = `${COOKIE}=${ctx.sessions.issue()}; HttpOnly; SameSite=Strict; Max-Age=${ctx.sessions.maxAgeSeconds}; Path=${API}`;
+      return json(res, 200, { ok: true }, { 'set-cookie': cookie });
     }
 
     let m;

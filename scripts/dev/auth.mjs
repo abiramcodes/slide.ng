@@ -5,7 +5,8 @@
 //   1. Host header: only localhost (and, with --remote, an IP address). A DNS rebinding page
 //      reaches us under its own name, which is not on the list.
 //   2. Origin header (every browser sends it on writes and WebSocket upgrades): must be this very server's address.
-//   3. Password (only with --remote=password): a cookie that is given out after the right password was sent.
+//   3. Password (always with --remote): a cookie, one per login, given out after the right password was sent; wrong
+//      passwords are limited per client address (login-guard.mjs).
 //   4. Token: a random value made when the server starts. A page learns it from /session (which
 //      the checks above protect) and sends it with every write and WebSocket. Other sites cannot read it.
 import { timingSafeEqual } from 'node:crypto';
@@ -54,7 +55,19 @@ export function parseCookies(header) {
 }
 
 export const hasAuthCookie = (req, ctx) =>
-  safeEqual(parseCookies(req.headers.cookie)[COOKIE], ctx.auth);
+  Boolean(ctx.sessions?.has(parseCookies(req.headers.cookie)[COOKIE]));
+
+/**
+ * Who is asking, for the limit on wrong passwords. The Angular dev server's proxy adds the address it saw as the last
+ * `X-Forwarded-For` entry (earlier entries are whatever the client claimed, so they are not used).
+ */
+export function clientAddress(req) {
+  const forwarded = String(req.headers['x-forwarded-for'] ?? '')
+    .split(',')
+    .pop()
+    ?.trim();
+  return (forwarded || req.socket?.remoteAddress || 'unknown').replace(/^::ffff:/, '');
+}
 
 export function tokenOf(req) {
   const fromHeader = req.headers['x-slide-ng-token'];

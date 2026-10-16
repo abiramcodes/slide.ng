@@ -509,6 +509,28 @@ try {
     (await api(OPORT, '/session', { headers: { cookie: ocookie, origin: 'http://evil.example' } }))
       .status === 403,
   );
+  // Wrong passwords are limited per client address through the real proxy; what the client writes in X-Forwarded-For does not help.
+  const forged = (n) => ({ 'x-forwarded-for': `10.9.8.${n}` });
+  const statuses = [];
+  for (let i = 0; i < 6; i++)
+    statuses.push(
+      (
+        await api(OPORT, '/login', {
+          method: 'POST',
+          body: { password: `x${i}` },
+          headers: forged(i),
+        })
+      ).status,
+    );
+  t.ok(
+    '--remote: after 5 wrong passwords the client is locked out, however it fills X-Forwarded-For',
+    statuses.indexOf(429) > 0 &&
+      statuses.slice(0, statuses.indexOf(429)).every((s) => s === 401) &&
+      statuses.slice(statuses.indexOf(429)).every((s) => s === 429),
+    statuses.join(),
+  );
+  const locked = await api(OPORT, '/login', { method: 'POST', body: { password: made } });
+  t.ok('--remote: the lock also stops the right password', locked.status === 429);
 } finally {
   await browser?.close();
   stop?.();
