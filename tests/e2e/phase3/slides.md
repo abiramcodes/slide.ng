@@ -5,6 +5,7 @@ timer: countdown
 drawings:
   persist: true
 record: true
+wakeLock: true
 ---
 
 # Phase 3

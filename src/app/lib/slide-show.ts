@@ -8,6 +8,8 @@ import { RenderContext } from './slide-context';
 import { Stage } from './stage';
 import { pickTransition } from './transitions';
 import { Ui } from './ui-state';
+import { ViewPrefs } from './view-prefs';
+import { filterCss } from './filters';
 
 // The slide on screen: a canvas of fixed size, scaled to fit this element, with the current slide
 // component inside. The deck and the presenter's main pane both use it. Whatever is placed
@@ -29,6 +31,7 @@ export class SlideShow {
   context = input<RenderContext>('slide');
   protected nav = inject(Nav);
   private ui = inject(Ui);
+  private view = inject(ViewPrefs);
   private self = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private host = viewChild.required('host', { read: ViewContainerRef });
   private canvas = viewChild.required<ElementRef<HTMLElement>>('canvas');
@@ -38,7 +41,7 @@ export class SlideShow {
   private size = hostSize();
   // `--slidev-slide-scale` is what the iframe layouts use to stay sharp (as in Slidev).
   private scale = computed(() => (this.context() === 'slide' && this.ui.slideScale()) || fitScale(this.size().w, this.size().h));
-  protected canvasStyle = computed(() => ({ transform: `translate(-50%, -50%) scale(${this.scale()})`, '--slidev-slide-scale': this.scale() }));
+  protected canvasStyle = computed(() => ({ transform: `translate(-50%, -50%) scale(${this.scale()})`, '--slidev-slide-scale': this.scale(), filter: filterCss(this.view.filters()) || null }));
 
   private stage?: Stage;
   private shown = 0; // the slide number on screen, to tell which way we moved
