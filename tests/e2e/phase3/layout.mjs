@@ -27,6 +27,13 @@ export async function run({ t, open, press, hud }) {
   t.ok('a click on a layer does not move the slide', (await hud(page)).startsWith('slide 2/2'));
   await page.close();
 
+  // the presenter's next-step preview draws the global layers, like the slide itself
+  const presenter = await open('/#/presenter/1', { width: 1280, height: 720 });
+  await presenter.waitForSelector('#next-canvas');
+  const nextLayers = await presenter.locator('#next-canvas #gt, #next-canvas #gb').evaluateAll((l) => l.map((e) => e.id).sort().join());
+  t.ok('the next-step preview shows the global layers', nextLayers === 'gb,gt', nextLayers);
+  await presenter.close();
+
   // a reload on a deep link works in hash mode (the server only knows /)
   const deep = await open('/#/2', { width: 640, height: 480 });
   t.ok('a link with #/2 opens slide 2', (await hud(deep)).startsWith('slide 2/2'), await hud(deep));

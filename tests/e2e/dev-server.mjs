@@ -2,7 +2,7 @@
 // companion server does: v-drag moves are written into the markdown (also for names and bare v-drag), drawings
 // and {monaco-write} edits are saved to files, bad requests are refused, and `--remote` needs its password.
 import { spawn } from 'node:child_process';
-import { copyFileSync, existsSync, readFileSync, rmSync } from 'node:fs';
+import { copyFileSync, existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { WebSocket } from 'ws';
 import { launch, reporter } from './browser.mjs';
 
@@ -128,6 +128,11 @@ try {
   await page.waitForSelector('#from-editor', { timeout: 30000 });
   t.ok('the slide shows the new text after the rebuild', (await page.locator('#from-editor').innerText()) === 'Typed in the editor');
   await page.waitForSelector('#editor-text');
+  // A change made outside (another editor, git) shows up in the open editor while nothing is being typed.
+  writeFileSync(WORK, read().replace('Typed in the editor', 'Changed outside'));
+  await page.waitForFunction(() => document.querySelector('#editor-text')?.value.includes('Changed outside'), null, { timeout: 15000 }).then(
+    () => t.ok('the open side editor takes over a change made outside', true),
+    () => t.ok('the open side editor takes over a change made outside', false, 'the textarea kept the old text'));
   await page.locator('#editor-close').click();
   await page.waitForTimeout(300);
   t.ok('the close button closes it and the slide gets its room back', (await page.locator('#side-editor').count()) === 0 && (await page.locator('.stage').evaluate((e) => getComputedStyle(e).right)) === '0px');

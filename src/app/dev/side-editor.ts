@@ -1,10 +1,12 @@
-import { Component, effect, inject, signal, untracked } from '@angular/core';
+import { Component, DestroyRef, effect, inject, signal, untracked } from '@angular/core';
 import { Nav } from '../lib/nav';
 import { DevApi } from './dev-api';
 import { SideEditorState } from './side-editor-state';
 
 type Status = 'loading' | 'saved' | 'saving' | 'error';
 const SAVE_DELAY = 600;
+// How often an open editor looks at the file for changes made elsewhere (another editor, git, the MCP server).
+const WATCH_EVERY = 2000;
 
 // A plain text box with the markdown of the current slide (frontmatter, content and notes). Typing saves it
 // into slides.md through the dev server; the generator rebuilds and the slide on the left updates.
@@ -43,6 +45,18 @@ export class SideEditor {
       const no = this.nav.no(), open = this.state.open() && this.state.available();
       if (open && no !== this.loadedNo) untracked(() => void this.load(no));
     });
+    const watch = setInterval(() => void this.refresh(), WATCH_EVERY);
+    inject(DestroyRef).onDestroy(() => clearInterval(watch));
+  }
+
+  // Takes over a change made outside, but only when nothing typed here is waiting to be saved.
+  private async refresh() {
+    if (!this.state.open() || !this.loadedNo || this.timer !== undefined || this.status() !== 'saved') return;
+    const no = this.loadedNo, shown = this.text();
+    const got = await this.api.get<{ raw: string }>(`/slides/${no}/source`);
+    // The user may have typed, or moved to another slide, while we asked.
+    if (!got || this.timer !== undefined || this.status() !== 'saved' || this.loadedNo !== no || this.text() !== shown) return;
+    if (got.raw !== shown) this.text.set(got.raw);
   }
 
   private async load(no: number) {

@@ -5,16 +5,17 @@ import { hostSize } from '../lib/element-size';
 import { mountSlide } from '../lib/mount-slide';
 import { Nav } from '../lib/nav';
 import { SlideBase } from '../lib/slide-base';
+import { SlideLayer } from '../lib/slide-layer';
 
 // The next step as a small picture: the next click of this slide, or the next slide when the
 // clicks are used up. It is the real slide component with its click set to that step.
 @Component({
   selector: 'app-next-preview',
-  imports: [DrawingPreview],
+  imports: [DrawingPreview, SlideLayer],
   host: { class: 'block relative h-full w-full overflow-hidden' },
   template: `
     @if (frame(); as f) {
-      <div id="next-canvas" class="canvas absolute left-1/2 top-1/2" [style]="style()"><ng-container #host /><app-drawing-preview [no]="f.no" /></div>
+      <div id="next-canvas" class="canvas absolute left-1/2 top-1/2" [style]="style()"><app-slide-layer name="global-bottom" /><ng-container #host /><app-slide-layer name="global-top" /><app-drawing-preview [no]="f.no" /></div>
     } @else if (nav.ready()) {
       <div class="h-full flex justify-center items-center"><div class="text-gray-500">End of the presentation</div></div>
     }
