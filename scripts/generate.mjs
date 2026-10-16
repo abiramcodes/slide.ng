@@ -88,6 +88,7 @@ async function generate() {
   if (build.download && deck.headmatter.download == null) deck.headmatter.download = true;
   if (build.withoutNotes) deck.slides.forEach((s) => { s.note = null; });
   if (build.offline) applyOffline(deck.headmatter);
+  deck.assetBase = build.building ? build.base : '/';
   mkdirSync(OUT, { recursive: true });
   // Remote pictures are fetched into the build only for a production build with `remoteAssets: true`.
   if (wantsRemoteAssets(deck.headmatter, build.building)) {
