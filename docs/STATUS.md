@@ -99,6 +99,6 @@ Run with `CHROME_PATH` set and `VSCODE_CWD` unset (the icon generator skips loca
 - `npm run lint`, `format:check`, `build`, `check:skills`: pass. `npm test`: **851** passed. `test:e2e`: pass (154, 24, 24). `test:export`: pass after the fixes below.
 - `test:dev`: live update 6 pass; dev server 50 pass, 1 fails ("arrow keys nudge and are saved once the keys rest") on every run here. The code path looks correct; not yet explained.
 - Fixed on the Mac: a blank last page in PDF export (Chrome), `--out` through a symbolic link such as `/var` bypassing the current-folder guard, three dev-test races (`localhost` vs `127.0.0.1`, typed text coloured, a refused huge upload reset by the server).
-- `npm audit`: 6 high (`braces`, `chokidar`, `image-size` through `pptxgenjs`, `@slidev/types`, `vite-plugin-static-copy`), 0 critical. `pdf-lib` is used in two small files (`scripts/export/outline.mjs`, `pdf.mjs`); a maintained fork would be a near drop-in.
+- `npm audit`: 6 high (`braces`, `chokidar`, `image-size` through `pptxgenjs`, `@slidev/types`, `vite-plugin-static-copy`), 0 critical. `pdf-lib` was replaced by the maintained fork `@cantoo/pdf-lib`.
 - Docker image: builds and serves. PDF export in the container needs `SLIDE_NG_NO_SANDBOX=1` (owner decision). A deck bind-mounted read-write fails on Docker Desktop for Mac; mount it `:ro`.
 - Starter: `npm install` fails until `slide-ng` is on npm.

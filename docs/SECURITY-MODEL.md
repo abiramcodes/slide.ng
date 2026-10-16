@@ -63,5 +63,5 @@ The tools write in the deck's `.slide-ng/` folder and, for a build or export, in
 
 - The built deck runs the author's HTML and scripts in the viewer's browser. Notes are part of a public build unless `--without-notes`.
 - `{monaco-run}` runs code in a frame without access to the slide, with the limits of a sandboxed iframe, not as a security promise for code you do not trust.
-- Dependencies are not audited here; CI has a non-blocking `npm audit` job. `pdf-lib` is no longer maintained (see [DECISIONS.md](DECISIONS.md)).
+- Dependencies are not audited here; CI has a non-blocking `npm audit` job. The PDF library is `@cantoo/pdf-lib`, a maintained fork of the unmaintained `pdf-lib` (see [DECISIONS.md](DECISIONS.md)).
 - Nothing was tried on a real network with a second machine.

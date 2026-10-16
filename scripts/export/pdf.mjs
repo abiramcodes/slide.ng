@@ -1,5 +1,5 @@
 // PDF output: page.pdf of the print page, merged (per-slide mode), titled, with an optional outline.
-import { PDFDocument } from 'pdf-lib';
+import { PDFDocument } from '@cantoo/pdf-lib';
 import { addOutline, outlineTree } from './outline.mjs';
 
 /** One PDF buffer of the loaded print page, with the paper as big as one slide. */

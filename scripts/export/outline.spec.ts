@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PDFDocument, PDFName } from 'pdf-lib';
+import { PDFDocument, PDFName } from '@cantoo/pdf-lib';
 import { addOutline, outlineTree } from './outline.mjs';
 
 const entry = (title: string, level: number | null, page: number) => ({ title, level, page });

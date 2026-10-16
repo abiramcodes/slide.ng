@@ -1,5 +1,5 @@
 // A PDF outline (the bookmarks panel) written with pdf-lib: slide titles, nested by heading level.
-import { PDFHexString, PDFName, PDFNumber } from 'pdf-lib';
+import { PDFHexString, PDFName, PDFNumber } from '@cantoo/pdf-lib';
 
 /**
  * Nests slides by title level, like Slidev: a title with a higher level than the one before goes inside it.
