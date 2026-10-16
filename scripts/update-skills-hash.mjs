@@ -9,8 +9,9 @@ const at = process.argv.indexOf('--root');
 const root = resolve(at > 0 ? process.argv[at + 1] : '.');
 const before = checkDrift(root);
 writeFileSync(join(root, GENERATION_FILE), updatedGeneration(root));
+const names = before.stale.map((s) => s.file.replace('skills/slide-ng/', ''));
 console.log(
-  before.stale.length
-    ? `Updated the hashes of ${before.stale.length} skill files: ${before.stale.map((s) => s.file).join(', ')}`
+  names.length
+    ? `Updated the hashes of ${names.length} skill files: ${names.slice(0, 5).join(', ')}${names.length > 5 ? ', ...' : ''}`
     : 'The hashes were already up to date.',
 );

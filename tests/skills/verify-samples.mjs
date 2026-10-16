@@ -2,7 +2,7 @@
 //   Samples are the `md` fences after `<!-- verify -->`; `<!-- verify-file: path -->` adds a file next to them (see scripts/skills/samples.mjs).
 //   1. Every sample is its own deck in a temporary folder and goes through the real generator. Any error or warning fails it.
 //   2. All samples together become the slides of one deck, built with the real `slide-ng build` (Angular compiles every template).
-//   Flags: --each  also build every sample alone with `slide-ng build` (slow), --only <text> only samples whose name has this text,
+//   Flags: --skill <folder> another skill folder, --each  also build every sample alone with `slide-ng build` (slow), --only <text> only samples whose name has this text,
 //          --no-build  skip step 2, --keep  keep the temporary folder.
 import { spawn } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
@@ -15,7 +15,8 @@ import { prepareApp } from '../../scripts/cli/app-root.mjs';
 import { extractSamples } from '../../scripts/skills/samples.mjs';
 
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const skill = join(repo, 'skills/slide-ng');
+const skillArg = process.argv.indexOf('--skill');
+const skill = skillArg > 0 ? resolve(process.argv[skillArg + 1]) : join(repo, 'skills/slide-ng'); // --skill <folder> is for trying the checker
 const args = process.argv.slice(2);
 const has = (flag) => args.includes(flag);
 const only = args.includes('--only') ? args[args.indexOf('--only') + 1] : '';
@@ -94,9 +95,19 @@ if (!has('--no-build')) {
     [join(repo, 'bin/slide-ng.mjs'), 'build', 'slides.md', '--out', 'dist'],
     { cwd: join(work, 'combined') },
   );
-  const noise = built.stderr.split('\n').filter((l) => /^\[slides\]/.test(l));
+  const noise = `${built.stdout}\n${built.stderr}`
+    .split('\n')
+    .filter((l) => /^\[slides\]/.test(l) && !/generated \d+ slides/.test(l));
   if (built.code !== 0 || noise.length) {
-    const tail = `${built.stdout}\n${built.stderr}`.trim().split('\n').slice(-60).join('\n');
+    // The escape character is the point of the pattern (colours in the output).
+    // eslint-disable-next-line no-control-regex
+    const text = `${built.stdout}\n${built.stderr}`.replace(/\x1b\[[0-9;]*m/g, '');
+    const lines = text.trim().split('\n');
+    // The error blocks of Angular (and our own warnings) first, then the end of the output.
+    const errors = lines.filter(
+      (l) => /ERROR|^\[slides\]|slide-\d+\.ts|roots\//.test(l) && !/generated \d+ slides/.test(l),
+    );
+    const tail = [...errors.slice(0, 40), '...', ...lines.slice(-15)].join('\n');
     fail('The combined deck does not build:', [
       tail,
       'Slides of each sample in the combined deck:\n' + ranges.map((r) => `  ${r}`).join('\n'),
@@ -134,7 +145,26 @@ else console.log(`kept ${work}`);
 async function combine() {
   const dir = join(work, 'combined');
   mkdirSync(dir, { recursive: true });
-  let out = '---\ntitle: Skill samples\n---\n\n# Skill samples\n';
+  // Deck-level keys that change what is generated or compiled: the theme and the addons (one for all the samples) and the code aliases (joined).
+  const deckKeys = {};
+  const aliases = {};
+  for (const s of samples) {
+    const head = (await parse(s.text, s.entry)).slides[0]?.frontmatter ?? {};
+    Object.assign(aliases, head.codeAliases);
+    for (const key of ['theme', 'addons']) {
+      if (!head[key] || head[key] === 'default') continue;
+      const value = JSON.stringify(head[key]);
+      if (deckKeys[key] && deckKeys[key] !== value)
+        fail(`Two samples use a different ${key}:`, [`${deckKeys[key]} and ${value}`]);
+      deckKeys[key] = value;
+    }
+  }
+  const headmatter = yaml({
+    title: 'Skill samples',
+    ...Object.fromEntries(Object.entries(deckKeys).map(([k, v]) => [k, JSON.parse(v)])),
+    ...(Object.keys(aliases).length ? { codeAliases: aliases } : {}),
+  });
+  let out = `---\n${headmatter}---\n\n# Skill samples\n`;
   const ranges = [];
   let no = 1;
   const owner = new Map();

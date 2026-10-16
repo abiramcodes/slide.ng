@@ -6,7 +6,7 @@ const page = (body: string) => extractSamples(body, 'ref.md');
 describe('extractSamples', () => {
   it('takes the md fence after the marker, and counts the other md fences as fragments', () => {
     const r = page('<!-- verify -->\n```md\n# A\n```\n\n```md\nfragment\n```\n');
-    expect(r.samples).toEqual([{ id: 'ref.md#1', line: 3, text: '# A\n' }]);
+    expect(r.samples).toEqual([{ id: 'ref.md#1', line: 2, text: '# A\n' }]);
     expect(r.unmarked).toBe(1);
     expect(r.problems).toEqual([]);
   });
@@ -21,7 +21,7 @@ describe('extractSamples', () => {
   it('collects companion files', () => {
     const r = page('<!-- verify-file: components/hello.ts -->\n```ts\nexport class A {}\n```\n');
     expect(r.files).toEqual([
-      { path: 'components/hello.ts', line: 3, text: 'export class A {}\n' },
+      { path: 'components/hello.ts', line: 2, text: 'export class A {}\n' },
     ]);
   });
   it('reports a marker without a fence, a wrong language and an unsafe path', () => {
