@@ -23,10 +23,10 @@ export function hasMath(text) {
   return extractMath(prose).maths.length > 0;
 }
 
-// An editor: a `{monaco...}` fence (also a `<<<` line or magic-move step cannot be one) or the <monaco> tag.
+// An editor: a `{monaco...}` fence (also a `<<<` line or magic-move step cannot be one) or the <slide-ng-monaco> tag.
 export const hasMonaco = (text) =>
   /^`{3,}[^\n]*\{monaco[\w-]*\}/m.test(text) ||
-  /<monaco[\s>]/.test(text) ||
+  /<slide-ng-monaco[\s>]/.test(text) ||
   /^<<<.*\{monaco[\w-]*\}/m.test(text);
 
 // A fence with the word `twoslash` after the language.

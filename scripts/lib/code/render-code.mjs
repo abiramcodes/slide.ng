@@ -1,4 +1,4 @@
-// A normal code fence -> highlighted HTML inside a <code-block-wrapper> component.
+// A normal code fence -> highlighted HTML inside a <slide-ng-code-block-wrapper> component.
 // The wrapper (src/app/code/code-block-wrapper.ts) adds the copy button, the title bar, the
 // click-stepped line highlights and the maximum height.
 import { codeToHtml, twoslashTransformer } from './highlighter.mjs';
@@ -49,5 +49,5 @@ export function renderCode(fence, ctx = {}) {
     finally: options.finally,
     noCopy: (head.codeCopy ?? true) === false || undefined,
   });
-  return `<code-block-wrapper${wrapperAttrs}>${highlightedPre(fence.code, lang, fence.info)}</code-block-wrapper>`;
+  return `<slide-ng-code-block-wrapper${wrapperAttrs}>${highlightedPre(fence.code, lang, fence.info)}</slide-ng-code-block-wrapper>`;
 }

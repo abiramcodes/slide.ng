@@ -14,7 +14,7 @@ export function declarations(source) {
   return [...source.matchAll(DECLARATION)].map((m) => ({ selector: m[1], className: m[2] }));
 }
 
-/** The text a slide must contain for this selector to be in use: `<my-tag` for a tag, ` v-thing` for `[v-thing]`. */
+/** The text a slide must contain for this selector to be in use: `<my-tag` for a tag, ` my-thing` for `[my-thing]`. */
 export function selectorTest(selector) {
   const attribute = /^\[([\w-]+)\]$/.exec(selector);
   const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -67,6 +67,7 @@ export function scanRoots(roots) {
         if (known >= 0) components.splice(known, 1); // same class name: the later root replaces it
         components.push({
           className: d.className,
+          selector: d.selector,
           importPath: `./roots/${root.id}/components/${file.slice(0, -3)}`,
           test: selectorTest(d.selector),
         });
