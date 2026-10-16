@@ -1,9 +1,9 @@
-// An embedded YouTube video:  <youtube id="luoMHjh-XcQ" width="560" height="315" />
+// An embedded YouTube video:  <slide-ng-youtube id="luoMHjh-XcQ" width="560" height="315" />
 import { Component, computed, inject, input, numberAttribute } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
-  selector: 'youtube',
+  selector: 'slide-ng-youtube',
   host: { style: 'display: inline-block' },
   template: `
     <iframe

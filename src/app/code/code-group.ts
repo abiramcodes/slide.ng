@@ -4,7 +4,7 @@ import { Component, contentChildren, effect, signal } from '@angular/core';
 import { CodeBlockWrapper } from './code-block-wrapper';
 
 @Component({
-  selector: 'code-group',
+  selector: 'slide-ng-code-group',
   template: `
     <div class="slidev-code-group-tabs">
       @for (block of blocks(); track $index) {

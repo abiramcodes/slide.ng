@@ -34,7 +34,7 @@ export const CLICKS_TOTAL = new InjectionToken<number | null>('CLICKS_TOTAL', {
 });
 
 // Port of normalizeSingleAtValue. Result is null (never), "+n"/"-n" (relative) or a number (absolute).
-// `v-click` written without a value arrives as '' - we treat it like "no value", which means '+1'.
+// `slide-ng-click` written without a value arrives as '' - we treat it like "no value", which means '+1'.
 export function normalizeSingle(at: RawSingleAt): NormSingle {
   if (at === false || at === 'false') return null;
   if (at == null || at === true || at === 'true' || at === '') return '+1';

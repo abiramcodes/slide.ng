@@ -3,9 +3,9 @@ import { RENDER_CONTEXT } from '../lib/slide-context';
 
 // Shows its content only where the slide is drawn: slide, presenter, print or overview.
 // `main` means slide or presenter. Content marked `fallback` is shown everywhere else.
-//   <render-when context="slide">only on the real slide<div fallback>thumbnail</div></render-when>
+//   <slide-ng-render-when context="slide">only on the real slide<div fallback>thumbnail</div></slide-ng-render-when>
 @Component({
-  selector: 'render-when',
+  selector: 'slide-ng-render-when',
   template: `
     @if (show()) {
       <ng-content />

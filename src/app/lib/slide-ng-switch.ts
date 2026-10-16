@@ -1,6 +1,6 @@
-// <v-switch> shows one child at a time, one per click. Port of Slidev's VSwitch, where the
+// <slide-ng-switch> shows one child at a time, one per click. Port of Slidev's SlideNgSwitch, where the
 // children are slots named 1, 2, 5-7. Here the children are elements with an `at` attribute:
-//   <v-switch><div at="1">first</div><div at="2">second</div><div at="3-5">third, for 3 clicks</div></v-switch>
+//   <slide-ng-switch><div at="1">first</div><div at="2">second</div><div at="3-5">third, for 3 clicks</div></slide-ng-switch>
 import {
   Component,
   ElementRef,
@@ -31,14 +31,18 @@ export function parseSlots(items: { el: Element; at: string }[]): Slot[] {
     }
     const [start, end] = at.split('-').map(Number);
     if (!Number.isFinite(start) || !Number.isFinite(end))
-      throw new Error(`Invalid range for v-switch: ${at}`);
+      throw new Error(`Invalid range for slide-ng-switch: ${at}`);
     lastStart = start;
     return { el, start, end };
   });
 }
 
-@Component({ selector: 'v-switch', template: '<ng-content />', host: { style: 'display: block' } })
-export class VSwitch implements OnInit, OnDestroy {
+@Component({
+  selector: 'slide-ng-switch',
+  template: '<ng-content />',
+  host: { style: 'display: block' },
+})
+export class SlideNgSwitch implements OnInit, OnDestroy {
   at = input<RawSingleAt>('+1');
   private ctx = inject(ClicksContext);
   private el = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;

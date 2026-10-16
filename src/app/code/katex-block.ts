@@ -20,7 +20,7 @@ export function collectRows(root: Element): Element[][] {
 }
 
 @Component({
-  selector: 'katex-block-wrapper',
+  selector: 'slide-ng-katex-block-wrapper',
   template: '<ng-content />',
   host: { class: 'slidev-katex-wrapper block' },
 })

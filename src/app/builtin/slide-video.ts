@@ -1,7 +1,7 @@
 // A <video> that can play by itself when the slide (and its click) comes:
-//   <slide-video v-click autoplay="true" controls><source src="/clip.mp4" type="video/mp4" /></slide-video>
+//   <slide-ng-video slide-ng-click autoplay="true" controls><source src="/clip.mp4" type="video/mp4" /></slide-ng-video>
 // `autoplay`: "true" plays every time it appears, "once" only the first time. `autoreset`: "slide" or "click"
-// goes back to the `timestamp` when it disappears. Called `slide-video` (Slidev: SlidevVideo) to stay clear of <video>.
+// goes back to the `timestamp` when it disappears. Called `slide-ng-video` (Slidev: SlidevVideo) to stay clear of <video>.
 import {
   Component,
   ElementRef,
@@ -15,10 +15,10 @@ import {
 } from '@angular/core';
 import { Nav } from '../lib/nav';
 import { RENDER_CONTEXT, SLIDE_NO } from '../lib/slide-context';
-import { VClick } from '../lib/v-click';
+import { SlideNgClick } from '../lib/slide-ng-click';
 
 @Component({
-  selector: 'slide-video',
+  selector: 'slide-ng-video',
   template: `
     <video
       #video
@@ -44,8 +44,8 @@ export class SlideVideo {
   private video = viewChild.required<ElementRef<HTMLVideoElement>>('video');
   private nav = inject(Nav);
   private slideNo = inject(SLIDE_NO);
-  // `v-click` on this element: the video is shown only from its click on.
-  private click = inject(VClick, { self: true, optional: true });
+  // `slide-ng-click` on this element: the video is shown only from its click on.
+  private click = inject(SlideNgClick, { self: true, optional: true });
   // Thumbnails and the like do not play anything.
   protected canPlay = ['slide', 'presenter'].includes(inject(RENDER_CONTEXT));
   private onSlide = computed(() => this.nav.no() === this.slideNo);

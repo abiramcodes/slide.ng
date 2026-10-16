@@ -1,6 +1,6 @@
 import { InjectionToken } from '@angular/core';
 
-// Where a slide is drawn. `<render-when context="...">` looks at this.
+// Where a slide is drawn. `<slide-ng-render-when context="...">` looks at this.
 export type RenderContext = 'slide' | 'presenter' | 'previewNext' | 'print' | 'overview';
 
 // Each slide component is created with these two, so built-in components know which slide they are in.

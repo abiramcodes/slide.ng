@@ -1,5 +1,5 @@
-// <span v-mark.red.circle="2">text</span>: draws a hand-made looking mark around the element
-// on a click. Uses rough-notation, loaded only when a slide has a v-mark.
+// <span slide-ng-mark.red.circle="2">text</span>: draws a hand-made looking mark around the element
+// on a click. Uses rough-notation, loaded only when a slide has a slide-ng-mark.
 import {
   Directive,
   ElementRef,
@@ -17,11 +17,11 @@ import { markOptions } from './mark-options';
 
 // While the mark is still to be drawn the element has `data-slide-ng-waitfor`, so an exporter can wait for it.
 @Directive({
-  selector: '[v-mark]',
+  selector: '[slide-ng-mark]',
   host: { '[attr.data-slide-ng-waitfor]': 'pending() ? "svg.rough-annotation" : null' },
 })
-export class VMark implements OnInit, OnDestroy {
-  value = input<unknown>(undefined, { alias: 'v-mark' });
+export class SlideNgMark implements OnInit, OnDestroy {
+  value = input<unknown>(undefined, { alias: 'slide-ng-mark' });
   // The generator moves `.red.circle` out of the attribute name into this one.
   mods = input('', { alias: 'mark-mods' });
 
@@ -64,7 +64,7 @@ export class VMark implements OnInit, OnDestroy {
     if (at !== true && at !== 'true' && at !== false && at !== 'false') {
       const info = this.ctx.calculate(at as never);
       this.info.set(info);
-      this.ctx.register(this, info); // ngOnInit runs in template order, so "+1" works like v-click
+      this.ctx.register(this, info); // ngOnInit runs in template order, so "+1" works like slide-ng-click
     }
     const { annotate } = await import('rough-notation');
     if (this.gone) return;

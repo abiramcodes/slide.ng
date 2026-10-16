@@ -8,7 +8,7 @@ interface Common {
   /** Called when a move, resize or nudge is finished: remembers the new place. */
   commit(): void;
 }
-/** One thing the user can drag: a box (`v-drag`) or an arrow (`<v-drag-arrow>`). */
+/** One thing the user can drag: a box (`slide-ng-drag`) or an arrow (`<slide-ng-drag-arrow>`). */
 export type DragTarget =
   | (Common & { kind: 'box'; value: WritableSignal<Box> })
   | (Common & { kind: 'arrow'; value: WritableSignal<Arrow> });
