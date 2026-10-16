@@ -18,7 +18,7 @@ addons:
 - Any other name that is not a path is looked up in `node_modules` (from the deck's folder upwards), like Slidev does it: `@slide-ng/theme-<name>`,
   then `slide-ng-theme-<name>`, then `<name>`. A scoped name (`@scope/theme-x`) is used as written. Addons use `@slide-ng/addon-<name>`,
   `slide-ng-addon-<name>`, then `<name>`.
-- The official themes `seriph`, `shibainu`, `bricks` and `apple-basic` are not part of this package. They live in their own repository
+- The official themes `seriph`, `shibainu`, `bricks`, `apple-basic` and `adev` are not part of this package. They live in their own repository
   (slide.ng-themes, one package each): `npm i -D @slide-ng/theme-seriph`, then `theme: seriph` (see below).
 - A path that is not a folder is an error, and so is a package name that is not installed, as in Slidev: the build stops with
   `The theme "x" was not found. Install it with: npm install -D slide-ng-theme-x` (for an official name the package is `@slide-ng/theme-<name>`;
@@ -34,13 +34,14 @@ and published from a separate repository, slide.ng-themes, the way Slidev keeps 
 `@slide-ng/theme-<name>` that follow the contract below. Each has a README that credits the original author and lists what is ported and what is simplified,
 and the repository's `examples/<name>.md` has a slide for every layout.
 
-| `theme:`      | Package                                                                | Original                    | Layouts                                                                                         |
-| ------------- | ---------------------------------------------------------------------- | --------------------------- | ----------------------------------------------------------------------------------------------- |
-| `default`     | none: the built-in theme (`src/app/layouts`, `src/styles/layouts.css`) | `@slidev/theme-default`     | `cover`, `intro`, `fact`, `statement`, `quote`, `section`                                       |
-| `seriph`      | `@slide-ng/theme-seriph`                                               | `@slidev/theme-seriph`      | `cover`                                                                                         |
-| `shibainu`    | `@slide-ng/theme-shibainu`                                             | `@slidev/theme-shibainu`    | 14 (`cover`, `default`, `center`, `section`, `default-2` to `default-7`, `right`, `quote`, ...) |
-| `bricks`      | `@slide-ng/theme-bricks`                                               | `@slidev/theme-bricks`      | 9; components `<polygon-1 />` to `<polygon-11 />`                                               |
-| `apple-basic` | `@slide-ng/theme-apple-basic`                                          | `@slidev/theme-apple-basic` | 10                                                                                              |
+| `theme:`      | Package                                                                | Original                       | Layouts                                                                                         |
+| ------------- | ---------------------------------------------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------- |
+| `default`     | none: the built-in theme (`src/app/layouts`, `src/styles/layouts.css`) | `@slidev/theme-default`        | `cover`, `intro`, `fact`, `statement`, `quote`, `section`                                       |
+| `seriph`      | `@slide-ng/theme-seriph`                                               | `@slidev/theme-seriph`         | `cover`                                                                                         |
+| `shibainu`    | `@slide-ng/theme-shibainu`                                             | `@slidev/theme-shibainu`       | 14 (`cover`, `default`, `center`, `section`, `default-2` to `default-7`, `right`, `quote`, ...) |
+| `bricks`      | `@slide-ng/theme-bricks`                                               | `@slidev/theme-bricks`         | 9; components `<polygon-1 />` to `<polygon-11 />`                                               |
+| `apple-basic` | `@slide-ng/theme-apple-basic`                                          | `@slidev/theme-apple-basic`    | 10                                                                                              |
+| `adev`        | `@slide-ng/theme-adev`                                                 | none (inspired by angular.dev) | 12; components `<adev-callout />`, `<adev-card-grid />` and more                                |
 
 `default` is a port of Slidev's default theme already; its web fonts (Avenir Next, Nunito Sans) are not loaded for it, set `fonts:` to get them.
 

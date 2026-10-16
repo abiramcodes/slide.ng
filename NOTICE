@@ -25,8 +25,8 @@ What we use from Slidev:
 - The agent skill in skills/slide-ng follows the structure of Slidev's own agent skill: the topic table in SKILL.md, the
   category prefixes of the reference files (core-, diagram-, animation-, ...) and many of the file names. The text is
   our own and describes slide.ng; the structure and topic list are adapted from Slidev's skill (MIT).
-- The official themes (seriph, shibainu, bricks, apple-basic) are not in this repository: they live in the slide.ng-themes repository,
-  which carries their MIT attribution to the Slidev themes and says that no CC BY-NC-SA asset was copied. `theme: default` is the built-in look
+- The official themes (seriph, shibainu, bricks, apple-basic, adev) are not in this repository: they live in the slide.ng-themes repository,
+  which carries their MIT attribution to the Slidev themes and says that no CC BY-NC-SA asset was copied. `adev` is not a port: it is inspired by angular.dev (Angular, MIT, Google LLC) and is not affiliated with or endorsed by Google or the Angular team. `theme: default` is the built-in look
   (see above).
 
 The permission notice of Slidev, as required by its license:
