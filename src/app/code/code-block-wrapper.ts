@@ -1,10 +1,10 @@
 // Wraps one highlighted code block (the generator puts Shiki's <pre> inside).
 // Port of Slidev's CodeBlockWrapper: title bar, copy button, line numbers, maximum height and
 // the line highlights, which can change with clicks: ```ts {2-3|5|all}
-import { Component, ElementRef, OnDestroy, OnInit, afterRenderEffect, booleanAttribute, computed, inject, input, numberAttribute, signal } from '@angular/core';
-import { CLICKS_MAX, ClickInfo, ClicksContext, RawSingleAt } from '../lib/clicks';
-import { highlightLines, rangeAt } from './ranges';
+import { Component, ElementRef, afterRenderEffect, booleanAttribute, inject, input, signal } from '@angular/core';
 import { copyText } from './copy';
+import { RangedBlock } from './ranged-block';
+import { highlightLines } from './ranges';
 
 @Component({
   selector: 'code-block-wrapper',
@@ -30,12 +30,7 @@ import { copyText } from './copy';
     }
   `,
 })
-export class CodeBlockWrapper implements OnInit, OnDestroy {
-  // "2-3|5|all": one range per click
-  ranges = input<string[], string | undefined>([], { transform: (v) => (v ? v.split('|') : []) });
-  finally = input('last');
-  at = input<RawSingleAt>('+1');
-  startLine = input(1, { transform: numberAttribute });
+export class CodeBlockWrapper extends RangedBlock {
   lines = input(false, { transform: booleanAttribute });
   maxHeight = input<string>();
   title = input('');
@@ -44,17 +39,10 @@ export class CodeBlockWrapper implements OnInit, OnDestroy {
   active = signal(false);
 
   protected copied = signal(false);
-  private clicks = inject(ClicksContext);
   private host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
-  private info = signal<ClickInfo | null>(null);
-  private shown = computed(() => {
-    const info = this.info();
-    const index = info ? Math.max(0, this.clicks.current() - info.start + 1) : CLICKS_MAX;
-    const last = this.finally() === 'last' ? this.ranges().at(-1) ?? 'all' : this.finally();
-    return rangeAt(this.ranges(), index, last);
-  });
 
   constructor() {
+    super();
     afterRenderEffect(() => {
       if (!this.ranges().length) return;
       const { text, hide } = this.shown();
@@ -64,16 +52,6 @@ export class CodeBlockWrapper implements OnInit, OnDestroy {
       if (this.maxHeight()) this.scrollToHighlight();
     });
   }
-
-  // In template order, so that "+1" counts the elements before this one.
-  ngOnInit() {
-    if (!this.ranges().length) return;
-    const info = this.clicks.calculateSince(this.at(), this.ranges().length - 1);
-    this.info.set(info);
-    this.clicks.register(this, info);
-  }
-
-  ngOnDestroy() { this.clicks.unregister(this); }
 
   // With a maximum height the block scrolls; keep the highlighted lines in view.
   private scrollToHighlight() {

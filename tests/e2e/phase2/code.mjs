@@ -25,7 +25,7 @@ export async function run({ t, open, press, hud }) {
   page = await open('/4');
   const lit = (n) => page.locator('.slidev-code-wrapper').nth(n).locator('.line').evaluateAll((l) => l.map((e) => (e.classList.contains('highlighted') ? 1 : 0)).join(''));
   t.ok('static {2,3} highlights lines 2 and 3', (await lit(0)) === '0110', await lit(0));
-  t.ok('stepped range: 4 stages mean 3 clicks (+1 for the div)', (await hud(page)) === 'slide 4/7 clicks 0/4', await hud(page));
+  t.ok('stepped range: 4 stages mean 3 clicks (+1 for the div)', /^slide 4\/\d+ clicks 0\/4$/.test(await hud(page)), await hud(page));
   t.ok('before the first click the first range shows', (await lit(1)) === '1000', await lit(1));
   const expected = ['1000', '0110', '0001', '1111'];
   for (let i = 1; i < 4; i++) {

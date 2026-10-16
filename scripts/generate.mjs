@@ -27,10 +27,12 @@ async function generate() {
   const features = detectFeatures(deck.slides);
   await initHighlighter({ langs: features.langs, headmatter: deck.headmatter });
   mkdirSync(OUT, { recursive: true });
-  const wanted = new Set(deck.slides.map((_, i) => `${slideName(i + 1)}.ts`).concat('index.ts', 'uno.css'));
+  const wanted = new Set(deck.slides.map((_, i) => `${slideName(i + 1)}.ts`).concat('index.ts', 'uno.css', 'features.css'));
   for (const f of readdirSync(OUT)) if (!wanted.has(f)) rmSync(OUT + f);
   deck.slides.forEach((s, i) => write(`${OUT}${slideName(i + 1)}.ts`, slideSource(s, i + 1, deck)));
   write(`${OUT}index.ts`, indexSource(deck));
+  // KaTeX's stylesheet (and fonts) are only part of the app when the deck has math.
+  write(`${OUT}features.css`, features.math ? "@import 'katex/dist/katex.min.css';\n" : '/* no feature styles needed */\n');
   write(`${OUT}uno.css`, await makeCss([...deck.files, ...tsFiles('src/app')]));
   console.log(`[slides] generated ${deck.slides.length} slides`);
   return deck.files;

@@ -62,3 +62,6 @@ html.dark .slidev-code-line-numbers .slidev-code code .line::before { color: #4b
 
 /* Magic Move: tokens that enter or leave fade (the rest of its CSS is @shikijs/magic-move/style.css) */
 .slidev-code-magic-move .shiki-magic-move-enter-from, .slidev-code-magic-move .shiki-magic-move-leave-to { opacity: 0; }
+
+/* Math rows that are not the current step fade, as code lines do */
+.slidev-katex-wrapper .dishonored { opacity: 0.3; }

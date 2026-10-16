@@ -10,7 +10,7 @@ export async function run({ t, open, press, hud }) {
     kids.forEach((k) => (k.tagName === 'BR' ? lines.push([]) : lines.at(-1).push(k)));
     return lines.filter((l) => l.length).map((l) => (l.every((k) => k.classList.contains('highlighted')) ? 1 : 0)).join('');
   });
-  t.ok('magic move: 3 clicks for the steps plus one for the element after it', (await hud(page)) === 'slide 7/7 clicks 0/4', await hud(page));
+  t.ok('magic move: 3 clicks for the steps plus one for the element after it', /^slide 7\/\d+ clicks 0\/4$/.test(await hud(page)), await hud(page));
   t.ok('step 1 is shown first', (await text()).startsWith('let count = 1 function add() {'), await text());
   t.ok('all lines highlighted at the start ({*})', (await lit()) === '1111', await lit());
   await press(page, 'ArrowRight', 400);

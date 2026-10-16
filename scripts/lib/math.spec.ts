@@ -1,0 +1,57 @@
+import { extractMath, renderMath } from './math.mjs';
+import { hasMath } from './features.mjs';
+
+const found = (md: string) => (extractMath(md) as { markdown: string; maths: any[] });
+
+describe('extractMath', () => {
+  it('finds inline math and leaves a word behind', () => {
+    const r = found('so $x^2 + y_1$ here');
+    expect(r.markdown).toBe('so NGMATH0X here');
+    expect(r.maths).toEqual([{ block: false, latex: 'x^2 + y_1' }]);
+  });
+  it('does not treat prices as math', () => {
+    expect(found('it costs $5 and $10 today').maths).toHaveLength(0);
+  });
+  it('ignores an escaped dollar', () => {
+    expect(found('a \\$b and c\\$ d').maths).toHaveLength(0);
+  });
+  it('finds a block over several lines, with ranges and options', () => {
+    const r = found('$$ {1|3|all} {at:2}\n\\begin{aligned}\na\n\\end{aligned}\n$$');
+    expect(r.maths).toHaveLength(1);
+    expect(r.maths[0]).toMatchObject({ block: true, ranges: '1|3|all', options: '{at:2}' });
+    expect(r.maths[0].latex).toBe('\\begin{aligned}\na\n\\end{aligned}');
+  });
+  it('finds a one line block', () => {
+    expect(found('$$ a^2 $$').maths[0]).toMatchObject({ block: true, latex: 'a^2' });
+  });
+});
+
+describe('renderMath', () => {
+  it('draws with KaTeX and protects the output from Angular', () => {
+    const html = renderMath({ block: false, latex: '\\frac{a}{b} \\{x\\}' });
+    expect(html.startsWith('<span ngNonBindable>')).toBe(true);
+    expect(html).toContain('class="katex"');
+    expect(html).not.toMatch(/[{}@]/);
+    expect(html).not.toContain('<math');
+  });
+  it('keeps {{ in a formula as text', () => {
+    expect(renderMath({ block: false, latex: 'a^{{b}}' })).not.toContain('{{');
+  });
+  it('wraps a block in katex-block-wrapper with its ranges', () => {
+    const html = renderMath({ block: true, latex: 'a', ranges: '1|all' });
+    expect(html).toContain('<katex-block-wrapper ranges="1|all"><div ngNonBindable>');
+    expect(html).toContain('katex-display');
+  });
+  it('shows the source when KaTeX cannot draw it, without throwing', () => {
+    expect(() => renderMath({ block: false, latex: '\\notacommand{' })).not.toThrow();
+  });
+});
+
+describe('hasMath (feature detection)', () => {
+  it('is true for math, false for dollars in code and prices', () => {
+    expect(hasMath('text $a+b$ text')).toBe(true);
+    expect(hasMath('```sh\necho $HOME and $PATH\n```')).toBe(false);
+    expect(hasMath('use `$x$` here')).toBe(false);
+    expect(hasMath('costs $5 or $6')).toBe(false);
+  });
+});

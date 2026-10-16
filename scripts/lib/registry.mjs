@@ -20,5 +20,6 @@ export const COMPONENTS = [
   { className: 'CodeBlockWrapper', file: 'code/code-block-wrapper', test: /<code-block-wrapper/ },
   { className: 'CodeGroup', file: 'code/code-group', test: /<code-group/ },
   { className: 'ShikiMagicMove', file: 'code/magic-move', test: /<shiki-magic-move/ },
+  { className: 'KatexBlockWrapper', file: 'code/katex-block', test: /<katex-block-wrapper/ },
   { className: 'Counter', file: 'lib/counter', test: /<app-counter/ },
 ];

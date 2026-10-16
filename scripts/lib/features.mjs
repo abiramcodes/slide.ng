@@ -1,6 +1,8 @@
 // Looks through the deck to see which heavy features it uses, before anything is generated.
 // Slidev does the same (`detectFeatures`): a deck without math never pays for KaTeX.
 import { SNIPPET_LINE } from './code/snippet.mjs';
+import { extractFences } from './fences.mjs';
+import { extractMath } from './math.mjs';
 
 // Code languages named on fences, in magic-move steps, and on `<<<` lines (by name or file extension).
 export function detectLangs(text) {
@@ -15,7 +17,13 @@ export function detectLangs(text) {
   return langs;
 }
 
+// Math outside code samples (a `$` in code or inline code is not math).
+export function hasMath(text) {
+  const prose = extractFences(text.replace(/^<<<.*$/gm, '')).markdown.replace(/(`+).+?\1/g, '');
+  return extractMath(prose).maths.length > 0;
+}
+
 export function detectFeatures(slides) {
   const text = slides.map((s) => s.content).join('\n');
-  return { langs: detectLangs(text) };
+  return { langs: detectLangs(text), math: hasMath(text) };
 }

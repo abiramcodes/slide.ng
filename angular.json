@@ -26,6 +26,7 @@
             ],
             "styles": [
               "src/slides/generated/uno.css",
+              "src/slides/generated/features.css",
               "src/styles.css"
             ]
           },

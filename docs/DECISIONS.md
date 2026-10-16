@@ -127,3 +127,12 @@ Nothing else was added: footnotes, alerts, the PlantUML encoding and the code ru
    the browser's `DecompressionStream`, then drives the library's plain DOM renderer (`MagicMoveRenderer`) and `syncTokenKeys`, both loaded with
    dynamic `import()` so they are separate chunks. No lz-string dependency.
 10. **A magic-move step's `<<<` snippet lines work** because the inner blocks are read by the same fence scanner.
+11. **KaTeX is drawn while generating**, as `output: 'html'` (no MathML), because Angular rejects MathML-only tags such as `<annotation>`.
+    The TeX source is added as visually hidden text (`sr-only`) for screen readers instead. Output is wrapped in `ngNonBindable` and has
+    `{ } @` as entities. `katex.min.css` (with its fonts) is imported through `src/slides/generated/features.css`, which the generator fills only when a
+    deck has math, so other decks carry no KaTeX at all.
+12. **Math is cut out of the markdown before Angular syntax is hidden**, so a line that is only `}` inside a formula is not taken for the end of an
+    `@if` block. The cost: `{{` inside `$...$` is math, never an interpolation. `$5 and $10` is text (the same rule as Slidev: no space after the opening
+    `$`, none before the closing one, and the closing one is not followed by a digit).
+13. **Range handling shared by code and math** lives in `code/ranged-block.ts` (`ranges`, `at`, `finally`, `startLine`, `hide`); `CodeBlockWrapper`
+    and `KatexBlockWrapper` extend it. `mhchem` (chemistry) is not loaded.

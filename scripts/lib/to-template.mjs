@@ -7,6 +7,7 @@ import { marked } from 'marked';
 import { extractFences } from './fences.mjs';
 import { renderFence } from './code/render-fence.mjs';
 import { escapeCode, protect } from './protect.mjs';
+import { extractMath, renderMath } from './math.mjs';
 
 export { escapeCode, protect };
 
@@ -25,6 +26,10 @@ export function toTemplate(markdown, ctx = {}) {
   const inlines = [];
   md = md.replace(/(`+)(.+?)\1/g, (_, __, code) => `NGCODE${inlines.push(code) - 1}X`);
 
+  // Math is cut out too, so markdown does not read the `_` and `*` in formulas.
+  const math = extractMath(md);
+  md = math.markdown;
+
   // 2. Hide Angular syntax.
   md = md.replace(/^[ \t]*(\}[ \t]*)?(@\w+.*\{|\})[ \t]*$/gm, hide); // @if (..) {   }   } @else {
   md = md.replace(/^[ \t]*@let\s.*;[ \t]*$/gm, hide); // @let x = 1;
@@ -37,6 +42,8 @@ export function toTemplate(markdown, ctx = {}) {
   let html = protect(marked.parse(md, { async: false }));
 
   // 4. Put everything back.
+  html = html.replace(/<p>NGMATH(\d+)X<\/p>/g, (_, i) => renderMath(math.maths[+i]));
+  html = html.replace(/NGMATH(\d+)X/g, (_, i) => renderMath(math.maths[+i]));
   html = html.replace(/<p>NGFENCE(\d+)X<\/p>/g, (_, i) => renderFence(fences[+i], ctx));
   html = html.replace(/NGCODE(\d+)X/g, (_, i) => `<code ngNonBindable>${escapeCode(inlines[+i])}</code>`);
   return html.replace(/<!--NGKEEP(\d+)X-->/g, (_, i) => kept[+i]).replace(/NGKEEP(\d+)X/g, (_, i) => kept[+i]);

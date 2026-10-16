@@ -104,3 +104,24 @@ console.log(add())
 ````
 
 <div v-click id="after-magic">after magic</div>
+
+---
+
+# Math
+
+Inline $\sqrt{3x-1}+(1+x)^2$ and a price of $5 and $10 stay text, `$HOME` too.
+
+$$
+\begin{aligned}
+a &= {{b}} \\
+c &= d
+\end{aligned}
+$$
+
+$$ {1|2|all}
+\begin{aligned}
+\nabla \cdot \vec{E} &= \frac{\rho}{\varepsilon_0} \\
+\nabla \cdot \vec{B} &= 0 \\
+\nabla \times \vec{E} &= -\frac{\partial\vec{B}}{\partial t}
+\end{aligned}
+$$
