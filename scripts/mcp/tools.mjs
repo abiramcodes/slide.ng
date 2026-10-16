@@ -1,11 +1,11 @@
 // The tools of the MCP server. Each one reads the deck with the same parser as the generator and changes slides.md as plain
 // text, the way the dev server's side editor does (scripts/dev/slide-source.mjs). Every change is checked by parsing the new
 // text again before anything is written, and only files inside the deck's folder are ever written.
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { relative } from 'node:path';
 import { stringify } from 'yaml';
 import { z } from 'zod';
-import { confine } from '../dev/auth.mjs';
+import { confine, safeWrite } from '../dev/auth.mjs';
 import { replaceSource, sourceOf } from '../dev/slide-source.mjs';
 import { parseDeck } from '../lib/parse-deck.mjs';
 import { insertSlide, moveSlide, removeSlide } from './deck-edit.mjs';
@@ -28,7 +28,9 @@ function pick(deck, no) {
 
 // A file of the project that may be written: inside the deck's folder, a .md file that exists.
 function writableFile(ctx, slide) {
-  const file = confine(ctx.root, relative(ctx.root, slide.source.filepath));
+  const file = confine(ctx.root, relative(ctx.root, slide.source.filepath), {
+    write: true,
+  });
   if (!file || !file.endsWith('.md') || !existsSync(file))
     throw new Error('this slide is not in a markdown file of the project');
   return file;
@@ -50,7 +52,7 @@ async function commit(ctx, file, text, expected) {
   if (got.length !== expected.length || got.some((g, i) => g !== expected[i])) {
     throw new Error('the edit would change other slides than intended, so nothing was written');
   }
-  writeFileSync(file, text);
+  safeWrite(file, text);
   return check;
 }
 

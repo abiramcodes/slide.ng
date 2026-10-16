@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, symlinkSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Readable } from 'node:stream';
@@ -11,6 +11,7 @@ import {
   readBody,
   safeEqual,
   safeNext,
+  safeWrite,
 } from './auth.mjs';
 
 const ctx = { token: 'tok123', password: '', auth: 'cookie456', remote: false, hostnames: [] };
@@ -143,6 +144,33 @@ describe('confine', () => {
   });
   it('rejects a symlink that leads out of the project', () => {
     expect(confine(root, 'link/secret.txt')).toBeNull();
+  });
+  it('rejects a file that is itself a symlink to outside, and a dangling one', () => {
+    symlinkSync(join(outside, 'secret.txt'), join(root, 'leaf.ts'));
+    symlinkSync(join(outside, 'missing.txt'), join(root, 'dangling.ts'));
+    expect(confine(root, 'leaf.ts')).toBeNull();
+    expect(confine(root, 'dangling.ts')).toBeNull();
+  });
+  it('refuses a symlink leaf as a write target even when it points inside the project', () => {
+    writeFileSync(join(root, 'real.ts'), 'x');
+    symlinkSync(join(root, 'real.ts'), join(root, 'inner.ts'));
+    expect(confine(root, 'inner.ts')).toBe(join(root, 'inner.ts'));
+    expect(confine(root, 'inner.ts', { write: true })).toBeNull();
+    expect(confine(root, 'real.ts', { write: true })).toBe(join(root, 'real.ts'));
+  });
+});
+
+describe('safeWrite', () => {
+  const root = mkdtempSync(join(tmpdir(), 'slide-ng-safewrite-'));
+  const outside = mkdtempSync(join(tmpdir(), 'slide-ng-safewrite-out-'));
+  it('writes an existing file and refuses a symlink, leaving the target alone', () => {
+    writeFileSync(join(root, 'a.ts'), 'old');
+    safeWrite(join(root, 'a.ts'), 'new');
+    expect(readFileSync(join(root, 'a.ts'), 'utf8')).toBe('new');
+    writeFileSync(join(outside, 't.txt'), 'keep');
+    symlinkSync(join(outside, 't.txt'), join(root, 'l.ts'));
+    expect(() => safeWrite(join(root, 'l.ts'), 'pwn')).toThrow();
+    expect(readFileSync(join(outside, 't.txt'), 'utf8')).toBe('keep');
   });
 });
 

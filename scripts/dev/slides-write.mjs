@@ -1,9 +1,9 @@
 // Changes slides.md (or a file it imports) on request of the page: a v-drag moved, or the side editor saved.
 // The page only says "slide 3"; which file and which lines is found here, from the parser. A path never comes from a request.
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { relative } from 'node:path';
 import { parseDeck } from '../lib/parse-deck.mjs';
-import { confine } from './auth.mjs';
+import { confine, safeWrite } from './auth.mjs';
 import { HttpError } from './http-error.mjs';
 import { dragEdit, replaceSource, sourceOf } from './slide-source.mjs';
 
@@ -13,7 +13,9 @@ async function locate(ctx, no) {
   const deck = await parseDeck(ctx.entry);
   const slide = deck.slides[no - 1];
   if (!slide?.source) throw new HttpError(404, 'no such slide');
-  const file = confine(ctx.root, relative(ctx.root, slide.source.filepath));
+  const file = confine(ctx.root, relative(ctx.root, slide.source.filepath), {
+    write: true,
+  });
   if (!file || !file.endsWith('.md') || !existsSync(file))
     throw new HttpError(403, 'this slide is not in a file of the project');
   return {
@@ -25,7 +27,7 @@ async function locate(ctx, no) {
 
 function save(file, result) {
   if (result.error) throw new HttpError(422, result.error);
-  writeFileSync(file, result.text);
+  safeWrite(file, result.text);
 }
 
 /** A v-drag element was moved: write its new place. */

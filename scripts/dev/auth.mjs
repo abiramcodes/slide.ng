@@ -9,7 +9,7 @@
 //   4. Token: a random value made when the server starts. A page learns it from /session (which
 //      the checks above protect) and sends it with every write and WebSocket. Other sites cannot read it.
 import { timingSafeEqual } from 'node:crypto';
-import { realpathSync } from 'node:fs';
+import { closeSync, constants, lstatSync, openSync, realpathSync, writeSync } from 'node:fs';
 import { dirname, isAbsolute, relative, resolve } from 'node:path';
 
 export const API = '/__slide-ng';
@@ -76,8 +76,12 @@ export function check(req, ctx, { needToken = true, needLogin = true } = {}) {
   return null;
 }
 
-/** `relativePath` joined to `root`, or null when it would leave `root` (absolute, `..`, a symlink out). The name is never used as it came. */
-export function confine(root, relativePath) {
+/**
+ * `relativePath` joined to `root`, or null when it would leave `root` (absolute, `..`, a symlink out). The name is never used as it came.
+ * The real place of the file counts, not only its folder: a file that is itself a symlink must lead inside `root`.
+ * With `{ write: true }` a symlink is refused as a target whatever it points to.
+ */
+export function confine(root, relativePath, { write = false } = {}) {
   if (
     typeof relativePath !== 'string' ||
     !relativePath ||
@@ -88,16 +92,50 @@ export function confine(root, relativePath) {
   const full = resolve(root, relativePath);
   const rel = relative(root, full);
   if (!rel || rel.startsWith('..') || isAbsolute(rel)) return null;
-  // A symlink inside the project could point outside: look at the real place of the closest folder that exists.
+  let realRoot;
+  try {
+    realRoot = realpathSync(root);
+  } catch {
+    return null;
+  }
+  const inside = (real) => {
+    const r = relative(realRoot, real);
+    return !!r && !r.startsWith('..') && !isAbsolute(r);
+  };
+  // The file itself, when it exists (a dangling link exists as a link): its real place must be inside.
+  let stat = null;
+  try {
+    stat = lstatSync(full);
+  } catch {
+    // does not exist yet: the closest folder that does is checked below
+  }
+  if (stat) {
+    if (stat.isSymbolicLink() && write) return null;
+    try {
+      return inside(realpathSync(full)) ? full : null;
+    } catch {
+      return null;
+    }
+  }
   let dir = dirname(full);
   for (;;) {
     try {
-      const real = relative(realpathSync(root), realpathSync(dir));
-      return real.startsWith('..') || isAbsolute(real) ? null : full;
+      return inside(realpathSync(dir)) || realpathSync(dir) === realRoot ? full : null;
     } catch {
       if (dir === dirname(dir)) return null;
       dir = dirname(dir);
     }
+  }
+}
+
+/** Overwrite an existing file without following a symlink (O_NOFOLLOW where the system has it, and an lstat check everywhere). */
+export function safeWrite(file, text) {
+  if (lstatSync(file).isSymbolicLink()) throw new Error('refusing to write through a symlink');
+  const fd = openSync(file, constants.O_WRONLY | constants.O_TRUNC | (constants.O_NOFOLLOW ?? 0));
+  try {
+    writeSync(fd, text);
+  } finally {
+    closeSync(fd);
   }
 }
 
