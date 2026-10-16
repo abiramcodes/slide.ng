@@ -1,0 +1,44 @@
+# Labels a pull request from the paths it changes (used by the Labeler workflow).
+'area: generator':
+  - changed-files:
+      - any-glob-to-any-file: ['scripts/generate.mjs', 'scripts/lib/**']
+
+'area: app':
+  - changed-files:
+      - any-glob-to-any-file: ['src/**']
+
+'area: cli':
+  - changed-files:
+      - any-glob-to-any-file: ['bin/**', 'scripts/cli/**', 'template/**']
+
+'area: dev server':
+  - changed-files:
+      - any-glob-to-any-file: ['scripts/dev.mjs', 'scripts/dev/**', 'proxy.conf.mjs']
+
+'area: export':
+  - changed-files:
+      - any-glob-to-any-file: ['scripts/export/**']
+
+'area: build':
+  - changed-files:
+      - any-glob-to-any-file: ['scripts/build/**']
+
+'area: mcp':
+  - changed-files:
+      - any-glob-to-any-file: ['scripts/mcp/**']
+
+'area: themes':
+  - changed-files:
+      - any-glob-to-any-file: ['examples/**', 'docs/THEMES.md', 'docs/WRITING-A-THEME.md']
+
+'area: tests':
+  - changed-files:
+      - any-glob-to-any-file: ['tests/**', '**/*.spec.ts']
+
+'area: docs':
+  - changed-files:
+      - any-glob-to-any-file: ['docs/**', '*.md']
+
+'area: ci':
+  - changed-files:
+      - any-glob-to-any-file: ['.github/**', '.githooks/**', 'eslint.config.mjs', '.prettierrc']

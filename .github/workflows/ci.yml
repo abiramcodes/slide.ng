@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Fast checks that need no browser.
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run build
+      - run: npm test
+
+  # The suites that drive a real browser. They build their own decks.
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      # playwright-core has no browser of its own, so download Chromium with its command.
+      - name: Install Chromium
+        run: npx playwright-core install --with-deps chromium
+
+      # The tests read the browser's path from CHROME_PATH.
+      - name: Find Chromium
+        run: echo "CHROME_PATH=$(node -p "require('playwright-core').chromium.executablePath()")" >> "$GITHUB_ENV"
+
+      - run: npm run test:e2e
+      - run: npm run test:dev
+      - run: npm run test:export

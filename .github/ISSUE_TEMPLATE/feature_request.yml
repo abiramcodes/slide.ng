@@ -1,0 +1,30 @@
+name: Feature request
+description: Suggest something new or a difference from Slidev worth closing
+labels: [feature, needs triage]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What can you not do today, or what is hard? A talk you are giving is a good example.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you would like
+      description: How it could work. For a Slidev feature, link its documentation.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Other ways you tried
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you submit
+      options:
+        - label: I searched the existing issues and docs/PARITY.md.
+          required: true
+        - label: I might be able to help build it.

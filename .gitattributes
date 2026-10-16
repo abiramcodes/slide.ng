@@ -1,0 +1,10 @@
+# Keep line endings as LF in the working tree, on every system.
+* text=auto eol=lf
+
+# Binary files
+*.png binary
+*.ico binary
+*.woff2 binary
+
+# The lock file is written by npm, so it stays out of diffs and language statistics.
+package-lock.json -diff linguist-generated
