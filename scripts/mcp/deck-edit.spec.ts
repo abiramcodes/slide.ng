@@ -30,19 +30,45 @@ inside a fence
 
 async function slidesOf(text: string) {
   const parsed = await parseDeck('/x/slides.md', { '/x/slides.md': text });
-  return parsed.slides.map((s: any) => ({ title: s.title, source: s.source, content: s.content.trim() }));
+  return parsed.slides.map((s: any) => ({
+    title: s.title,
+    source: s.source,
+    content: s.content.trim(),
+  }));
 }
 const titles = async (text: string) => (await slidesOf(text)).map((s: any) => s.title);
 
 describe('removeSlide', () => {
   it('removes a slide with frontmatter and one with a plain separator', async () => {
     const slides = await slidesOf(deck);
-    expect(await titles(removeSlide(deck, slides.map((s: any) => s.source), 2))).toEqual(['T', 'Three']);
-    expect(await titles(removeSlide(deck, slides.map((s: any) => s.source), 3))).toEqual(['T', 'Two']);
+    expect(
+      await titles(
+        removeSlide(
+          deck,
+          slides.map((s: any) => s.source),
+          2,
+        ),
+      ),
+    ).toEqual(['T', 'Three']);
+    expect(
+      await titles(
+        removeSlide(
+          deck,
+          slides.map((s: any) => s.source),
+          3,
+        ),
+      ),
+    ).toEqual(['T', 'Two']);
   });
   it('keeps a code fence that contains ---', async () => {
     const slides = await slidesOf(deck);
-    expect(removeSlide(deck, slides.map((s: any) => s.source), 2)).toContain('inside a fence');
+    expect(
+      removeSlide(
+        deck,
+        slides.map((s: any) => s.source),
+        2,
+      ),
+    ).toContain('inside a fence');
   });
   it('refuses slide 1 and numbers out of range', async () => {
     const sources = (await slidesOf(deck)).map((s: any) => s.source);

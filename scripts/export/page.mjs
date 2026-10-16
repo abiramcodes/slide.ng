@@ -9,7 +9,9 @@ export function printQuery({ withClicks, range }) {
 
 /** Address of the print page. A deck built with `routerMode: hash` keeps the route after a #. */
 export function printUrl({ origin, base = '/', routerMode, query, path = 'print' }) {
-  return routerMode === 'hash' ? `${origin}${base}#/${path}?${query}` : `${origin}${base}${path}?${query}`;
+  return routerMode === 'hash'
+    ? `${origin}${base}#/${path}?${query}`
+    : `${origin}${base}${path}?${query}`;
 }
 
 /**
@@ -23,15 +25,23 @@ export async function loadPrintPage(page, { url, dark, timeout, waitUntil, wait,
 
   // Mermaid, Monaco, Magic Move, v-mark and the code runner mark themselves with `data-slide-ng-waitfor` until done.
   try {
-    await page.waitForFunction(() => !document.querySelector('[data-slide-ng-waitfor]'), null, { timeout });
+    await page.waitForFunction(() => !document.querySelector('[data-slide-ng-waitfor]'), null, {
+      timeout,
+    });
   } catch {
-    const left = await page.evaluate(() => [...document.querySelectorAll('[data-slide-ng-waitfor]')].map((e) => `${e.localName} (waiting for ${e.getAttribute('data-slide-ng-waitfor')})`));
+    const left = await page.evaluate(() =>
+      [...document.querySelectorAll('[data-slide-ng-waitfor]')].map(
+        (e) => `${e.localName} (waiting for ${e.getAttribute('data-slide-ng-waitfor')})`,
+      ),
+    );
     warn(`these elements did not finish loading: ${left.join(', ')}`);
     process.exitCode = 1;
   }
   // Fonts and iframes (video embeds) have their own loading.
   await page.evaluate(() => document.fonts.ready);
-  await Promise.all(page.frames().map((f) => f.waitForLoadState(undefined, { timeout }).catch(() => {})));
+  await Promise.all(
+    page.frames().map((f) => f.waitForLoadState(undefined, { timeout }).catch(() => {})),
+  );
   // Monaco keeps a hidden accessibility box that would show in a picture.
   await page.addStyleTag({ content: '.monaco-aria-container { display: none !important; }' });
   if (wait) await page.waitForTimeout(wait);
@@ -39,6 +49,9 @@ export async function loadPrintPage(page, { url, dark, timeout, waitUntil, wait,
 
 /** The pages of the print page in order: `{ no, id }` for each `.print-slide-container`. */
 export function listPages(page) {
-  return page.locator('.print-slide-container').evaluateAll((list) =>
-    list.map((e) => ({ id: e.id, no: Number(e.getAttribute('data-slide-ng-no')) })));
+  return page
+    .locator('.print-slide-container')
+    .evaluateAll((list) =>
+      list.map((e) => ({ id: e.id, no: Number(e.getAttribute('data-slide-ng-no')) })),
+    );
 }

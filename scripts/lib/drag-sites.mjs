@@ -29,7 +29,15 @@ export function findDragSites(content) {
     if (component || DIRECTIVE.test(m[2])) {
       const value = VALUE.exec(m[2]);
       const text = (value?.[1] ?? value?.[2] ?? '').trim();
-      sites.push({ index: sites.length, start: m.index, end: m.index + m[0].length, tag: m[1], attrs: m[2], component, name: NAME.test(text) ? text : null });
+      sites.push({
+        index: sites.length,
+        start: m.index,
+        end: m.index + m[0].length,
+        tag: m[1],
+        attrs: m[2],
+        component,
+        name: NAME.test(text) ? text : null,
+      });
     }
   }
   return sites;
@@ -48,7 +56,9 @@ export function tagDragSites(content) {
 // The position text that may be written into markdown: 3 to 5 numbers, `NaN` or `_` (automatic height), in the forms
 // `10,20,30,40,5` and `[10,20,30,NaN]`. Nothing else, so a request cannot put markup into the file.
 const NUMBER = '(?:-?\\d+(?:\\.\\d+)?|NaN|_)';
-const POSITION = new RegExp(`^(?:\\[${NUMBER}(?:,${NUMBER}){2,4}\\]|${NUMBER}(?:,${NUMBER}){2,4})$`);
+const POSITION = new RegExp(
+  `^(?:\\[${NUMBER}(?:,${NUMBER}){2,4}\\]|${NUMBER}(?:,${NUMBER}){2,4})$`,
+);
 export const isPosition = (text) => typeof text === 'string' && POSITION.test(text);
 
 /** `10,20,30,_,5` -> `[10,20,30,NaN,5]`: the spelling of `v-drag="..."`. Text that is already an array stays. */
@@ -73,7 +83,10 @@ export function setDragPosition(content, site, pos) {
       : tag.replace(/^<[\w-]+/, (open) => `${open} pos=${plain}`);
   } else {
     // <img v-drag="..."> or a bare v-drag
-    next = tag.replace(/(?<![\w-])v-drag(?:=("[^"]*"|'[^']*'))?(?![\w-])/, `v-drag="${toArrayStyle(pos)}"`);
+    next = tag.replace(
+      /(?<![\w-])v-drag(?:=("[^"]*"|'[^']*'))?(?![\w-])/,
+      `v-drag="${toArrayStyle(pos)}"`,
+    );
   }
   return content.slice(0, s.start) + next + content.slice(s.end);
 }

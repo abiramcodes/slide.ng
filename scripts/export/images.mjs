@@ -4,7 +4,9 @@ import { join } from 'node:path';
 
 /** Hides every background so a screenshot with `omitBackground` really is transparent. */
 export function makeTransparent(page) {
-  return page.addStyleTag({ content: 'html, body, .print-slide-container { background: transparent !important; }' });
+  return page.addStyleTag({
+    content: 'html, body, .print-slide-container { background: transparent !important; }',
+  });
 }
 
 /** File name of a picture: `001.png`, or `001-01.png` (the page's id) when there is one per click. */
@@ -13,7 +15,11 @@ export function pictureName({ id, no }, withClicks) {
 }
 
 /** Screenshots the pages of the loaded print page. Returns `{ no, id, name, buffer }` for each. */
-export async function screenshotPages(page, pages, { omitBackground, withClicks, onEach = () => {} }) {
+export async function screenshotPages(
+  page,
+  pages,
+  { omitBackground, withClicks, onEach = () => {} },
+) {
   if (omitBackground) await makeTransparent(page);
   const containers = page.locator('.print-slide-container');
   const result = [];

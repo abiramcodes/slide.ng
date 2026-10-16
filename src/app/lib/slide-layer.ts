@@ -9,7 +9,9 @@ import { LAYERS } from '../../slides/generated/layers';
   selector: 'app-slide-layer',
   imports: [NgComponentOutlet],
   host: { style: 'position: absolute; inset: 0; pointer-events: none; display: block' },
-  template: `@if (component(); as c) { <ng-container *ngComponentOutlet="c" /> }`,
+  template: `@if (component(); as c) {
+    <ng-container *ngComponentOutlet="c" />
+  }`,
 })
 export class SlideLayer {
   name = input.required<'global-top' | 'global-bottom' | 'slide-top' | 'slide-bottom'>();

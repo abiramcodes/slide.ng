@@ -31,23 +31,42 @@ const LOG_LEVELS = ['error', 'warn', 'info', 'silent'];
 /** Checks the flags and returns the plan for the three processes. Pure, so it can be tested without starting anything. */
 export function devPlan(argv) {
   const { flags, positionals } = parseFlags(argv, DEV_FLAGS);
-  if (flags.tunnel) throw new Error('--tunnel is not available (it needs a tunnel service; use --remote on your network instead)');
-  if (flags.base) throw new Error('--base is for `slide-ng build`; the dev server always runs at /');
+  if (flags.tunnel)
+    throw new Error(
+      '--tunnel is not available (it needs a tunnel service; use --remote on your network instead)',
+    );
+  if (flags.base)
+    throw new Error('--base is for `slide-ng build`; the dev server always runs at /');
   const log = flags.log ?? 'info';
-  if (!LOG_LEVELS.includes(log)) throw new Error(`--log must be one of ${LOG_LEVELS.join(', ')}, got "${log}"`);
+  if (!LOG_LEVELS.includes(log))
+    throw new Error(`--log must be one of ${LOG_LEVELS.join(', ')}, got "${log}"`);
   // Like Slidev: `--remote` listens on every address, `--remote=secret` adds a password, which is optional. `--bind` only matters with --remote.
   const remote = flags.remote !== undefined && flags.remote !== false;
   const password = remote && typeof flags.remote === 'string' ? flags.remote : '';
   const host = remote ? (flags.bind ?? '0.0.0.0') : undefined;
   // SLIDES_FILE is how tests (and older scripts) pick another deck.
   const entry = resolve(positionals[0] ?? process.env.SLIDES_FILE ?? 'slides.md');
-  return { entry, port: flags.port ?? 4230, open: Boolean(flags.open), remote, password, host, log, force: Boolean(flags.force), theme: flags.theme };
+  return {
+    entry,
+    port: flags.port ?? 4230,
+    open: Boolean(flags.open),
+    remote,
+    password,
+    host,
+    log,
+    force: Boolean(flags.force),
+    theme: flags.theme,
+  };
 }
 
 // A free port for the companion server (it only listens on this machine).
-const freePort = () => new Promise((done) => {
-  const s = createServer().listen(0, '127.0.0.1', () => { const { port } = s.address(); s.close(() => done(port)); });
-});
+const freePort = () =>
+  new Promise((done) => {
+    const s = createServer().listen(0, '127.0.0.1', () => {
+      const { port } = s.address();
+      s.close(() => done(port));
+    });
+  });
 
 export async function devCommand(argv) {
   const plan = devPlan(argv);
@@ -57,7 +76,8 @@ export async function devCommand(argv) {
   const companionPort = process.env.SLIDE_NG_DEV_PORT || String(await freePort());
 
   const env = {
-    ...process.env, SLIDES_FILE: plan.entry,
+    ...process.env,
+    SLIDES_FILE: plan.entry,
     SLIDE_NG_DEV_PORT: companionPort,
     SLIDE_NG_TOKEN: randomSecret(),
     SLIDE_NG_REMOTE: plan.remote ? '1' : '0',
@@ -76,15 +96,29 @@ export async function devCommand(argv) {
   if (plan.open) ngArgs.push('--open');
   const children = [
     spawn(process.execPath, [generate, '--watch'], { cwd: appRoot, env, stdio }),
-    spawn(process.execPath, [join(packageRoot, 'scripts/dev/server.mjs')], { cwd: appRoot, env, stdio }),
+    spawn(process.execPath, [join(packageRoot, 'scripts/dev/server.mjs')], {
+      cwd: appRoot,
+      env,
+      stdio,
+    }),
     spawn(process.execPath, ngArgs, { cwd: appRoot, env, stdio }),
   ];
   const stopAll = () => children.forEach((c) => c.kill());
-  children[2].on('exit', (code) => { stopAll(); process.exit(code ?? 0); });
-  for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => { stopAll(); process.exit(0); });
+  children[2].on('exit', (code) => {
+    stopAll();
+    process.exit(code ?? 0);
+  });
+  for (const sig of ['SIGINT', 'SIGTERM'])
+    process.on(sig, () => {
+      stopAll();
+      process.exit(0);
+    });
 
   if (plan.remote) {
-    const addresses = Object.values(networkInterfaces()).flat().filter((i) => i && i.family === 'IPv4' && !i.internal).map((i) => i.address);
+    const addresses = Object.values(networkInterfaces())
+      .flat()
+      .filter((i) => i && i.family === 'IPv4' && !i.internal)
+      .map((i) => i.address);
     console.log(remoteLines({ port: plan.port, password: plan.password, addresses }).join('\n'));
   }
 }

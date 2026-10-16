@@ -8,10 +8,24 @@ import { Component, ElementRef, effect, signal, viewChild } from '@angular/core'
     <div class="h-full w-full flex items-center justify-center bg-black/80 rounded">
       @if (stream()) {
         <video #video autoplay muted playsinline class="max-h-full max-w-full"></video>
-        <button id="mirror-stop" class="absolute top-2 right-2 px-2 py-1 rounded bg-main border border-main text-sm" (click)="stop()">Stop sharing</button>
+        <button
+          id="mirror-stop"
+          class="absolute top-2 right-2 px-2 py-1 rounded bg-main border border-main text-sm"
+          (click)="stop()"
+        >
+          Stop sharing
+        </button>
       } @else {
-        <button id="mirror-start" class="px-3 py-1.5 rounded bg-main border border-main text-sm" (click)="start()">Choose a screen or window to show</button>
-        @if (error()) { <div id="mirror-error" class="absolute bottom-2 text-xs color-red-400">{{ error() }}</div> }
+        <button
+          id="mirror-start"
+          class="px-3 py-1.5 rounded bg-main border border-main text-sm"
+          (click)="start()"
+        >
+          Choose a screen or window to show
+        </button>
+        @if (error()) {
+          <div id="mirror-error" class="absolute bottom-2 text-xs color-red-400">{{ error() }}</div>
+        }
       }
     </div>
   `,
@@ -40,7 +54,9 @@ export class ScreenMirror {
   }
 
   stop() {
-    this.stream()?.getTracks().forEach((t) => t.stop());
+    this.stream()
+      ?.getTracks()
+      .forEach((t) => t.stop());
     this.stream.set(null);
   }
 }

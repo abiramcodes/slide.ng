@@ -6,10 +6,13 @@
 export function extractFootnotes(markdown) {
   const defs = new Map();
   // `[^id]: text`, and the lines under it that are indented
-  const md = markdown.replace(/^\[\^([^\]\s]+)\]:[ \t]*(.*(?:\n(?: {2,}|\t).*)*)$/gm, (_, id, text) => {
-    defs.set(id, text.replace(/\n[ \t]+/g, ' ').trim());
-    return '';
-  });
+  const md = markdown.replace(
+    /^\[\^([^\]\s]+)\]:[ \t]*(.*(?:\n(?: {2,}|\t).*)*)$/gm,
+    (_, id, text) => {
+      defs.set(id, text.replace(/\n[ \t]+/g, ' ').trim());
+      return '';
+    },
+  );
   const used = [];
   const withRefs = md.replace(/\[\^([^\]\s]+)\]/g, (whole, id) => {
     if (!defs.has(id)) return whole; // not defined: stays as written

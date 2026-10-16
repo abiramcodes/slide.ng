@@ -49,16 +49,35 @@ export function cleanShared(data: unknown): Partial<SharedState> {
   if (count(data['clicks'])) out.clicks = data['clicks'];
   if (count(data['clicksTotal'])) out.clicksTotal = data['clicksTotal'];
   const t = data['timer'];
-  if (obj(t) && ['stopped', 'running', 'paused'].includes(t['status'] as string) && num(t['startedAt']) && num(t['pausedAt'])) {
-    out.timer = { status: t['status'] as TimerStatus, startedAt: t['startedAt'], pausedAt: t['pausedAt'] };
+  if (
+    obj(t) &&
+    ['stopped', 'running', 'paused'].includes(t['status'] as string) &&
+    num(t['startedAt']) &&
+    num(t['pausedAt'])
+  ) {
+    out.timer = {
+      status: t['status'] as TimerStatus,
+      startedAt: t['startedAt'],
+      pausedAt: t['pausedAt'],
+    };
   }
   const c = data['cursor'];
   if (c === null) out.cursor = null;
-  else if (obj(c) && num(c['x']) && num(c['y']) && (c['style'] === 'cursor' || c['style'] === 'laser')) {
+  else if (
+    obj(c) &&
+    num(c['x']) &&
+    num(c['y']) &&
+    (c['style'] === 'cursor' || c['style'] === 'laser')
+  ) {
     out.cursor = { x: c['x'], y: c['y'], style: c['style'] };
   }
   const u = data['lastUpdate'];
-  if (obj(u) && typeof u['id'] === 'string' && (u['type'] === 'presenter' || u['type'] === 'viewer') && num(u['time'])) {
+  if (
+    obj(u) &&
+    typeof u['id'] === 'string' &&
+    (u['type'] === 'presenter' || u['type'] === 'viewer') &&
+    num(u['time'])
+  ) {
     out.lastUpdate = { id: u['id'].slice(0, 64), type: u['type'], time: u['time'] };
   }
   return out;
@@ -74,7 +93,8 @@ export function cleanDrawings(data: unknown): DrawingsState {
   if (!obj(data)) return out;
   for (const [key, value] of Object.entries(data)) {
     const no = Number(key);
-    if (Number.isInteger(no) && no > 0 && typeof value === 'string' && value.length <= MAX_SVG) out[no] = value;
+    if (Number.isInteger(no) && no > 0 && typeof value === 'string' && value.length <= MAX_SVG)
+      out[no] = value;
   }
   return out;
 }

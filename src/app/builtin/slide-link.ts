@@ -13,7 +13,11 @@ export class SlideLink {
 
   go(e: Event) {
     e.preventDefault();
-    const no = findSlide(String(this.to()), this.nav.total, this.nav.slides.map((s) => s.routeAlias));
+    const no = findSlide(
+      String(this.to()),
+      this.nav.total,
+      this.nav.slides.map((s) => s.routeAlias),
+    );
     if (no) this.nav.go(no);
     (e.target as HTMLElement).blur();
   }

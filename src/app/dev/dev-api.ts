@@ -24,11 +24,15 @@ export class DevApi {
   private async connect(): Promise<string | null> {
     try {
       const fromUrl = new URLSearchParams(location.search).get('password');
-      if (fromUrl) { await this.login(fromUrl); this.forgetPasswordInUrl(); }
+      if (fromUrl) {
+        await this.login(fromUrl);
+        this.forgetPasswordInUrl();
+      }
       let res = await fetch(`${API}/session`, { credentials: 'same-origin' });
       if (res.status === 401) {
         const typed = window.prompt('Password for this slide.ng session');
-        if (typed && (await this.login(typed))) res = await fetch(`${API}/session`, { credentials: 'same-origin' });
+        if (typed && (await this.login(typed)))
+          res = await fetch(`${API}/session`, { credentials: 'same-origin' });
       }
       if (res.status === 401) this.locked.set(true);
       return res.ok ? ((await res.json()) as { token: string }).token : null;
@@ -39,8 +43,10 @@ export class DevApi {
 
   private async login(password: string): Promise<boolean> {
     const res = await fetch(`${API}/login`, {
-      method: 'POST', credentials: 'same-origin',
-      headers: { 'content-type': 'application/json' }, body: JSON.stringify({ password }),
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ password }),
     });
     return res.ok;
   }
@@ -58,19 +64,28 @@ export class DevApi {
     if (!token) return false;
     try {
       const res = await fetch(`${API}${path}`, {
-        method, credentials: 'same-origin', body: JSON.stringify(body),
+        method,
+        credentials: 'same-origin',
+        body: JSON.stringify(body),
         headers: { 'content-type': 'application/json', 'x-slide-ng-token': token },
       });
       return res.ok;
-    } catch { return false; }
+    } catch {
+      return false;
+    }
   }
 
   async get<T>(path: string): Promise<T | null> {
     const token = await this.token();
     if (!token) return null;
     try {
-      const res = await fetch(`${API}${path}`, { credentials: 'same-origin', headers: { 'x-slide-ng-token': token } });
+      const res = await fetch(`${API}${path}`, {
+        credentials: 'same-origin',
+        headers: { 'x-slide-ng-token': token },
+      });
       return res.ok ? ((await res.json()) as T) : null;
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   }
 }

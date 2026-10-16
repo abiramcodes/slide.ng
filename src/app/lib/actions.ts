@@ -7,7 +7,14 @@ import { ShortcutActions } from './shortcuts';
 import { Ui } from './ui-state';
 
 // Connects the shortcut names to the things they do.
-export function makeActions(nav: Nav, ui: Ui, dark: Dark, fullscreen: Fullscreen, drawings: Drawings, drag: DragState): ShortcutActions {
+export function makeActions(
+  nav: Nav,
+  ui: Ui,
+  dark: Dark,
+  fullscreen: Fullscreen,
+  drawings: Drawings,
+  drag: DragState,
+): ShortcutActions {
   return {
     next: () => nav.next(),
     prev: () => nav.prev(),
@@ -20,7 +27,10 @@ export function makeActions(nav: Nav, ui: Ui, dark: Dark, fullscreen: Fullscreen
     closeAll: () => ui.closeAll(),
     overviewOpen: () => ui.overview(),
     overviewMove: (by) => ui.moveOverview(by, nav.total),
-    overviewGo: () => { nav.go(ui.overviewPage()); ui.overview.set(false); },
+    overviewGo: () => {
+      nav.go(ui.overviewPage());
+      ui.overview.set(false);
+    },
     drawingEnabled: () => drawings.available && drawings.enabled(),
     toggleDrawing: () => drawings.toggle(),
     dragActive: () => drag.active() !== null,

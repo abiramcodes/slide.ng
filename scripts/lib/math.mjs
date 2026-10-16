@@ -5,7 +5,8 @@ import { splitRanges, parseOptions } from './code/meta.mjs';
 import { attrs, escapeCode, protect } from './protect.mjs';
 
 // $$ {ranges} {options} <newline> latex <newline> $$      or a single line: $$ latex $$
-const BLOCK = /^\$\$[ \t]*(?:\{([\w,|*-]+)\})?[ \t]*(\{[^}\n]*\})?[ \t]*\n([\s\S]*?)\n?[ \t]*\$\$[ \t]*$/gm;
+const BLOCK =
+  /^\$\$[ \t]*(?:\{([\w,|*-]+)\})?[ \t]*(\{[^}\n]*\})?[ \t]*\n([\s\S]*?)\n?[ \t]*\$\$[ \t]*$/gm;
 const BLOCK_ONE_LINE = /^\$\$[ \t]*([^\n{][^\n]*?)[ \t]*\$\$[ \t]*$/gm;
 // $latex$ : no space after the first $ or before the last, and the last is not followed by a digit (so "$5 and $10" is text)
 const INLINE = /(?<![\\$])\$(?![\s$])((?:\\.|[^$\\\n])+?)(?<![\s\\])\$(?!\d)/g;
@@ -14,7 +15,10 @@ const INLINE = /(?<![\\$])\$(?![\s$])((?:\\.|[^$\\\n])+?)(?<![\s\\])\$(?!\d)/g;
 export function extractMath(markdown) {
   const maths = [];
   const put = (item) => `NGMATH${maths.push(item) - 1}X`;
-  let md = markdown.replace(BLOCK, (_, ranges, options, latex) => `\n${put({ block: true, latex, ranges, options })}\n`);
+  let md = markdown.replace(
+    BLOCK,
+    (_, ranges, options, latex) => `\n${put({ block: true, latex, ranges, options })}\n`,
+  );
   md = md.replace(BLOCK_ONE_LINE, (_, latex) => `\n${put({ block: true, latex })}\n`);
   md = md.replace(INLINE, (_, latex) => put({ block: false, latex }));
   return { markdown: md, maths };
@@ -22,12 +26,19 @@ export function extractMath(markdown) {
 
 // The deck's own KaTeX options (setup/katex.ts), put over the defaults below.
 let katexOptions = {};
-export const setKatexOptions = (options = {}) => { katexOptions = options; };
+export const setKatexOptions = (options = {}) => {
+  katexOptions = options;
+};
 
 function render(latex, displayMode) {
   try {
     // `output: 'html'`: the MathML part is left out because Angular does not know MathML-only tags like <annotation>.
-    return katex.renderToString(latex, { throwOnError: false, ...katexOptions, displayMode, output: 'html' });
+    return katex.renderToString(latex, {
+      throwOnError: false,
+      ...katexOptions,
+      displayMode,
+      output: 'html',
+    });
   } catch (e) {
     console.warn(`[slides] math could not be drawn: ${e.message}`);
     return protect(latex);
@@ -43,6 +54,11 @@ export function renderMath({ block, latex, ranges, options }) {
   const drawn = `<span class="sr-only">${escapeCode(latex)}</span>${safe(render(latex, !!block))}`;
   if (!block) return `<span ngNonBindable>${drawn}</span>`;
   const o = parseOptions(options);
-  const a = attrs({ ranges: splitRanges(ranges).join('|'), at: o.at, finally: o.finally, startLine: o.startLine });
+  const a = attrs({
+    ranges: splitRanges(ranges).join('|'),
+    at: o.at,
+    finally: o.finally,
+    startLine: o.startLine,
+  });
   return `<katex-block-wrapper${a}><div ngNonBindable>${drawn}</div></katex-block-wrapper>`;
 }

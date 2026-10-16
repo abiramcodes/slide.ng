@@ -31,7 +31,9 @@ export class WebSocketTransport implements SyncTransport {
     const token = await this.api.token();
     if (!token) return;
     const scheme = location.protocol === 'https:' ? 'wss' : 'ws';
-    const socket = new WebSocket(`${scheme}://${location.host}${API}/ws?token=${encodeURIComponent(token)}`);
+    const socket = new WebSocket(
+      `${scheme}://${location.host}${API}/ws?token=${encodeURIComponent(token)}`,
+    );
     this.socket = socket;
     socket.onopen = () => {
       this.delay = 500;
@@ -41,7 +43,9 @@ export class WebSocketTransport implements SyncTransport {
       try {
         const m = JSON.parse(String(e.data));
         if (m && typeof m.channel === 'string') this.handler(m.channel, m.data);
-      } catch { /* not ours */ }
+      } catch {
+        /* not ours */
+      }
     };
     // Try again with growing pauses (the dev server restarts now and then).
     socket.onclose = () => {

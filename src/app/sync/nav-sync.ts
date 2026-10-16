@@ -25,7 +25,9 @@ export function startNavSync(nav: Nav) {
     const d = sync.directions();
     if (!(nav.isPresenter ? d.presenterSend : d.viewerSend) || !mayShare) return;
     sync.patchShared({
-      page: nav.no(), clicks: nav.clicks(), clicksTotal: nav.clicksTotal(),
+      page: nav.no(),
+      clicks: nav.clicks(),
+      clicksTotal: nav.clicksTotal(),
       lastUpdate: { id: sync.id, type, time: Date.now() },
     });
   };
@@ -33,7 +35,9 @@ export function startNavSync(nav: Nav) {
   // Our position changed: tell the others. The very first position of a viewer is not news
   // (a viewer that just opened would drag the presenter back to its own slide).
   effect(() => {
-    const page = nav.no(), clicks = nav.clicks(), mounted = nav.ready();
+    const page = nav.no(),
+      clicks = nav.clicks(),
+      mounted = nav.ready();
     nav.clicksTotal();
     untracked(() => {
       if (!mounted) return; // the slide is still being created
@@ -47,7 +51,10 @@ export function startNavSync(nav: Nav) {
   });
 
   // Someone else moved: follow. Only a new position or a new update time counts, not a moving cursor or the timer.
-  const moved = computed(() => { const s = sync.shared(); return `${s.page}:${s.clicks}:${s.lastUpdate?.time}`; });
+  const moved = computed(() => {
+    const s = sync.shared();
+    return `${s.page}:${s.clicks}:${s.lastUpdate?.time}`;
+  });
   effect(() => {
     moved();
     untracked(() => {

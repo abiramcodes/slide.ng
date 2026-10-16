@@ -2,7 +2,16 @@
 // Mermaid is large, so it is loaded with import() the first time a diagram is drawn.
 // While the drawing is pending the host has `data-slide-ng-waitfor` (the selector that will exist when it is
 // done), like Slidev's `data-waitfor`, so an exporter can wait for it.
-import { Component, ElementRef, effect, inject, input, signal, untracked, viewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+  viewChild,
+} from '@angular/core';
 import { optionalNumber } from '../lib/attrs';
 import { Dark } from '../lib/dark';
 import { MERMAID_SETUP } from '../setup/tokens';
@@ -62,7 +71,11 @@ export class Mermaid {
       const [packed, code, extra] = [this.packed(), this.code(), this.config()];
       const text = packed ? await unpack<string>(packed) : code;
       // setup/mermaid.ts of the roots come first, the diagram's own options last.
-      const config = { theme, ...Object.assign({}, ...this.setups.map((f) => f())), ...JSON.parse(extra) };
+      const config = {
+        theme,
+        ...Object.assign({}, ...this.setups.map((f) => f())),
+        ...JSON.parse(extra),
+      };
       untracked(() => this.pending.set(true));
       try {
         const svg = await draw(text, config);

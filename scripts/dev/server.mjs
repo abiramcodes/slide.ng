@@ -21,12 +21,18 @@ export function startServer(ctx) {
     }
     hub.handleUpgrade(req, socket, head, (ws) => hub.emit('connection', ws, req));
   });
-  return new Promise((resolve) => server.listen(ctx.port, '127.0.0.1', () => resolve({ server, hub, port: server.address().port })));
+  return new Promise((resolve) =>
+    server.listen(ctx.port, '127.0.0.1', () =>
+      resolve({ server, hub, port: server.address().port }),
+    ),
+  );
 }
 
 // Started as a program by scripts/dev.mjs (or by a test, with its own environment).
 if (import.meta.url === `file://${process.argv[1]}`) {
   const ctx = readConfig(process.env);
   const { port } = await startServer(ctx);
-  console.log(`[dev-server] listening on 127.0.0.1:${port}${ctx.remote ? ' (remote: password required)' : ''}`);
+  console.log(
+    `[dev-server] listening on 127.0.0.1:${port}${ctx.remote ? ' (remote: password required)' : ''}`,
+  );
 }

@@ -25,7 +25,10 @@ export class PrintSlide {
   protected steps = computed(() => {
     const ctx = this.first()?.clicks();
     if (!this.withClicks() || !ctx?.mounted()) return [];
-    return Array.from({ length: Math.max(0, ctx.total() - ctx.clicksStart) }, (_, i) => ctx.clicksStart + i + 1);
+    return Array.from(
+      { length: Math.max(0, ctx.total() - ctx.clicksStart) },
+      (_, i) => ctx.clicksStart + i + 1,
+    );
   });
 
   /** Every page is created and its slide is drawn. */

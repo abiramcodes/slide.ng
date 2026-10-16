@@ -1,6 +1,13 @@
 // The click engine: decides how many clicks a slide has and which one is current.
 // It is a port of Slidev's useClicks.ts, using Angular signals instead of Vue refs.
-import { Injectable, InjectionToken, afterNextRender, computed, inject, signal } from '@angular/core';
+import {
+  Injectable,
+  InjectionToken,
+  afterNextRender,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 
 export type RawSingleAt = boolean | number | string | null | undefined;
 export type RawAt = RawSingleAt | [RawSingleAt, RawSingleAt];
@@ -22,7 +29,9 @@ export const CLICKS_MAX = 999999;
 export const CLICKS_START = new InjectionToken<number>('CLICKS_START', { factory: () => 0 });
 
 // `clicks: 4` in the frontmatter fixes the number of clicks, whatever the elements ask for.
-export const CLICKS_TOTAL = new InjectionToken<number | null>('CLICKS_TOTAL', { factory: () => null });
+export const CLICKS_TOTAL = new InjectionToken<number | null>('CLICKS_TOTAL', {
+  factory: () => null,
+});
 
 // Port of normalizeSingleAtValue. Result is null (never), "+n"/"-n" (relative) or a number (absolute).
 // `v-click` written without a value arrives as '' - we treat it like "no value", which means '+1'.
@@ -31,8 +40,14 @@ export function normalizeSingle(at: RawSingleAt): NormSingle {
   if (at == null || at === true || at === 'true' || at === '') return '+1';
   if (typeof at === 'string' && '+-'.includes(at[0])) return at;
   const v = +at;
-  if (Number.isNaN(v)) { console.error(`Invalid "at" value: ${at}`); return null; }
-  if (v <= 0) { console.warn(`[clicks] "at" must be > 0, got ${at}, set to 1`); return 1; }
+  if (Number.isNaN(v)) {
+    console.error(`Invalid "at" value: ${at}`);
+    return null;
+  }
+  if (v <= 0) {
+    console.warn(`[clicks] "at" must be > 0, got ${at}, set to 1`);
+    return 1;
+  }
   return v;
 }
 
@@ -51,20 +66,33 @@ export class ClicksContext {
   private maxes = signal<number[]>([]); // signals cannot watch a Map, so we publish a copy
 
   /** Like Slidev: 0 until the slide is mounted, then the biggest registered max (or the frontmatter override). */
-  readonly total = computed(() => this.totalOverride ?? (this.mounted() ? Math.max(0, ...this.maxes()) : 0));
+  readonly total = computed(
+    () => this.totalOverride ?? (this.mounted() ? Math.max(0, ...this.maxes()) : 0),
+  );
   /** The current click, always between clicksStart and total. */
   readonly current = computed(() => clamp(+this.raw(), this.clicksStart, this.total()));
 
   constructor() {
-    afterNextRender(() => { this.publish(); this.mounted.set(true); });
+    afterNextRender(() => {
+      this.publish();
+      this.mounted.set(true);
+    });
   }
 
-  private publish() { this.maxes.set([...this.maxMap.values()]); }
+  private publish() {
+    this.maxes.set([...this.maxMap.values()]);
+  }
 
   // Before mount the total is unknown, so the value is stored unclamped (like Slidev's setter).
-  setCurrent(v: number) { this.raw.set(this.mounted() ? clamp(v, this.clicksStart, this.total()) : v); }
-  next() { this.setCurrent(this.current() + 1); }
-  prev() { this.setCurrent(this.current() - 1); }
+  setCurrent(v: number) {
+    this.raw.set(this.mounted() ? clamp(v, this.clicksStart, this.total()) : v);
+  }
+  next() {
+    this.setCurrent(this.current() + 1);
+  }
+  prev() {
+    this.setCurrent(this.current() - 1);
+  }
 
   /** Sum of all relative steps registered so far; "+1" is added on top of this. */
   get currentOffset() {
@@ -79,25 +107,56 @@ export class ClicksContext {
     if (at == null) return null;
     let start: number, max: number, delta: number;
     if (typeof at === 'string') {
-      const v = +at, offset = this.currentOffset;
-      start = offset + v; max = offset + v + size - 1; delta = v + size - 1;
+      const v = +at,
+        offset = this.currentOffset;
+      start = offset + v;
+      max = offset + v + size - 1;
+      delta = v + size - 1;
     } else {
-      start = at; max = at + size - 1; delta = 0;
+      start = at;
+      max = at + size - 1;
+      delta = 0;
     }
-    return { start, end: Infinity, max, delta, isActive: (c) => c >= start, isCurrent: (c) => c === start };
+    return {
+      start,
+      end: Infinity,
+      max,
+      delta,
+      isActive: (c) => c >= start,
+      isCurrent: (c) => c === start,
+    };
   }
 
   /** Shown only from `start` up to (not including) `end`. */
   calculateRange(rawAt: RawAt): ClickInfo | null {
     if (!Array.isArray(rawAt)) return null;
-    const a = normalizeSingle(rawAt[0])!, b = normalizeSingle(rawAt[1])!;
+    const a = normalizeSingle(rawAt[0])!,
+      b = normalizeSingle(rawAt[1])!;
     let start: number, end: number, delta: number;
-    if (typeof a === 'string') { start = this.currentOffset + +a; delta = +a; } else { start = a; delta = 0; }
-    if (typeof b === 'string') { end = start + +b; delta += +b; } else end = b;
-    return { start, end, max: end, delta, isActive: (c) => start <= c && c < end, isCurrent: (c) => c === start };
+    if (typeof a === 'string') {
+      start = this.currentOffset + +a;
+      delta = +a;
+    } else {
+      start = a;
+      delta = 0;
+    }
+    if (typeof b === 'string') {
+      end = start + +b;
+      delta += +b;
+    } else end = b;
+    return {
+      start,
+      end,
+      max: end,
+      delta,
+      isActive: (c) => start <= c && c < end,
+      isCurrent: (c) => c === start,
+    };
   }
 
-  calculate(at: RawAt) { return Array.isArray(at) ? this.calculateRange(at) : this.calculateSince(at); }
+  calculate(at: RawAt) {
+    return Array.isArray(at) ? this.calculateRange(at) : this.calculateSince(at);
+  }
 
   register(key: unknown, info: Pick<ClickInfo, 'delta' | 'max'> | null) {
     if (!info) return;

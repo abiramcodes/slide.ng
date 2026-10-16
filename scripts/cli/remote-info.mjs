@@ -14,9 +14,17 @@ export function remoteLines({ port, password, addresses, routerMode }) {
     if (password) lines.push(`[slide.ng]   private slide show: ${base}${slash}${query}`);
     lines.push(`[slide.ng]   presenter mode:     ${base}${slash}presenter/1${query}`);
   }
-  if (password) lines.push('[slide.ng] the password is needed to follow the presenter and to use the dev server from another device');
-  else lines.push('[slide.ng] WARNING: no password. Anyone who can reach this port can open the deck and follow or move the presenter. Use --remote=<password> on a network you do not trust.');
-  lines.push('[slide.ng] there is no HTTPS; the password and the slides cross the network in the clear');
+  if (password)
+    lines.push(
+      '[slide.ng] the password is needed to follow the presenter and to use the dev server from another device',
+    );
+  else
+    lines.push(
+      '[slide.ng] WARNING: no password. Anyone who can reach this port can open the deck and follow or move the presenter. Use --remote=<password> on a network you do not trust.',
+    );
+  lines.push(
+    '[slide.ng] there is no HTTPS; the password and the slides cross the network in the clear',
+  );
   lines.push('');
   return lines;
 }

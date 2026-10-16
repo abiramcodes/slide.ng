@@ -25,7 +25,8 @@ export class Devices {
     navigator.mediaDevices.addEventListener?.('devicechange', () => this.refresh());
     // Open or close the camera whenever the switch or the chosen device changes.
     effect(() => {
-      const on = this.cameraOn(), id = this.cameraId();
+      const on = this.cameraOn(),
+        id = this.cameraId();
       // Only the switch and the device choice start this; reading the stream here must not.
       untracked(() => {
         this.close();
@@ -42,9 +43,15 @@ export class Devices {
   private async open(id: string) {
     this.error.set('');
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: this.constraint(id), audio: false });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: this.constraint(id),
+        audio: false,
+      });
       // The switch may have been turned off while the browser was asking.
-      if (!this.cameraOn()) { stream.getTracks().forEach((t) => t.stop()); return; }
+      if (!this.cameraOn()) {
+        stream.getTracks().forEach((t) => t.stop());
+        return;
+      }
       this.stream.set(stream);
       await this.refresh(); // device names are only known after permission
     } catch (e) {
@@ -54,7 +61,9 @@ export class Devices {
   }
 
   private close() {
-    this.stream()?.getTracks().forEach((t) => t.stop());
+    this.stream()
+      ?.getTracks()
+      .forEach((t) => t.stop());
     this.stream.set(null);
   }
 
@@ -64,5 +73,7 @@ export class Devices {
     this.mics.set(all.filter((d) => d.kind === 'audioinput'));
   }
 
-  toggleCamera() { this.cameraOn.update((v) => !v); }
+  toggleCamera() {
+    this.cameraOn.update((v) => !v);
+  }
 }

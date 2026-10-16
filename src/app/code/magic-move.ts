@@ -1,7 +1,20 @@
 // Code that morphs from one step to the next as you click: ````md magic-move
 // Port of Slidev's ShikiMagicMove.vue. The steps were tokenised while generating; the animation
 // is @shikijs/magic-move's own renderer, loaded only when a deck uses this component.
-import { Component, ElementRef, OnDestroy, OnInit, computed, inject, input, numberAttribute, signal, viewChild, effect, booleanAttribute } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  computed,
+  inject,
+  input,
+  numberAttribute,
+  signal,
+  viewChild,
+  effect,
+  booleanAttribute,
+} from '@angular/core';
 import type { KeyedTokensInfo } from '@shikijs/magic-move/types';
 import { CLICKS_MAX, ClickInfo, ClicksContext, RawSingleAt } from '../lib/clicks';
 import { copyText } from './copy';
@@ -22,16 +35,28 @@ export function stepAt(ranges: string[][], clickCount: number, stepCount: number
 @Component({
   selector: 'shiki-magic-move',
   // While the animation code and the steps load, the host has `data-slide-ng-waitfor` (like the Mermaid block), so an exporter can wait.
-  host: { class: 'slidev-code-wrapper slidev-code-magic-move relative group', '[attr.data-slide-ng-waitfor]': 'data() ? null : ".shiki-magic-move-container span"' },
+  host: {
+    class: 'slidev-code-wrapper slidev-code-magic-move relative group',
+    '[attr.data-slide-ng-waitfor]': 'data() ? null : ".shiki-magic-move-container span"',
+  },
   template: `
     @if (title()) {
-      <div class="slidev-code-block-title"><div class="leading-1em">{{ title() }}</div></div>
+      <div class="slidev-code-block-title">
+        <div class="leading-1em">{{ title() }}</div>
+      </div>
     }
     <pre #pre class="slidev-code relative shiki shiki-magic-move-container overflow-visible"></pre>
     @if (!noCopy()) {
-      <button class="slidev-code-copy absolute right-0 transition opacity-0 group-hover:opacity-20 hover:!opacity-100"
-        [class]="title() ? 'top-10' : 'top-0'" [attr.title]="copied() ? 'Copied' : 'Copy'" (click)="copy()">
-        <span [class]="copied() ? 'i-ph:check-circle' : 'i-ph:clipboard'" class="inline-block p-2 w-8 h-8"></span>
+      <button
+        class="slidev-code-copy absolute right-0 transition opacity-0 group-hover:opacity-20 hover:!opacity-100"
+        [class]="title() ? 'top-10' : 'top-0'"
+        [attr.title]="copied() ? 'Copied' : 'Copy'"
+        (click)="copy()"
+      >
+        <span
+          [class]="copied() ? 'i-ph:check-circle' : 'i-ph:clipboard'"
+          class="inline-block p-2 w-8 h-8"
+        ></span>
       </button>
     }
   `,
@@ -80,17 +105,22 @@ export class ShikiMagicMove implements OnInit, OnDestroy {
     this.info.set(info);
     this.clicks.register(this, info);
     // Load the animation code and the steps; neither is needed before this.
-    void Promise.all([import('@shikijs/magic-move/renderer'), import('@shikijs/magic-move/core'), unpack<KeyedTokensInfo[]>(this.steps())]).then(
-      ([renderer, core, steps]) => {
-        if (!this.alive) return;
-        this.sync = core.syncTokenKeys;
-        this.renderer = new renderer.MagicMoveRenderer(this.pre().nativeElement);
-        this.data.set(steps);
-      },
-    );
+    void Promise.all([
+      import('@shikijs/magic-move/renderer'),
+      import('@shikijs/magic-move/core'),
+      unpack<KeyedTokensInfo[]>(this.steps()),
+    ]).then(([renderer, core, steps]) => {
+      if (!this.alive) return;
+      this.sync = core.syncTokenKeys;
+      this.renderer = new renderer.MagicMoveRenderer(this.pre().nativeElement);
+      this.data.set(steps);
+    });
   }
 
-  ngOnDestroy() { this.alive = false; this.clicks.unregister(this); }
+  ngOnDestroy() {
+    this.alive = false;
+    this.clicks.unregister(this);
+  }
 
   private show(steps: KeyedTokensInfo[], step: number, range: string) {
     const renderer = this.renderer!;
@@ -106,14 +136,18 @@ export class ShikiMagicMove implements OnInit, OnDestroy {
       this.shownStep = step;
       this.previous = to;
       if (first) renderer.replace(to);
-      else { renderer.replace(from); void renderer.render(to); } // the animation runs on its own
+      else {
+        renderer.replace(from);
+        void renderer.render(to);
+      } // the animation runs on its own
     }
     this.highlight(range);
   }
 
   // Group the rendered tokens into lines at the <br> elements, then highlight like a code block.
   private highlight(range: string) {
-    const tokens = Array.from(this.pre().nativeElement.children).slice(1) // the first child is the renderer's anchor
+    const tokens = Array.from(this.pre().nativeElement.children)
+      .slice(1) // the first child is the renderer's anchor
       .filter((el) => !el.className.includes('shiki-magic-move-leave'));
     const lines: Element[][] = [[]];
     for (const el of tokens) {

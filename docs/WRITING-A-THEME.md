@@ -63,7 +63,12 @@ The official themes (the slide.ng-themes repository, `packages/theme-*`) are lar
 
 ```ts
 import { SHORTCUTS_SETUP } from 'slide-ng/lib/shortcuts';
-export default [{ provide: SHORTCUTS_SETUP, useValue: (actions, list) => [...list, { name: 'back', key: 'b', run: actions.prevSlide }] }];
+export default [
+  {
+    provide: SHORTCUTS_SETUP,
+    useValue: (actions, list) => [...list, { name: 'back', key: 'b', run: actions.prevSlide }],
+  },
+];
 ```
 
 ## Sharing it

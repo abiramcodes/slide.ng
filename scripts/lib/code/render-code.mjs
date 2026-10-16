@@ -18,10 +18,18 @@ export function highlightedPre(code, lang, info = '') {
   const twoslash = /\btwoslash\b/.test(info) ? twoslashTransformer() : null;
   let html;
   try {
-    html = codeToHtml(code, lang, twoslash ? { transformers: [twoslash, slidevCode], meta: { __raw: info } } : { transformers: [slidevCode] });
+    html = codeToHtml(
+      code,
+      lang,
+      twoslash
+        ? { transformers: [twoslash, slidevCode], meta: { __raw: info } }
+        : { transformers: [slidevCode] },
+    );
   } catch (e) {
     // A code error in a twoslash block must not stop the whole build.
-    console.warn(`[slides] twoslash failed for a ${lang} block (${e.message.split('\n')[0]}), showing it without types`);
+    console.warn(
+      `[slides] twoslash failed for a ${lang} block (${e.message.split('\n')[0]}), showing it without types`,
+    );
     html = codeToHtml(code, lang, { transformers: [slidevCode] });
   }
   return protect(html).replace('<pre ', '<pre ngNonBindable ');

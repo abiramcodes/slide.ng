@@ -1,7 +1,15 @@
 // Wraps one highlighted code block (the generator puts Shiki's <pre> inside).
 // Port of Slidev's CodeBlockWrapper: title bar, copy button, line numbers, maximum height and
 // the line highlights, which can change with clicks: ```ts {2-3|5|all}
-import { Component, ElementRef, afterRenderEffect, booleanAttribute, inject, input, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  afterRenderEffect,
+  booleanAttribute,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { copyText } from './copy';
 import { RangedBlock } from './ranged-block';
 import { highlightLines } from './ranges';
@@ -19,13 +27,22 @@ import { highlightLines } from './ranges';
   },
   template: `
     @if (title()) {
-      <div class="slidev-code-block-title"><div class="leading-1em">{{ title() }}</div></div>
+      <div class="slidev-code-block-title">
+        <div class="leading-1em">{{ title() }}</div>
+      </div>
     }
     <ng-content />
     @if (!noCopy()) {
-      <button class="slidev-code-copy absolute right-0 transition opacity-0 group-hover:opacity-20 hover:!opacity-100"
-        [class]="title() ? 'top-10' : 'top-0'" [attr.title]="copied() ? 'Copied' : 'Copy'" (click)="copy()">
-        <span [class]="copied() ? 'i-ph:check-circle' : 'i-ph:clipboard'" class="inline-block p-2 w-8 h-8"></span>
+      <button
+        class="slidev-code-copy absolute right-0 transition opacity-0 group-hover:opacity-20 hover:!opacity-100"
+        [class]="title() ? 'top-10' : 'top-0'"
+        [attr.title]="copied() ? 'Copied' : 'Copy'"
+        (click)="copy()"
+      >
+        <span
+          [class]="copied() ? 'i-ph:check-circle' : 'i-ph:clipboard'"
+          class="inline-block p-2 w-8 h-8"
+        ></span>
       </button>
     }
   `,
@@ -59,7 +76,10 @@ export class CodeBlockWrapper extends RangedBlock {
     if (!lit.length) return;
     const height = lit.reduce((sum, el) => sum + el.offsetHeight, 0);
     const target = height > this.host.offsetHeight ? lit[0] : lit[Math.round((lit.length - 1) / 2)];
-    target.scrollIntoView({ behavior: 'smooth', block: height > this.host.offsetHeight ? 'start' : 'center' });
+    target.scrollIntoView({
+      behavior: 'smooth',
+      block: height > this.host.offsetHeight ? 'start' : 'center',
+    });
   }
 
   protected async copy() {

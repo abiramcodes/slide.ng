@@ -29,7 +29,8 @@ describe('classicPage', () => {
 
 describe('workerFiles', () => {
   it('finds worker names in any kind of quotes, once', () => {
-    const text = 'new Worker(new URL(`worker-AB12.js`, x)); new URL("worker-AB12.js"); new URL(\'worker-Cd_3.js\')';
+    const text =
+      'new Worker(new URL(`worker-AB12.js`, x)); new URL("worker-AB12.js"); new URL(\'worker-Cd_3.js\')';
     expect(workerFiles(text)).toEqual(['worker-AB12.js', 'worker-Cd_3.js']);
   });
   it('the shim only handles file:// and falls back to the real Worker', () => {
@@ -42,9 +43,15 @@ describe('makeOffline', () => {
   it('folds a lazy chunk into one script and removes the chunk', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'offline-'));
     writeFileSync(join(dir, 'index.html'), PAGE);
-    writeFileSync(join(dir, 'main-X.js'), 'import("./chunk-B.js").then((m) => { window.result = m.value; });');
+    writeFileSync(
+      join(dir, 'main-X.js'),
+      'import("./chunk-B.js").then((m) => { window.result = m.value; });',
+    );
     writeFileSync(join(dir, 'chunk-A.js'), 'export const a = 1;');
-    writeFileSync(join(dir, 'chunk-B.js'), 'import { a } from "./chunk-A.js"; export const value = a + 41;');
+    writeFileSync(
+      join(dir, 'chunk-B.js'),
+      'import { a } from "./chunk-A.js"; export const value = a + 41;',
+    );
     const result = await makeOffline(dir);
     expect(result).toMatchObject({ entry: 'main-X.js', removed: 2, workers: [] });
     expect(readdirSync(dir).sort()).toEqual(['index.html', 'main-X.js']);
@@ -61,7 +68,10 @@ describe('makeOffline', () => {
     const dir = mkdtempSync(join(tmpdir(), 'offline-'));
     mkdirSync(dir, { recursive: true });
     writeFileSync(join(dir, 'index.html'), PAGE);
-    writeFileSync(join(dir, 'main-X.js'), 'new Worker(new URL(`worker-W1.js`, import.meta.url), { type: "module" });');
+    writeFileSync(
+      join(dir, 'main-X.js'),
+      'new Worker(new URL(`worker-W1.js`, import.meta.url), { type: "module" });',
+    );
     writeFileSync(join(dir, 'worker-W1.js'), 'self.postMessage("hi");');
     const result = await makeOffline(dir);
     expect(result.workers).toEqual(['worker-W1.js']);
@@ -74,7 +84,11 @@ describe('makeOffline', () => {
 
 describe('offline build settings', () => {
   it('forces hash routing and no service worker', () => {
-    expect(applyOffline({ routerMode: 'history', pwa: true, title: 'x' })).toEqual({ routerMode: 'hash', pwa: false, title: 'x' });
+    expect(applyOffline({ routerMode: 'history', pwa: true, title: 'x' })).toEqual({
+      routerMode: 'hash',
+      pwa: false,
+      title: 'x',
+    });
   });
   it('an offline folder takes remote pictures along unless the deck says false', () => {
     expect(wantsRemoteAssets({}, true, true)).toBe(true);

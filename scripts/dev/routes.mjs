@@ -9,7 +9,11 @@ import { canvasSize } from '../lib/canvas-size.mjs';
 import { parseDeck } from '../lib/parse-deck.mjs';
 
 const json = (res, status, body, headers = {}) => {
-  res.writeHead(status, { 'content-type': 'application/json', 'cache-control': 'no-store', ...headers });
+  res.writeHead(status, {
+    'content-type': 'application/json',
+    'cache-control': 'no-store',
+    ...headers,
+  });
   res.end(JSON.stringify(body));
 };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -21,8 +25,13 @@ export function createHandler(ctx) {
   const serial = (job) => (queue = queue.then(job, job));
 
   async function body(req, limit) {
-    if (!/^application\/json\b/i.test(req.headers['content-type'] ?? '')) throw new HttpError(415, 'JSON expected');
-    try { return JSON.parse(await readBody(req, limit)); } catch (e) { throw e.status ? e : new HttpError(400, 'bad JSON'); }
+    if (!/^application\/json\b/i.test(req.headers['content-type'] ?? ''))
+      throw new HttpError(415, 'JSON expected');
+    try {
+      return JSON.parse(await readBody(req, limit));
+    } catch (e) {
+      throw e.status ? e : new HttpError(400, 'bad JSON');
+    }
   }
 
   const number = (text) => (/^\d{1,6}$/.test(text) ? Number(text) : NaN);
@@ -34,12 +43,21 @@ export function createHandler(ctx) {
     const denied = check(req, ctx, { needToken: !unlocked, needLogin: path !== '/login' });
     if (denied) throw new HttpError(denied.status, denied.error);
 
-    if (path === '/session' && method === 'GET') return json(res, 200, { token: ctx.token, remote: ctx.remote });
+    if (path === '/session' && method === 'GET')
+      return json(res, 200, { token: ctx.token, remote: ctx.remote });
 
     if (path === '/login' && method === 'POST') {
       const { password } = await body(req, 1_000);
-      if (!ctx.password || !safeEqual(password, ctx.password)) { await sleep(400); throw new HttpError(401, 'wrong password'); }
-      return json(res, 200, { ok: true }, { 'set-cookie': `${COOKIE}=${ctx.auth}; HttpOnly; SameSite=Strict; Path=${API}` });
+      if (!ctx.password || !safeEqual(password, ctx.password)) {
+        await sleep(400);
+        throw new HttpError(401, 'wrong password');
+      }
+      return json(
+        res,
+        200,
+        { ok: true },
+        { 'set-cookie': `${COOKIE}=${ctx.auth}; HttpOnly; SameSite=Strict; Path=${API}` },
+      );
     }
 
     let m;
@@ -60,7 +78,9 @@ export function createHandler(ctx) {
     if ((m = /^\/drawings\/(\d+)$/.exec(path)) && method === 'PUT') {
       const { svg } = await body(req, MAX_DRAWING + 1_000);
       const { slides, headmatter } = await parseDeck(ctx.entry);
-      await serial(async () => writeDrawing(ctx, number(m[1]), svg, slides.length, canvasSize(headmatter)));
+      await serial(async () =>
+        writeDrawing(ctx, number(m[1]), svg, slides.length, canvasSize(headmatter)),
+      );
       return json(res, 200, { ok: true });
     }
     if ((m = /^\/monaco\/([\w-]{1,40})$/.exec(path)) && method === 'PUT') {
@@ -82,7 +102,12 @@ export function createHandler(ctx) {
       if (!res.headersSent) {
         // After a too big body the client may still be sending: answer, then hang up.
         if (status === 413) res.on('finish', () => req.destroy());
-        json(res, status, { error: status === 500 ? 'server error' : e.message }, status === 413 ? { connection: 'close' } : {});
+        json(
+          res,
+          status,
+          { error: status === 500 ? 'server error' : e.message },
+          status === 413 ? { connection: 'close' } : {},
+        );
       }
     }
   };

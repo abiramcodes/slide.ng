@@ -22,17 +22,17 @@ temporary `.slide-ng/build` folder inside the deck's folder.
 
 ## What is in the build
 
-| file | what for |
-| ---- | -------- |
+| file                                                    | what for                                                                                     |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | `index.html`, `main-*.js`, `chunk-*.js`, `styles-*.css` | the app (Monaco, Mermaid and so on are separate chunks, fetched only when a slide uses them) |
-| `404.html` | a copy of `index.html`: GitHub Pages shows it for unknown paths, so `/talk/3` opens the app |
-| `_redirects` | the same rule for Netlify |
-| `<exportFilename>.pdf` | only with `--download` or `download: true` in the headmatter |
-| `og-image.png` | the link preview picture (see below) |
-| `remote-assets/` | remote pictures that were downloaded (`remoteAssets: true`, or any `--offline` build) |
-| `media/` | font files (KaTeX, and the web fonts with `fonts.selfHost`) |
-| `workers.js` | only with `--offline` and Monaco: the editor's workers as text |
-| `sw.js`, `manifest.webmanifest` | offline support (`pwa: true`) |
+| `404.html`                                              | a copy of `index.html`: GitHub Pages shows it for unknown paths, so `/talk/3` opens the app  |
+| `_redirects`                                            | the same rule for Netlify                                                                    |
+| `<exportFilename>.pdf`                                  | only with `--download` or `download: true` in the headmatter                                 |
+| `og-image.png`                                          | the link preview picture (see below)                                                         |
+| `remote-assets/`                                        | remote pictures that were downloaded (`remoteAssets: true`, or any `--offline` build)        |
+| `media/`                                                | font files (KaTeX, and the web fonts with `fonts.selfHost`)                                  |
+| `workers.js`                                            | only with `--offline` and Monaco: the editor's workers as text                               |
+| `sw.js`, `manifest.webmanifest`                         | offline support (`pwa: true`)                                                                |
 
 ## Addresses and the base path
 
@@ -59,7 +59,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
       - run: npm ci
-      - run: npx playwright-core install --with-deps chromium   # only if you use --download or seoMeta.ogImage: auto
+      - run: npx playwright-core install --with-deps chromium # only if you use --download or seoMeta.ogImage: auto
       - run: npx slide-ng build --base /${{ github.event.repository.name }}/ --download
       - uses: actions/upload-pages-artifact@v3
         with: { path: dist }

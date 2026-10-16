@@ -2,7 +2,9 @@ import { remoteLines } from './remote-info.mjs';
 
 describe('remoteLines', () => {
   it('with a password: a private address with the password, no warning', () => {
-    const text = remoteLines({ port: 4230, password: 'sec ret', addresses: ['192.168.1.5'] }).join('\n');
+    const text = remoteLines({ port: 4230, password: 'sec ret', addresses: ['192.168.1.5'] }).join(
+      '\n',
+    );
     expect(text).toContain('public slide show:  http://192.168.1.5:4230/');
     expect(text).toContain('private slide show: http://192.168.1.5:4230/?password=sec%20ret');
     expect(text).toContain('presenter/1?password=sec%20ret');
@@ -15,6 +17,8 @@ describe('remoteLines', () => {
     expect(text).not.toContain('private slide show');
   });
   it('says so when there is no network address', () => {
-    expect(remoteLines({ port: 1, password: '', addresses: [] }).join('\n')).toContain('<your address>');
+    expect(remoteLines({ port: 1, password: '', addresses: [] }).join('\n')).toContain(
+      '<your address>',
+    );
   });
 });

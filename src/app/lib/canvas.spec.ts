@@ -17,13 +17,25 @@ describe('readCanvasSize', () => {
     expect(readCanvasSize({})).toEqual({ width: 980, height: 552 });
   });
   it('takes canvasWidth and an aspect ratio as number or fraction', () => {
-    expect(readCanvasSize({ canvasWidth: 800, aspectRatio: '4/3' })).toEqual({ width: 800, height: 600 });
-    expect(readCanvasSize({ canvasWidth: 1000, aspectRatio: 2 })).toEqual({ width: 1000, height: 500 });
+    expect(readCanvasSize({ canvasWidth: 800, aspectRatio: '4/3' })).toEqual({
+      width: 800,
+      height: 600,
+    });
+    expect(readCanvasSize({ canvasWidth: 1000, aspectRatio: 2 })).toEqual({
+      width: 1000,
+      height: 500,
+    });
     expect(readCanvasSize({ aspectRatio: '16 / 10' })).toEqual({ width: 980, height: 613 });
   });
   it('ignores values that make no sense', () => {
-    expect(readCanvasSize({ canvasWidth: -5, aspectRatio: 'wide' })).toEqual({ width: 980, height: 552 });
-    expect(readCanvasSize({ canvasWidth: 'x', aspectRatio: '1/0' })).toEqual({ width: 980, height: 552 });
+    expect(readCanvasSize({ canvasWidth: -5, aspectRatio: 'wide' })).toEqual({
+      width: 980,
+      height: 552,
+    });
+    expect(readCanvasSize({ canvasWidth: 'x', aspectRatio: '1/0' })).toEqual({
+      width: 980,
+      height: 552,
+    });
   });
 });
 

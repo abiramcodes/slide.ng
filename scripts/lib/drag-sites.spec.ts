@@ -1,4 +1,12 @@
-import { dragName, findDragSites, isPosition, setDragPosition, tagDragSites, toArrayStyle, toPlainStyle } from './drag-sites.mjs';
+import {
+  dragName,
+  findDragSites,
+  isPosition,
+  setDragPosition,
+  tagDragSites,
+  toArrayStyle,
+  toPlainStyle,
+} from './drag-sites.mjs';
 
 const md = [
   '# Title',
@@ -80,9 +88,11 @@ describe('spellings', () => {
 
 describe('isPosition', () => {
   it('accepts the two spellings and automatic height', () => {
-    for (const p of ['1,2,3,4', '[1,2,3,4]', '1,2,3,_', '[1,2,3,NaN,30]', '-5.5,2,3']) expect(isPosition(p)).toBe(true);
+    for (const p of ['1,2,3,4', '[1,2,3,4]', '1,2,3,_', '[1,2,3,NaN,30]', '-5.5,2,3'])
+      expect(isPosition(p)).toBe(true);
   });
   it('refuses the rest', () => {
-    for (const p of ['', 'a,b,c', '1,2,3,4,5,6', '1;2;3', '"1,2,3"', 5, null]) expect(isPosition(p as string)).toBe(false);
+    for (const p of ['', 'a,b,c', '1,2,3,4,5,6', '1;2;3', '"1,2,3"', 5, null])
+      expect(isPosition(p as string)).toBe(false);
   });
 });

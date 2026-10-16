@@ -6,7 +6,11 @@ import { loadScript } from './load-script';
 import { resolveTweetId } from './tweet-id';
 import { Transform } from './transform';
 
-interface Twitter { widgets: { createTweet(id: string, el: HTMLElement, options: object): Promise<HTMLElement | undefined> } }
+interface Twitter {
+  widgets: {
+    createTweet(id: string, el: HTMLElement, options: object): Promise<HTMLElement | undefined>;
+  };
+}
 
 @Component({
   selector: 'tweet',
@@ -18,7 +22,9 @@ interface Twitter { widgets: { createTweet(id: string, el: HTMLElement, options:
           <div class="w-30 h-30 my-10px bg-gray-400 bg-opacity-10 rounded-lg flex opacity-50">
             <div class="m-auto animate-pulse text-4xl">
               <div class="i-carbon:logo-twitter"></div>
-              @if (notFound()) { <span>Could not load tweet</span> }
+              @if (notFound()) {
+                <span>Could not load tweet</span>
+              }
             </div>
           </div>
         }

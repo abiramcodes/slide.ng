@@ -15,8 +15,11 @@ export class SideEditorState {
 
   constructor() {
     const api = inject(DevApi);
-    if (api.enabled && editorEnabled()) void api.token().then((token) => this.available.set(!!token));
+    if (api.enabled && editorEnabled())
+      void api.token().then((token) => this.available.set(!!token));
   }
 
-  toggle() { this.open.update((v) => !v); }
+  toggle() {
+    this.open.update((v) => !v);
+  }
 }

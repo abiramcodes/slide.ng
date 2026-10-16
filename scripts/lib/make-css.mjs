@@ -14,7 +14,15 @@ export function tsFiles(dir) {
 
 // A theme's uno.config.mjs adds to the base settings: presets, rules and safelist are appended, shortcuts and theme are merged.
 export function mergeUnoConfigs(base, extras) {
-  const merged = { ...base, presets: [...(base.presets ?? [])], rules: [...(base.rules ?? [])], safelist: [...(base.safelist ?? [])], variants: [...(base.variants ?? [])], shortcuts: { ...base.shortcuts }, theme: { ...base.theme } };
+  const merged = {
+    ...base,
+    presets: [...(base.presets ?? [])],
+    rules: [...(base.rules ?? [])],
+    safelist: [...(base.safelist ?? [])],
+    variants: [...(base.variants ?? [])],
+    shortcuts: { ...base.shortcuts },
+    theme: { ...base.theme },
+  };
   for (const extra of extras) {
     merged.presets.push(...(extra.presets ?? []));
     merged.rules.push(...(extra.rules ?? []));

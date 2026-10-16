@@ -1,7 +1,7 @@
 import { extractMath, renderMath } from './math.mjs';
 import { hasMath } from './features.mjs';
 
-const found = (md: string) => (extractMath(md) as { markdown: string; maths: any[] });
+const found = (md: string) => extractMath(md) as { markdown: string; maths: any[] };
 
 describe('extractMath', () => {
   it('finds inline math and leaves a word behind', () => {

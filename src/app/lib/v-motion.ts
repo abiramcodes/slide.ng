@@ -44,14 +44,17 @@ export class VMotion implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy() { for (const k of this.keys) this.clicks.unregister(k); }
+  ngOnDestroy() {
+    for (const k of this.keys) this.clicks.unregister(k);
+  }
 
   private phase(): Phase {
     const current = this.nav?.no() ?? this.slideNo;
     if (this.slideNo < current) return 'leave';
     if (this.slideNo > current) return 'initial';
     const info = this.click?.info();
-    if (info && this.click?.state.hidden()) return this.clicks.current() >= info.end ? 'leave' : 'initial';
+    if (info && this.click?.state.hidden())
+      return this.clicks.current() >= info.end ? 'leave' : 'initial';
     return 'enter';
   }
 
@@ -60,7 +63,9 @@ export class VMotion implements OnInit, OnDestroy {
     const keys = touchedKeys(variants);
     const live = ['slide', 'presenter'].includes(this.context);
     // Thumbnails and print show the end state, nothing moves there.
-    const mixed = live ? mixVariants(variants, this.phase(), this.clicks.current()) : mixVariants(variants, 'enter', 'all');
+    const mixed = live
+      ? mixVariants(variants, this.phase(), this.clicks.current())
+      : mixVariants(variants, 'enter', 'all');
     const css = toStyle(mixed, keys);
     if (live && !this.started) {
       // Start from `initial` without animating, so that `enter` has something to move from.
@@ -68,7 +73,15 @@ export class VMotion implements OnInit, OnDestroy {
       void this.el.offsetWidth; // makes the browser take that state before we change it
     }
     this.started = true;
-    this.set(css, live ? toTransition(mixed, Object.keys(css).map((k) => (k === 'transform' ? 'transform' : k))) : '');
+    this.set(
+      css,
+      live
+        ? toTransition(
+            mixed,
+            Object.keys(css).map((k) => (k === 'transform' ? 'transform' : k)),
+          )
+        : '',
+    );
   }
 
   private set(css: Record<string, string>, transition: string) {

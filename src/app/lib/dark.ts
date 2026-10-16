@@ -5,7 +5,11 @@ const KEY = 'slidev-color-schema'; // the same key Slidev uses
 
 // What was stored last time: 'auto' (follow the system), 'light' or 'dark'. Storage may be blocked.
 function stored(): string {
-  try { return localStorage.getItem(KEY) ?? 'auto'; } catch { return 'auto'; }
+  try {
+    return localStorage.getItem(KEY) ?? 'auto';
+  } catch {
+    return 'auto';
+  }
 }
 
 /**
@@ -40,6 +44,10 @@ export class Dark {
     const dark = !this.isDark();
     const value = dark === this.systemDark() ? 'auto' : dark ? 'dark' : 'light';
     this.choice.set(value);
-    try { localStorage.setItem(KEY, value); } catch { /* the choice just is not remembered */ }
+    try {
+      localStorage.setItem(KEY, value);
+    } catch {
+      /* the choice just is not remembered */
+    }
   }
 }

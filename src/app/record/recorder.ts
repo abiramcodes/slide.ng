@@ -41,7 +41,9 @@ export class Recorder {
       const mimeType = pickMimeType((t) => MediaRecorder.isTypeSupported(t));
       const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
       this.chunks = [];
-      recorder.ondataavailable = (e) => { if (e.data.size) this.chunks.push(e.data); };
+      recorder.ondataavailable = (e) => {
+        if (e.data.size) this.chunks.push(e.data);
+      };
       recorder.onstop = () => this.finish(recorder.mimeType);
       // The user ending the share from the browser's own bar also ends the recording.
       stream.getVideoTracks()[0]?.addEventListener('ended', () => this.stop());
@@ -51,7 +53,9 @@ export class Recorder {
       this.pausedTotal = 0;
       this.seconds.set(0);
       this.state.set('recording');
-      this.timer = window.setInterval(() => { if (this.state() === 'recording') this.seconds.update((s) => s + 1); }, 1000);
+      this.timer = window.setInterval(() => {
+        if (this.state() === 'recording') this.seconds.update((s) => s + 1);
+      }, 1000);
     } catch (e) {
       this.release();
       this.error.set(e instanceof Error ? e.message : 'recording failed');
@@ -63,15 +67,32 @@ export class Recorder {
   }
 
   togglePause() {
-    if (this.state() === 'recording') { this.recorder?.pause(); this.pausedAt = performance.now(); this.state.set('paused'); }
-    else if (this.state() === 'paused') { this.recorder?.resume(); this.pausedTotal += performance.now() - this.pausedAt; this.state.set('recording'); }
+    if (this.state() === 'recording') {
+      this.recorder?.pause();
+      this.pausedAt = performance.now();
+      this.state.set('paused');
+    } else if (this.state() === 'paused') {
+      this.recorder?.resume();
+      this.pausedTotal += performance.now() - this.pausedAt;
+      this.state.set('recording');
+    }
   }
 
   private async makeStream(): Promise<MediaStream> {
-    const mic = await navigator.mediaDevices.getUserMedia({ audio: this.devices.constraint(this.devices.micId()), video: false }).catch(() => null);
-    const video = this.source() === 'camera'
-      ? await navigator.mediaDevices.getUserMedia({ video: this.devices.constraint(this.devices.cameraId()), audio: false })
-      : await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false, preferCurrentTab: true } as DisplayMediaStreamOptions);
+    const mic = await navigator.mediaDevices
+      .getUserMedia({ audio: this.devices.constraint(this.devices.micId()), video: false })
+      .catch(() => null);
+    const video =
+      this.source() === 'camera'
+        ? await navigator.mediaDevices.getUserMedia({
+            video: this.devices.constraint(this.devices.cameraId()),
+            audio: false,
+          })
+        : await navigator.mediaDevices.getDisplayMedia({
+            video: true,
+            audio: false,
+            preferCurrentTab: true,
+          } as DisplayMediaStreamOptions);
     this.opened = [video, ...(mic ? [mic] : [])];
     return new MediaStream([...video.getVideoTracks(), ...(mic?.getAudioTracks() ?? [])]);
   }
@@ -79,7 +100,10 @@ export class Recorder {
   private async finish(type: string) {
     if (this.state() === 'paused') this.pausedTotal += performance.now() - this.pausedAt;
     const elapsed = performance.now() - this.startedAt - this.pausedTotal;
-    const blob = await fixWebmDuration(new Blob(this.chunks, { type: type || 'video/webm' }), elapsed);
+    const blob = await fixWebmDuration(
+      new Blob(this.chunks, { type: type || 'video/webm' }),
+      elapsed,
+    );
     this.lastSize.set(blob.size);
     // A click on a temporary link is how a page starts a download.
     const link = document.createElement('a');

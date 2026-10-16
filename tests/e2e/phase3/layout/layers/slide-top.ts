@@ -4,7 +4,8 @@ import { SLIDE_NO } from 'slide-ng/lib/slide-context';
 // Test layer: a small label that says where it is.
 @Component({
   selector: 'test-slide-top',
-  template: '<div id="st" style="position:absolute;top:4px;right:4px;pointer-events:auto" [attr.data-slide]="no">slide-top</div>',
+  template:
+    '<div id="st" style="position:absolute;top:4px;right:4px;pointer-events:auto" [attr.data-slide]="no">slide-top</div>',
 })
 export default class SlideTopLayer {
   no = inject(SLIDE_NO);

@@ -18,7 +18,14 @@ function toStep(fence, defaultLines) {
   const { tokens, bg, fg, rootStyle, themeName } = codeToTokens(fence.code.trimEnd(), lang);
   const salt = JSON.stringify([lang, themeOptions().themes]);
   const lines = options.lines ?? defaultLines;
-  return { ...toKeyedTokens(fence.code.trimEnd(), tokens, salt, lines), bg, fg, rootStyle, themeName, lang };
+  return {
+    ...toKeyedTokens(fence.code.trimEnd(), tokens, salt, lines),
+    bg,
+    fg,
+    rootStyle,
+    themeName,
+    lang,
+  };
 }
 
 export function renderMagicMove(fence, ctx = {}) {

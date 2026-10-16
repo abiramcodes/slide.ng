@@ -3,7 +3,14 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { findSetupFile, katexOptions, preparserExtensions, runSetups, shikiSetup, transformersSetup } from './node-setups.mjs';
+import {
+  findSetupFile,
+  katexOptions,
+  preparserExtensions,
+  runSetups,
+  shikiSetup,
+  transformersSetup,
+} from './node-setups.mjs';
 import { applyPreTransformers } from './pre-transform.mjs';
 
 // A root folder with the given setup files: { 'katex.ts': 'export default ...' }.
@@ -23,7 +30,8 @@ describe('setup files', () => {
 
   it('reads TypeScript, so types and imports of a relative file work', async () => {
     const r = root('a', {
-      'katex.ts': "import { macros } from './macros'; export default (): { macros: Record<string, string> } => ({ macros })",
+      'katex.ts':
+        "import { macros } from './macros'; export default (): { macros: Record<string, string> } => ({ macros })",
       'macros.ts': "export const macros: Record<string, string> = { '\\\\RR': '\\\\mathbb{R}' };",
     });
     expect(await katexOptions([r])).toEqual({ macros: { '\\RR': '\\mathbb{R}' } });
@@ -46,7 +54,10 @@ describe('setup files', () => {
   });
 
   it('collects the languages of setup/shiki.ts and keeps the other options', async () => {
-    const a = root('a', { 'shiki.ts': "export default () => ({ langs: ['rust', { name: 'mine', scopeName: 'source.mine', patterns: [] }], colorReplacements: { '#fff': '#eee' } })" });
+    const a = root('a', {
+      'shiki.ts':
+        "export default () => ({ langs: ['rust', { name: 'mine', scopeName: 'source.mine', patterns: [] }], colorReplacements: { '#fff': '#eee' } })",
+    });
     const b = root('b', { 'shiki.ts': "export default () => ({ langs: ['go'] })" });
     const s = await shikiSetup([a, b]);
     expect(s.langNames).toEqual(['rust', 'go']);
@@ -55,23 +66,47 @@ describe('setup files', () => {
   });
 
   it('joins transformers: markdown lists last root first, code blocks first root first', async () => {
-    const a = root('a', { 'transformers.ts': "export default () => ({ pre: ['a'], codeblocks: ['a'] })" });
-    const b = root('b', { 'transformers.ts': "export default () => ({ pre: ['b'], preCodeblock: ['c'], codeblocks: ['b'] })" });
+    const a = root('a', {
+      'transformers.ts': "export default () => ({ pre: ['a'], codeblocks: ['a'] })",
+    });
+    const b = root('b', {
+      'transformers.ts':
+        "export default () => ({ pre: ['b'], preCodeblock: ['c'], codeblocks: ['b'] })",
+    });
     const t = await transformersSetup([a, b]);
     expect(t.pre).toEqual(['b', 'a', 'c']);
     expect(t.codeblocks).toEqual(['a', 'b']);
   });
 
   it('gives preparser extensions the file, headmatter and mode', async () => {
-    const r = root('a', { 'preparser.ts': 'export default (c: any) => [{ name: c.mode + c.headmatter.title }]' });
-    expect(await preparserExtensions([r], { filepath: 'slides.md', headmatter: { title: 'T' }, mode: 'dev' })).toEqual([{ name: 'devT' }]);
+    const r = root('a', {
+      'preparser.ts': 'export default (c: any) => [{ name: c.mode + c.headmatter.title }]',
+    });
+    expect(
+      await preparserExtensions([r], {
+        filepath: 'slides.md',
+        headmatter: { title: 'T' },
+        mode: 'dev',
+      }),
+    ).toEqual([{ name: 'devT' }]);
   });
 });
 
 describe('pre transformers', () => {
   it('edit each slide with a MagicString and know the slide', async () => {
-    const slides = [{ content: 'hello', title: 'one', frontmatter: {} }, { content: 'bye', title: 'two', frontmatter: {} }];
-    await applyPreTransformers(slides, [async ({ s, slide }: any) => { s.replace('e', `E${slide.index}`); }], {});
+    const slides = [
+      { content: 'hello', title: 'one', frontmatter: {} },
+      { content: 'bye', title: 'two', frontmatter: {} },
+    ];
+    await applyPreTransformers(
+      slides,
+      [
+        async ({ s, slide }: any) => {
+          s.replace('e', `E${slide.index}`);
+        },
+      ],
+      {},
+    );
     expect(slides.map((s) => s.content)).toEqual(['hE0llo', 'byE1']);
   });
 });

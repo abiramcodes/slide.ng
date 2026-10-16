@@ -44,12 +44,22 @@ export function resolveSnippet(line, file, root) {
   if (!m) return null;
   const [, name, region = '', lang = '', meta = ''] = m;
   const path = name.startsWith('@/') ? resolve(root, name.slice(2)) : resolve(dirname(file), name);
-  if (!existsSync(path) || !statSync(path).isFile()) throw new Error(`Code snippet not found: ${path}`);
+  if (!existsSync(path) || !statSync(path).isFile())
+    throw new Error(`Code snippet not found: ${path}`);
   let lines = readFileSync(path, 'utf8').replace(/\r/g, '').replace(/\n$/, '').split('\n');
   if (region) {
     const found = findRegion(lines, region.slice(1));
     if (found) lines = dedent(found);
-    else console.warn(`[slides] region "${region.slice(1)}" not found in ${path}, using the whole file`);
+    else
+      console.warn(
+        `[slides] region "${region.slice(1)}" not found in ${path}, using the whole file`,
+      );
   }
-  return { code: lines.join('\n'), lang: lang.trim() || extname(name).slice(1), meta: meta.trim(), path, partial: !!region };
+  return {
+    code: lines.join('\n'),
+    lang: lang.trim() || extname(name).slice(1),
+    meta: meta.trim(),
+    path,
+    partial: !!region,
+  };
 }

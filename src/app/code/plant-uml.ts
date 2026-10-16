@@ -6,7 +6,13 @@ import { optionalNumber } from '../lib/attrs';
 @Component({
   selector: 'plant-uml',
   host: { class: 'inline-block', '[attr.data-slide-ng-waitfor]': 'pending() ? "img" : null' },
-  template: `<img [src]="url()" [style.scale]="scale()" [alt]="alt()" (load)="pending.set(false)" (error)="pending.set(false)" />`,
+  template: `<img
+    [src]="url()"
+    [style.scale]="scale()"
+    [alt]="alt()"
+    (load)="pending.set(false)"
+    (error)="pending.set(false)"
+  />`,
 })
 export class PlantUml {
   code = input.required<string>(); // the diagram, encoded for PlantUML (done by the generator)

@@ -12,7 +12,14 @@ function renderGroup(fences, ctx) {
 // `codeblocks` of setup/transformers.ts: the first that returns a string decides what the block becomes (it is template markup).
 function transformed(fence, ctx) {
   const [lang = '', ...meta] = fence.info.split(/\s+/);
-  const args = { code: fence.code, info: fence.info, lang, meta: meta.join(' '), slide: ctx.slide, options: { data: { headmatter: ctx.headmatter ?? {} } } };
+  const args = {
+    code: fence.code,
+    info: fence.info,
+    lang,
+    meta: meta.join(' '),
+    slide: ctx.slide,
+    options: { data: { headmatter: ctx.headmatter ?? {} } },
+  };
   for (const transform of ctx.codeblocks ?? []) {
     const result = transform(args);
     if (typeof result === 'string') return result;

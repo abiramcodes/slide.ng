@@ -7,7 +7,11 @@ const ID_INFO = 0x1549a966;
 const ID_TIMECODE_SCALE = 0x2ad7b1;
 const ID_DURATION = 0x4489;
 
-interface Vint { value: number; length: number; unknown: boolean }
+interface Vint {
+  value: number;
+  length: number;
+  unknown: boolean;
+}
 
 /** An EBML variable-length number (the length of a size field), or an element id when `keepMarker`. */
 function readVint(bytes: Uint8Array, at: number, keepMarker = false): Vint | null {
@@ -16,7 +20,7 @@ function readVint(bytes: Uint8Array, at: number, keepMarker = false): Vint | nul
   const length = Math.clz32(first) - 23; // leading zero bits of the byte, plus one
   if (length > 8 || at + length > bytes.length) return null;
   let value = keepMarker ? first : first & (0xff >> length);
-  let allOnes = (first & (0xff >> length)) === (0xff >> length);
+  let allOnes = (first & (0xff >> length)) === 0xff >> length;
   for (let i = 1; i < length; i++) {
     value = value * 256 + bytes[at + i];
     if (bytes[at + i] !== 0xff) allOnes = false;
@@ -27,13 +31,31 @@ function readVint(bytes: Uint8Array, at: number, keepMarker = false): Vint | nul
 function writeSize(value: number, length: number): Uint8Array {
   const out = new Uint8Array(length);
   let rest = value;
-  for (let i = length - 1; i >= 0; i--) { out[i] = rest % 256; rest = Math.floor(rest / 256); }
+  for (let i = length - 1; i >= 0; i--) {
+    out[i] = rest % 256;
+    rest = Math.floor(rest / 256);
+  }
   out[0] |= 0x80 >> (length - 1);
   return out;
 }
 
-const idBytes = (id: number) => Uint8Array.from(id.toString(16).padStart(id > 0xffffff ? 8 : id > 0xffff ? 6 : id > 0xff ? 4 : 2, '0').match(/../g)!.map((h) => parseInt(h, 16)));
-const join = (...parts: Uint8Array[]) => { const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0)); let at = 0; for (const p of parts) { out.set(p, at); at += p.length; } return out; };
+const idBytes = (id: number) =>
+  Uint8Array.from(
+    id
+      .toString(16)
+      .padStart(id > 0xffffff ? 8 : id > 0xffff ? 6 : id > 0xff ? 4 : 2, '0')
+      .match(/../g)!
+      .map((h) => parseInt(h, 16)),
+  );
+const join = (...parts: Uint8Array[]) => {
+  const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0));
+  let at = 0;
+  for (const p of parts) {
+    out.set(p, at);
+    at += p.length;
+  }
+  return out;
+};
 
 function float64(value: number): Uint8Array {
   const out = new Uint8Array(8);
@@ -41,7 +63,14 @@ function float64(value: number): Uint8Array {
   return out;
 }
 
-interface Element { id: number; start: number; dataStart: number; end: number; sizeLength: number; unknown: boolean }
+interface Element {
+  id: number;
+  start: number;
+  dataStart: number;
+  end: number;
+  sizeLength: number;
+  unknown: boolean;
+}
 
 /** The element that starts at `at` (its end is the end of the buffer when its size is unknown). */
 function readElement(bytes: Uint8Array, at: number): Element | null {
@@ -50,7 +79,9 @@ function readElement(bytes: Uint8Array, at: number): Element | null {
   if (!id || !size) return null;
   const dataStart = at + id.length + size.length;
   const end = size.unknown ? bytes.length : dataStart + size.value;
-  return end > bytes.length ? null : { id: id.value, start: at, dataStart, end, sizeLength: size.length, unknown: size.unknown };
+  return end > bytes.length
+    ? null
+    : { id: id.value, start: at, dataStart, end, sizeLength: size.length, unknown: size.unknown };
 }
 
 /** The elements directly inside `[from, to)`, stopping at the first one that is not readable or has an unknown size. */
@@ -77,12 +108,15 @@ export function setWebmDuration(bytes: Uint8Array, durationMs: number): Uint8Arr
   const inner = children(bytes, info.dataStart, info.end);
   const scaleEl = inner.find((e) => e.id === ID_TIMECODE_SCALE);
   let scale = 1_000_000; // nanoseconds per tick, the default
-  if (scaleEl) scale = bytes.slice(scaleEl.dataStart, scaleEl.end).reduce((n, b) => n * 256 + b, 0) || scale;
+  if (scaleEl)
+    scale = bytes.slice(scaleEl.dataStart, scaleEl.end).reduce((n, b) => n * 256 + b, 0) || scale;
   const ticks = (durationMs * 1_000_000) / scale;
 
   const old = inner.find((e) => e.id === ID_DURATION);
   const data = bytes.slice(info.dataStart, info.end);
-  const without = old ? join(data.slice(0, old.start - info.dataStart), data.slice(old.end - info.dataStart)) : data;
+  const without = old
+    ? join(data.slice(0, old.start - info.dataStart), data.slice(old.end - info.dataStart))
+    : data;
   const duration = join(idBytes(ID_DURATION), writeSize(8, 1), float64(ticks));
   const content = join(without, duration);
 
@@ -103,5 +137,7 @@ export async function fixWebmDuration(blob: Blob, durationMs: number): Promise<B
   try {
     const fixed = setWebmDuration(new Uint8Array(await blob.arrayBuffer()), durationMs);
     return fixed ? new Blob([fixed as BlobPart], { type: blob.type }) : blob;
-  } catch { return blob; }
+  } catch {
+    return blob;
+  }
 }

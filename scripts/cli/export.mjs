@@ -27,10 +27,15 @@ export async function exportCommand(argv, { notes = false } = {}) {
   });
 
   // Where the deck is served from: a running server, an existing build, or a build made now.
-  let served, close = async () => {}, workDir;
+  let served,
+    close = async () => {},
+    workDir;
   if (flags.url) {
     const url = new URL(flags.url);
-    served = { origin: url.origin, base: url.pathname.endsWith('/') ? url.pathname : `${url.pathname}/` };
+    served = {
+      origin: url.origin,
+      base: url.pathname.endsWith('/') ? url.pathname : `${url.pathname}/`,
+    };
   } else {
     let dist = flags.dist && resolve(flags.dist);
     if (!dist) {

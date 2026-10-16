@@ -17,9 +17,20 @@ const packagesFromHere = {
     b.onResolve({ filter: /.*/ }, async (args) => {
       if (args.pluginData?.inner || args.kind === 'entry-point') return undefined;
       if (args.path.startsWith('.') || isAbsolute(args.path)) return undefined;
-      if (args.path.startsWith('node:') || builtinModules.includes(args.path)) return { path: args.path, external: true };
-      const found = await b.resolve(args.path, { resolveDir: args.resolveDir, kind: args.kind, pluginData: { inner: true } });
-      if (found.errors.length) return { errors: found.errors.map((e) => ({ ...e, text: `${e.text} (imported by ${args.importer})` })) };
+      if (args.path.startsWith('node:') || builtinModules.includes(args.path))
+        return { path: args.path, external: true };
+      const found = await b.resolve(args.path, {
+        resolveDir: args.resolveDir,
+        kind: args.kind,
+        pluginData: { inner: true },
+      });
+      if (found.errors.length)
+        return {
+          errors: found.errors.map((e) => ({
+            ...e,
+            text: `${e.text} (imported by ${args.importer})`,
+          })),
+        };
       return { path: pathToFileURL(found.path).href, external: true };
     });
   },
@@ -31,7 +42,13 @@ export async function loadSetupFunction(file) {
   try {
     const { build } = await import('esbuild'); // only loaded when a setup file exists
     const result = await build({
-      entryPoints: [file], bundle: true, write: false, format: 'esm', platform: 'node', target: 'node22', logLevel: 'silent',
+      entryPoints: [file],
+      bundle: true,
+      write: false,
+      format: 'esm',
+      platform: 'node',
+      target: 'node22',
+      logLevel: 'silent',
       plugins: [packagesFromHere],
       define: {
         'import.meta.url': JSON.stringify(pathToFileURL(file).href),
@@ -48,7 +65,8 @@ export async function loadSetupFunction(file) {
     const out = join(dir, `${basename(file).replace(/\.\w+$/, '')}.mjs`);
     writeFileSync(out, code);
     const mod = await import(pathToFileURL(out).href);
-    if (typeof mod.default !== 'function') throw new Error(`${file} must export a function by default (export default ...)`);
+    if (typeof mod.default !== 'function')
+      throw new Error(`${file} must export a function by default (export default ...)`);
     return mod.default;
   } finally {
     rmSync(dir, { recursive: true, force: true });

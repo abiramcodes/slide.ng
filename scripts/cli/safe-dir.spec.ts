@@ -1,8 +1,21 @@
-import { mkdirSync, mkdtempSync, symlinkSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
+import {
+  mkdirSync,
+  mkdtempSync,
+  symlinkSync,
+  writeFileSync,
+  existsSync,
+  readFileSync,
+} from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { MARKER, checkClaimable, claimDirectory, markDirectory, publishDirectory } from './safe-dir.mjs';
+import {
+  MARKER,
+  checkClaimable,
+  claimDirectory,
+  markDirectory,
+  publishDirectory,
+} from './safe-dir.mjs';
 
 const tmp = () => mkdtempSync(join(tmpdir(), 'slide-ng-safe-'));
 

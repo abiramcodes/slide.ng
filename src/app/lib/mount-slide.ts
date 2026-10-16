@@ -5,7 +5,11 @@ import { RENDER_CONTEXT, RenderContext, SLIDE_NO } from './slide-context';
 import { SlideBase } from './slide-base';
 
 // Creates the component of slide `no` (1-based) inside `host`, telling it where it is drawn.
-export function mountSlide(host: ViewContainerRef, no: number, context: RenderContext): ComponentRef<SlideBase> {
+export function mountSlide(
+  host: ViewContainerRef,
+  no: number,
+  context: RenderContext,
+): ComponentRef<SlideBase> {
   const injector = Injector.create({
     parent: host.injector,
     providers: [

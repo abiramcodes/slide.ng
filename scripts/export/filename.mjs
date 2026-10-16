@@ -30,11 +30,15 @@ const KNOWN = ['.pdf', '.png', '.pptx', '.md'];
 export function outputBase({ output, exportFilename, entry, dir = process.cwd(), suffix = '' }) {
   if (output) {
     const path = resolve(dir, output);
-    return KNOWN.includes(extname(path).toLowerCase()) ? path.slice(0, -extname(path).length) : path;
+    return KNOWN.includes(extname(path).toLowerCase())
+      ? path.slice(0, -extname(path).length)
+      : path;
   }
   // `suffix` marks a different kind of export (`-notes`). Without a headmatter name the deck's file name is used.
   const named = safeName(stripKnown(exportFilename ?? ''), '');
-  const stem = named ? named + suffix : `${safeName(basename(entry ?? 'slides.md', '.md'), 'slides')}${suffix || '-export'}`;
+  const stem = named
+    ? named + suffix
+    : `${safeName(basename(entry ?? 'slides.md', '.md'), 'slides')}${suffix || '-export'}`;
   return resolve(dir, stem);
 }
 
@@ -55,7 +59,8 @@ export function isInside(dir, file) {
  */
 export function downloadTarget(headmatter, entry) {
   const d = headmatter.download;
-  if (d === true || d === 'true' || d === 'auto') return `${basename(outputBase({ exportFilename: headmatter.exportFilename, entry, dir: '/' }))}.pdf`;
+  if (d === true || d === 'true' || d === 'auto')
+    return `${basename(outputBase({ exportFilename: headmatter.exportFilename, entry, dir: '/' }))}.pdf`;
   if (typeof d === 'string' && /^(https?:\/\/|\/|[\w.-]+\.pdf$)/.test(d)) return d;
   return null;
 }

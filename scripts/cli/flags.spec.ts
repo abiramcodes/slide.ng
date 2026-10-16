@@ -10,7 +10,10 @@ const spec = {
 
 describe('parseFlags', () => {
   it('reads values after a space or an equals sign', () => {
-    expect(parseFlags(['--port', '3030', '--format=png'], spec).flags).toEqual({ port: 3030, format: 'png' });
+    expect(parseFlags(['--port', '3030', '--format=png'], spec).flags).toEqual({
+      port: 3030,
+      format: 'png',
+    });
   });
   it('reads aliases and booleans', () => {
     expect(parseFlags(['-p', '1', '-o'], spec).flags).toEqual({ port: 1, open: true });
@@ -18,7 +21,10 @@ describe('parseFlags', () => {
     expect(parseFlags(['--no-open'], spec).flags).toEqual({ open: false });
   });
   it('an optional value is only taken with an equals sign', () => {
-    expect(parseFlags(['--remote', 'my.md'], spec)).toEqual({ flags: { remote: true }, positionals: ['my.md'] });
+    expect(parseFlags(['--remote', 'my.md'], spec)).toEqual({
+      flags: { remote: true },
+      positionals: ['my.md'],
+    });
     expect(parseFlags(['--remote=pw'], spec).flags).toEqual({ remote: 'pw' });
   });
   it('keeps positionals and everything after --', () => {

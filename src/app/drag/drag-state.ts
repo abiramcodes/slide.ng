@@ -9,10 +9,16 @@ interface Common {
   commit(): void;
 }
 /** One thing the user can drag: a box (`v-drag`) or an arrow (`<v-drag-arrow>`). */
-export type DragTarget = (Common & { kind: 'box'; value: WritableSignal<Box> }) | (Common & { kind: 'arrow'; value: WritableSignal<Arrow> });
+export type DragTarget =
+  | (Common & { kind: 'box'; value: WritableSignal<Box> })
+  | (Common & { kind: 'arrow'; value: WritableSignal<Arrow> });
 
 /** What gets sent when a drag ends. `pos` is always the plain spelling, `10,20,30,_[,rotation]` or `x1,y1,x2,y2`. */
-export interface DragSave { slide: number; site: number; pos: string }
+export interface DragSave {
+  slide: number;
+  site: number;
+  pos: string;
+}
 
 /** Something that can write the position into slides.md. Only the dev server provides one (see dev/dev-api.ts). */
 export const DRAG_SAVER = new InjectionToken<(save: DragSave) => void>('DRAG_SAVER');

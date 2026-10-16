@@ -7,10 +7,17 @@ describe('parseSlots', () => {
   it('a single number lasts until the next one starts', () => {
     const slots = parseSlots(items('1', '2', '5'));
     // sorted from the biggest start, as in Slidev
-    expect(slots.map(range)).toEqual([[5, 6], [2, 5], [1, 2]]);
+    expect(slots.map(range)).toEqual([
+      [5, 6],
+      [2, 5],
+      [1, 2],
+    ]);
   });
   it('a range is explicit', () => {
-    expect(parseSlots(items('1', '2-4')).map(range)).toEqual([[2, 4], [1, 2]]);
+    expect(parseSlots(items('1', '2-4')).map(range)).toEqual([
+      [2, 4],
+      [1, 2],
+    ]);
   });
   it('rejects a broken range', () => {
     expect(() => parseSlots(items('2-x'))).toThrow('Invalid range');

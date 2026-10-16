@@ -2,11 +2,15 @@
 
 /** The line numbers a range names. `total` is the last line number of the block. */
 export function parseRange(total: number, text?: string): number[] {
-  if (!text || text === 'all' || text === '*') return Array.from({ length: total }, (_, i) => i + 1);
+  if (!text || text === 'all' || text === '*')
+    return Array.from({ length: total }, (_, i) => i + 1);
   if (text === 'none') return [];
   const lines = new Set<number>();
   for (const part of text.split(/[,;]/)) {
-    if (!part.includes('-')) { lines.add(+part); continue; }
+    if (!part.includes('-')) {
+      lines.add(+part);
+      continue;
+    }
     const [from, to] = part.split('-', 2);
     // "3-" means "from 3 to the end"
     for (let n = +from; n <= (to ? +to : total); n++) lines.add(n);

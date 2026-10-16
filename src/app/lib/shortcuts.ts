@@ -35,7 +35,9 @@ export interface ShortcutActions {
 }
 
 /** Deck authors provide this to change the list: `{ provide: SHORTCUTS_SETUP, useValue: (a, list) => [...list, mine] }`. */
-export const SHORTCUTS_SETUP = new InjectionToken<(actions: ShortcutActions, list: Shortcut[]) => Shortcut[]>('SHORTCUTS_SETUP', {
+export const SHORTCUTS_SETUP = new InjectionToken<
+  (actions: ShortcutActions, list: Shortcut[]) => Shortcut[]
+>('SHORTCUTS_SETUP', {
   factory: () => (_actions, list) => list,
 });
 
@@ -60,7 +62,12 @@ export function defaultShortcuts(a: ShortcutActions): Shortcut[] {
     { name: 'hide_overview', key: 'Escape', run: a.closeAll, when: notDrawing },
     { name: 'goto', key: 'g', run: a.toggleGoto, when: notDrawing },
     { name: 'fullscreen', key: 'f', run: a.toggleFullscreen },
-    { name: 'right_overview', key: 'ArrowRight', run: () => a.overviewMove('right'), when: overview },
+    {
+      name: 'right_overview',
+      key: 'ArrowRight',
+      run: () => a.overviewMove('right'),
+      when: overview,
+    },
     { name: 'left_overview', key: 'ArrowLeft', run: () => a.overviewMove('left'), when: overview },
     { name: 'up_overview', key: 'ArrowUp', run: () => a.overviewMove('up'), when: overview },
     { name: 'down_overview', key: 'ArrowDown', run: () => a.overviewMove('down'), when: overview },
@@ -69,7 +76,10 @@ export function defaultShortcuts(a: ShortcutActions): Shortcut[] {
 }
 
 // Does the key event match the spec? Ctrl, Meta and Alt are never ours (browser shortcuts).
-export function matches(e: Pick<KeyboardEvent, 'key' | 'shiftKey' | 'ctrlKey' | 'metaKey' | 'altKey'>, spec: string): boolean {
+export function matches(
+  e: Pick<KeyboardEvent, 'key' | 'shiftKey' | 'ctrlKey' | 'metaKey' | 'altKey'>,
+  spec: string,
+): boolean {
   if (e.ctrlKey || e.metaKey || e.altKey) return false;
   const shift = spec.startsWith('shift+');
   const key = shift ? spec.slice(6) : spec;

@@ -4,7 +4,10 @@ import { Component, input } from '@angular/core';
 // `layoutClass` goes on the whole layout, `contentClass` (the frontmatter `class`) on both columns.
 @Component({
   selector: 'sn-two-cols',
-  host: { class: 'slidev-layout two-columns w-full h-full grid grid-cols-2', '[class]': 'layoutClass()' },
+  host: {
+    class: 'slidev-layout two-columns w-full h-full grid grid-cols-2',
+    '[class]': 'layoutClass()',
+  },
   template: `
     <div class="col-left" [class]="contentClass()">
       <ng-content />

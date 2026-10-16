@@ -11,12 +11,16 @@ import { readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
 import { WORKER_SHIM, workerFiles, workersScript } from './offline-workers.mjs';
 
-const MODULE_SCRIPT = /<script\b[^>]*\bsrc="([^"]+)"[^>]*\btype="module"[^>]*><\/script>|<script\b[^>]*\btype="module"[^>]*\bsrc="([^"]+)"[^>]*><\/script>/i;
+const MODULE_SCRIPT =
+  /<script\b[^>]*\bsrc="([^"]+)"[^>]*\btype="module"[^>]*><\/script>|<script\b[^>]*\btype="module"[^>]*\bsrc="([^"]+)"[^>]*><\/script>/i;
 
 /** The page rewritten for classic scripts: no <base>, no module scripts or preloads. Returns `{ html, entry }`. */
 export function classicPage(html, { workers = false } = {}) {
   const match = MODULE_SCRIPT.exec(html);
-  if (!match) throw new Error('the build has no module script in index.html, cannot make it work from a folder');
+  if (!match)
+    throw new Error(
+      'the build has no module script in index.html, cannot make it work from a folder',
+    );
   const entry = match[1] ?? match[2];
   // `workers.js` comes first, so the app finds the stored worker sources when it starts one.
   const scripts = `${workers ? '<script defer src="workers.js"></script>' : ''}<script defer src="${entry}"></script>`;
@@ -31,10 +35,20 @@ export function classicPage(html, { workers = false } = {}) {
 // One classic script from `file` and everything it imports, lazily or not. `inputs` are the files that went in.
 async function bundleClassic(file, { banner = '', url }) {
   const result = await build({
-    entryPoints: [file], bundle: true, write: false, format: 'iife', target: 'es2022', metafile: true, logLevel: 'silent',
-    banner: { js: banner }, define: { 'import.meta.url': url },
+    entryPoints: [file],
+    bundle: true,
+    write: false,
+    format: 'iife',
+    target: 'es2022',
+    metafile: true,
+    logLevel: 'silent',
+    banner: { js: banner },
+    define: { 'import.meta.url': url },
   });
-  return { text: result.outputFiles[0].text, inputs: Object.keys(result.metafile.inputs).map((p) => resolve(p)) };
+  return {
+    text: result.outputFiles[0].text,
+    inputs: Object.keys(result.metafile.inputs).map((p) => resolve(p)),
+  };
 }
 
 /**
@@ -48,7 +62,10 @@ export async function makeOffline(dir) {
   const entryFile = resolve(real, entry);
 
   // A classic script has no `import.meta.url`; the address of the script itself stands in for it.
-  const app = await bundleClassic(entryFile, { banner: 'var __slideNgScriptUrl = document.currentScript && document.currentScript.src;', url: '__slideNgScriptUrl' });
+  const app = await bundleClassic(entryFile, {
+    banner: 'var __slideNgScriptUrl = document.currentScript && document.currentScript.src;',
+    url: '__slideNgScriptUrl',
+  });
   const workers = workerFiles(app.text);
   const sources = {};
   const used = new Set(app.inputs);

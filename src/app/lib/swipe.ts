@@ -3,7 +3,12 @@
 export type SwipeAction = 'next' | 'prev' | 'nextSlide' | 'prevSlide';
 
 /** What a finished swipe does. `dx` and `dy` are the distance from where the finger went down to where it was lifted. */
-export function swipeAction(dx: number, dy: number, width: number, height: number): SwipeAction | null {
+export function swipeAction(
+  dx: number,
+  dy: number,
+  width: number,
+  height: number,
+): SwipeAction | null {
   const x = Math.abs(dx);
   const y = Math.abs(dy);
   if (x / width > 0.3 || x > 75) return dx < 0 ? 'next' : 'prev'; // the finger moved left: go forward

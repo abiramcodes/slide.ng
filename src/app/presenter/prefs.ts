@@ -13,8 +13,16 @@ export class PresenterPrefs {
   /** How the audience sees it: a mouse arrow or a red laser dot. */
   readonly cursorStyle = storedSignal<'cursor' | 'laser'>('slidev-cursor-style', 'cursor');
 
-  nextLayout() { this.layout.update((l) => (l >= 3 ? 1 : l + 1)); }
-  bigger() { this.fontSize.update((s) => Math.min(2, Math.round((s + 0.1) * 10) / 10)); }
-  smaller() { this.fontSize.update((s) => Math.max(0.5, Math.round((s - 0.1) * 10) / 10)); }
-  toggleCursor() { this.showCursor.update((v) => !v); }
+  nextLayout() {
+    this.layout.update((l) => (l >= 3 ? 1 : l + 1));
+  }
+  bigger() {
+    this.fontSize.update((s) => Math.min(2, Math.round((s + 0.1) * 10) / 10));
+  }
+  smaller() {
+    this.fontSize.update((s) => Math.max(0.5, Math.round((s - 0.1) * 10) / 10));
+  }
+  toggleCursor() {
+    this.showCursor.update((v) => !v);
+  }
 }

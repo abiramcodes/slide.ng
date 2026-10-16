@@ -8,7 +8,9 @@ describe('svgDocument and svgInner', () => {
     expect(svgInner(svgDocument('<path d="M0 0"/>'))).toBe('<path d="M0 0"/>');
   });
   it('read an svg with an xml header and attributes', () => {
-    expect(svgInner('<?xml version="1.0"?>\n<svg width="9" viewBox="0 0 1 1"><g/></svg>')).toBe('<g/>');
+    expect(svgInner('<?xml version="1.0"?>\n<svg width="9" viewBox="0 0 1 1"><g/></svg>')).toBe(
+      '<g/>',
+    );
   });
   it('give nothing for other text', () => {
     expect(svgInner('hello')).toBe('');

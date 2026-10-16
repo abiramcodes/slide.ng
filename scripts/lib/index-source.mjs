@@ -23,12 +23,18 @@ function metaOf(slide, index) {
 }
 
 export function indexSource(deck) {
-  const imports = deck.slides.map((_, i) => `import ${slideClass(i + 1)} from './${slideName(i + 1)}';`);
+  const imports = deck.slides.map(
+    (_, i) => `import ${slideClass(i + 1)} from './${slideName(i + 1)}';`,
+  );
   const entries = deck.slides.map(
-    (s, i) => `  { ${JSON.stringify(metaOf(s, i)).slice(1, -1)}, component: ${slideClass(i + 1)} },`,
+    (s, i) =>
+      `  { ${JSON.stringify(metaOf(s, i)).slice(1, -1)}, component: ${slideClass(i + 1)} },`,
   );
   // `info:` in the headmatter is markdown for the info dialog; we turn it into HTML here.
-  const info = typeof deck.headmatter.info === 'string' ? marked.parse(deck.headmatter.info, { async: false }) : null;
+  const info =
+    typeof deck.headmatter.info === 'string'
+      ? marked.parse(deck.headmatter.info, { async: false })
+      : null;
   return `// GENERATED from slides.md - do not edit
 import type { SlideMeta } from '../../app/lib/slide-meta';
 ${imports.join('\n')}

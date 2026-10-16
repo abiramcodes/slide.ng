@@ -2,12 +2,21 @@
 // the app (a theme in node_modules is TypeScript that the build would not touch otherwise, and imports in it must find
 // `@angular/core`). The `public` folders are merged into `generated/public/` (later roots win), which is served as the site's root.
 // Files are only written when their content changed, so the dev server does not rebuild for nothing.
-import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { join, relative } from 'node:path';
 import { ROOT_FOLDERS } from './roots.mjs';
 
 // Symbolic links, dependencies and git data are not copied: a theme could point a link anywhere on the disk.
-const skip = (name, path) => name === 'node_modules' || name === '.git' || lstatSync(path).isSymbolicLink();
+const skip = (name, path) =>
+  name === 'node_modules' || name === '.git' || lstatSync(path).isSymbolicLink();
 
 // Every file under `dir` as a path relative to it.
 function listFiles(dir, base = dir) {
@@ -28,7 +37,8 @@ export function syncTree(from, to, prune = true) {
     mkdirSync(join(target, '..'), { recursive: true });
     writeFileSync(target, source);
   }
-  if (prune && existsSync(to)) for (const file of listFiles(to)) if (!wanted.has(file)) rmSync(join(to, file));
+  if (prune && existsSync(to))
+    for (const file of listFiles(to)) if (!wanted.has(file)) rmSync(join(to, file));
 }
 
 /** Copies every root. Returns, for the logs, `{ id, folders }` of each. `generated` is the folder `src/slides/generated`. */
@@ -38,19 +48,29 @@ export function syncRoots(roots, generated) {
   mkdirSync(target, { recursive: true });
   mkdirSync(publicDir, { recursive: true });
   // The folders of roots that are gone, and the public files of the last run, are cleared first (public is rebuilt from all roots).
-  for (const id of readdirSync(target)) if (!roots.some((r) => r.id === id)) rmSync(join(target, id), { recursive: true });
+  for (const id of readdirSync(target))
+    if (!roots.some((r) => r.id === id)) rmSync(join(target, id), { recursive: true });
   const publicWanted = new Set();
 
   const result = roots.map((root) => {
-    const folders = ROOT_FOLDERS.filter((f) => existsSync(join(root.dir, f)) && lstatSync(join(root.dir, f)).isDirectory());
+    const folders = ROOT_FOLDERS.filter(
+      (f) => existsSync(join(root.dir, f)) && lstatSync(join(root.dir, f)).isDirectory(),
+    );
     for (const folder of ROOT_FOLDERS) {
       const from = join(root.dir, folder);
-      if (!folders.includes(folder)) { if (folder !== 'public') rmSync(join(target, root.id, folder), { recursive: true, force: true }); continue; }
-      if (folder === 'public') { syncTree(from, publicDir, false); listFiles(from).forEach((f) => publicWanted.add(f)); }
-      else syncTree(from, join(target, root.id, folder));
+      if (!folders.includes(folder)) {
+        if (folder !== 'public')
+          rmSync(join(target, root.id, folder), { recursive: true, force: true });
+        continue;
+      }
+      if (folder === 'public') {
+        syncTree(from, publicDir, false);
+        listFiles(from).forEach((f) => publicWanted.add(f));
+      } else syncTree(from, join(target, root.id, folder));
     }
     return { id: root.id, folders };
   });
-  for (const file of listFiles(publicDir)) if (!publicWanted.has(file)) rmSync(join(publicDir, file));
+  for (const file of listFiles(publicDir))
+    if (!publicWanted.has(file)) rmSync(join(publicDir, file));
   return result;
 }

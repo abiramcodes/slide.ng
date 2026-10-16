@@ -17,7 +17,8 @@ export const COOKIE = 'slide-ng-auth';
 
 /** Compare two secrets without leaking, through timing, how many characters matched. */
 export function safeEqual(a, b) {
-  const x = Buffer.from(String(a ?? '')), y = Buffer.from(String(b ?? ''));
+  const x = Buffer.from(String(a ?? '')),
+    y = Buffer.from(String(b ?? ''));
   return x.length === y.length && timingSafeEqual(x, y);
 }
 
@@ -36,7 +37,11 @@ export function hostAllowed(host, ctx = {}) {
 /** No Origin header = not a browser page; the token still guards writes. Otherwise it must be our own address. */
 export function originAllowed(origin, host) {
   if (origin == null) return true;
-  try { return new URL(origin).host.toLowerCase() === String(host).toLowerCase(); } catch { return false; }
+  try {
+    return new URL(origin).host.toLowerCase() === String(host).toLowerCase();
+  } catch {
+    return false;
+  }
 }
 
 export function parseCookies(header) {
@@ -48,7 +53,8 @@ export function parseCookies(header) {
   return out;
 }
 
-export const hasAuthCookie = (req, ctx) => safeEqual(parseCookies(req.headers.cookie)[COOKIE], ctx.auth);
+export const hasAuthCookie = (req, ctx) =>
+  safeEqual(parseCookies(req.headers.cookie)[COOKIE], ctx.auth);
 
 export function tokenOf(req) {
   const fromHeader = req.headers['x-slide-ng-token'];
@@ -62,15 +68,23 @@ export function tokenOf(req) {
  */
 export function check(req, ctx, { needToken = true, needLogin = true } = {}) {
   if (!hostAllowed(req.headers.host, ctx)) return { status: 403, error: 'host not allowed' };
-  if (!originAllowed(req.headers.origin, req.headers.host)) return { status: 403, error: 'origin not allowed' };
-  if (needLogin && ctx.password && !hasAuthCookie(req, ctx)) return { status: 401, error: 'password required' };
+  if (!originAllowed(req.headers.origin, req.headers.host))
+    return { status: 403, error: 'origin not allowed' };
+  if (needLogin && ctx.password && !hasAuthCookie(req, ctx))
+    return { status: 401, error: 'password required' };
   if (needToken && !safeEqual(tokenOf(req), ctx.token)) return { status: 403, error: 'bad token' };
   return null;
 }
 
 /** `relativePath` joined to `root`, or null when it would leave `root` (absolute, `..`, a symlink out). The name is never used as it came. */
 export function confine(root, relativePath) {
-  if (typeof relativePath !== 'string' || !relativePath || relativePath.includes('\0') || isAbsolute(relativePath)) return null;
+  if (
+    typeof relativePath !== 'string' ||
+    !relativePath ||
+    relativePath.includes('\0') ||
+    isAbsolute(relativePath)
+  )
+    return null;
   const full = resolve(root, relativePath);
   const rel = relative(root, full);
   if (!rel || rel.startsWith('..') || isAbsolute(rel)) return null;
@@ -80,7 +94,10 @@ export function confine(root, relativePath) {
     try {
       const real = relative(realpathSync(root), realpathSync(dir));
       return real.startsWith('..') || isAbsolute(real) ? null : full;
-    } catch { if (dir === dirname(dir)) return null; dir = dirname(dir); }
+    } catch {
+      if (dir === dirname(dir)) return null;
+      dir = dirname(dir);
+    }
   }
 }
 
@@ -106,4 +123,5 @@ export function readBody(req, limit) {
 }
 
 /** A `next=` address after login: only a path on this server (no other site, no `//host`). */
-export const safeNext = (next) => (typeof next === 'string' && /^\/(?![/\\])[^\r\n]*$/.test(next) ? next : '/');
+export const safeNext = (next) =>
+  typeof next === 'string' && /^\/(?![/\\])[^\r\n]*$/.test(next) ? next : '/';

@@ -43,7 +43,8 @@ export async function buildCommand(argv) {
   const entry = resolve(positionals[0] ?? 'slides.md');
   const root = dirname(entry);
   const offline = Boolean(flags.offline);
-  if (offline && flags.base) throw new Error('--offline builds a folder that works at any path, so it cannot take --base');
+  if (offline && flags.base)
+    throw new Error('--offline builds a folder that works at any path, so it cannot take --base');
   const base = offline ? './' : normalizeBase(flags.base);
   const out = resolve(flags.out ?? 'dist');
   checkClaimable(out); // fail now, not after a long build
@@ -54,15 +55,19 @@ export async function buildCommand(argv) {
   const download = flags.download || downloadTarget(head, entry) !== null;
   const workDir = join(root, '.slide-ng', 'build');
   const env = {
-    SLIDE_NG_BUILD: '1', SLIDE_NG_BASE: base,
-    SLIDE_NG_DOWNLOAD: flags.download ? '1' : '0', SLIDE_NG_WITHOUT_NOTES: flags['without-notes'] ? '1' : '0',
+    SLIDE_NG_BUILD: '1',
+    SLIDE_NG_BASE: base,
+    SLIDE_NG_DOWNLOAD: flags.download ? '1' : '0',
+    SLIDE_NG_WITHOUT_NOTES: flags['without-notes'] ? '1' : '0',
     SLIDE_NG_OFFLINE: offline ? '1' : '0',
   };
   try {
     const dist = buildDeck({ entry, workDir, base, env });
     await afterBuild({ dist, deck, entry, root, base, workDir, download, flags, offline });
     publishDirectory(dist, out);
-    console.log(`\nBuilt ${deck.slides.length} slides into ${out} (${offline ? `offline folder, open ${join(out, 'index.html')}` : `base ${base}`}).`);
+    console.log(
+      `\nBuilt ${deck.slides.length} slides into ${out} (${offline ? `offline folder, open ${join(out, 'index.html')}` : `base ${base}`}).`,
+    );
   } finally {
     rmSync(workDir, { recursive: true, force: true }); // the folder this command made itself
   }
@@ -82,19 +87,39 @@ async function afterBuild({ dist, deck, entry, root, base, workDir, download, fl
   try {
     // Open Graph picture: the first slide.
     await placeOgImage(ogImagePlan(head, root), {
-      deckRoot: root, distDir: dist, workDir: join(workDir, 'og'),
+      deckRoot: root,
+      distDir: dist,
+      workDir: join(workDir, 'og'),
       makePicture: async (dir) => {
-        const options = resolveExportOptions({ ...exportOptions, format: 'png', range: '1', scale: 1.5 }, {});
-        await exportSlides({ deck, options, served, routerMode, outBase: join(dir, 'og'), log: () => {} });
+        const options = resolveExportOptions(
+          { ...exportOptions, format: 'png', range: '1', scale: 1.5 },
+          {},
+        );
+        await exportSlides({
+          deck,
+          options,
+          served,
+          routerMode,
+          outBase: join(dir, 'og'),
+          log: () => {},
+        });
         return join(dir, 'og', '001.png');
       },
     });
     // The PDF the "download" button points to.
-    const target = downloadTarget(head, entry) ?? downloadTarget({ ...head, download: true }, entry);
-    if (download && /^https?:|^\//.test(target)) console.log(`download points to ${target}; no PDF is made`);
+    const target =
+      downloadTarget(head, entry) ?? downloadTarget({ ...head, download: true }, entry);
+    if (download && /^https?:|^\//.test(target))
+      console.log(`download points to ${target}; no PDF is made`);
     else if (download) {
       const options = resolveExportOptions(exportOptions, head);
-      await exportSlides({ deck, options: { ...options, format: 'pdf' }, served, routerMode, outBase: join(dist, target.replace(/\.pdf$/, '')) });
+      await exportSlides({
+        deck,
+        options: { ...options, format: 'pdf' },
+        served,
+        routerMode,
+        outBase: join(dist, target.replace(/\.pdf$/, '')),
+      });
     }
   } finally {
     await server?.close();
@@ -102,7 +127,9 @@ async function afterBuild({ dist, deck, entry, root, base, workDir, download, fl
 
   if (offline) {
     const { removed } = await makeOffline(dist);
-    console.log(`Offline folder: one classic script (${removed} chunks folded in), no service worker, hash routing.`);
+    console.log(
+      `Offline folder: one classic script (${removed} chunks folded in), no service worker, hash routing.`,
+    );
     return;
   }
 

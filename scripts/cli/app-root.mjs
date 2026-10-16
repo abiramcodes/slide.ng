@@ -10,10 +10,15 @@ import { packageRoot } from './package-root.mjs';
 /** True when the deck is part of this package's own folder (and not an installed copy in node_modules). */
 export function isInPlace(entry) {
   const path = resolve(entry);
-  return path.startsWith(packageRoot + sep) && !path.includes(`${sep}node_modules${sep}`) && !path.includes(`${sep}.slide-ng${sep}`);
+  return (
+    path.startsWith(packageRoot + sep) &&
+    !path.includes(`${sep}node_modules${sep}`) &&
+    !path.includes(`${sep}.slide-ng${sep}`)
+  );
 }
 
-export const appRootFor = (entry) => (isInPlace(entry) ? packageRoot : join(dirname(resolve(entry)), '.slide-ng', 'app'));
+export const appRootFor = (entry) =>
+  isInPlace(entry) ? packageRoot : join(dirname(resolve(entry)), '.slide-ng', 'app');
 
 /** The `ng` program of this package's @angular/cli, wherever npm put it. */
 export function ngBinary() {
@@ -21,7 +26,14 @@ export function ngBinary() {
   return join(dirname(pkg), 'bin', 'ng.js');
 }
 
-const RUNTIME_FILES = ['angular.json', 'tsconfig.json', 'tsconfig.app.json', 'tsconfig.worker.json', 'uno.config.mjs', 'proxy.conf.mjs'];
+const RUNTIME_FILES = [
+  'angular.json',
+  'tsconfig.json',
+  'tsconfig.app.json',
+  'tsconfig.worker.json',
+  'uno.config.mjs',
+  'proxy.conf.mjs',
+];
 
 /**
  * Makes the folder the app is built in and returns it. For a deck outside this package it is a copy of `src/`,
@@ -34,10 +46,16 @@ export function prepareApp(entry) {
   // Only these parts of the working folder are replaced; `.angular/cache` stays, so the second build is faster.
   rmSync(join(root, 'src'), { recursive: true, force: true });
   mkdirSync(root, { recursive: true });
-  cpSync(join(packageRoot, 'src'), join(root, 'src'), { recursive: true, filter: (from) => !from.endsWith(`${sep}slides${sep}generated`) });
+  cpSync(join(packageRoot, 'src'), join(root, 'src'), {
+    recursive: true,
+    filter: (from) => !from.endsWith(`${sep}slides${sep}generated`),
+  });
   cpSync(join(packageRoot, 'public'), join(root, 'public'), { recursive: true });
   for (const file of RUNTIME_FILES) cpSync(join(packageRoot, file), join(root, file));
-  writeFileSync(join(root, 'package.json'), '{ "name": "slide-ng-app", "private": true, "type": "module" }\n');
+  writeFileSync(
+    join(root, 'package.json'),
+    '{ "name": "slide-ng-app", "private": true, "type": "module" }\n',
+  );
 
   // Use the packages next to this one (Angular and friends). Without a copy of its own, npm has put them higher up and the lookup finds them.
   if (existsSync(join(packageRoot, 'node_modules')) && !existsSync(join(root, 'node_modules'))) {

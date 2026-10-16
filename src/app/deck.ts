@@ -25,7 +25,21 @@ import { Overview } from './ui/overview';
 // The route /:no, the audience's page. Shows one slide on a scaled canvas and hosts the controls around it.
 @Component({
   selector: 'app-deck',
-  imports: [SlideShow, PresenterCursor, DrawingLayer, DrawingControls, DragControls, WebCamera, SideEditor, NavBar, Overview, Goto, InfoDialog, ContextMenu, OfflineBadge],
+  imports: [
+    SlideShow,
+    PresenterCursor,
+    DrawingLayer,
+    DrawingControls,
+    DragControls,
+    WebCamera,
+    SideEditor,
+    NavBar,
+    Overview,
+    Goto,
+    InfoDialog,
+    ContextMenu,
+    OfflineBadge,
+  ],
   providers: [Nav, Ui, Drawings],
   host: { '(window:keydown)': 'key($event)' },
   template: `
@@ -38,8 +52,12 @@ import { Overview } from './ui/overview';
       (pointerdown)="swipeStart($event)"
       (pointerup)="swipeEnd($event)"
     >
-      <app-slide-show context="slide"><app-drawing-layer /><app-drag-controls /><app-presenter-cursor /></app-slide-show>
-      <div class="absolute bottom-0 left-0 p-2 transition duration-300 opacity-0 hover:opacity-100 focus-within:opacity-100">
+      <app-slide-show context="slide"
+        ><app-drawing-layer /><app-drag-controls /><app-presenter-cursor
+      /></app-slide-show>
+      <div
+        class="absolute bottom-0 left-0 p-2 transition duration-300 opacity-0 hover:opacity-100 focus-within:opacity-100"
+      >
         <app-nav-bar />
       </div>
       <app-offline-badge />
@@ -51,7 +69,9 @@ import { Overview } from './ui/overview';
     <app-goto />
     <app-info-dialog />
     <app-context-menu />
-    <div id="hud">slide {{ nav.no() }}/{{ nav.total }} clicks {{ nav.clicks() }}/{{ nav.clicksTotal() }}</div>
+    <div id="hud">
+      slide {{ nav.no() }}/{{ nav.total }} clicks {{ nav.clicks() }}/{{ nav.clicksTotal() }}
+    </div>
   `,
 })
 export class Deck {
@@ -69,14 +89,20 @@ export class Deck {
 
   // Touch swipes move through the deck (not while drawing, as in Slidev).
   swipeStart(e: PointerEvent) {
-    this.swipeFrom = e.pointerType === 'touch' && !this.drawings.enabled() ? { x: e.clientX, y: e.clientY } : null;
+    this.swipeFrom =
+      e.pointerType === 'touch' && !this.drawings.enabled() ? { x: e.clientX, y: e.clientY } : null;
   }
 
   swipeEnd(e: PointerEvent) {
     const from = this.swipeFrom;
     this.swipeFrom = null;
     if (!from || e.pointerType !== 'touch' || this.drawings.enabled()) return;
-    const action = swipeAction(e.clientX - from.x, e.clientY - from.y, window.innerWidth, window.innerHeight);
+    const action = swipeAction(
+      e.clientX - from.x,
+      e.clientY - from.y,
+      window.innerWidth,
+      window.innerHeight,
+    );
     if (action) this.nav[action]();
   }
 

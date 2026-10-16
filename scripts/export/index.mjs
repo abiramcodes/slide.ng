@@ -15,27 +15,46 @@ const EXTENSION = { pdf: '.pdf', pptx: '.pptx', md: '.md', png: '' };
  * `deck` is the parsed deck (slides, headmatter), `served` is `{ origin, base }` of the running copy,
  * `outBase` the output path without extension (see filename.mjs). Returns the path that was written.
  */
-export async function exportSlides({ deck, options, served, routerMode, outBase, log = console.log }) {
+export async function exportSlides({
+  deck,
+  options,
+  served,
+  routerMode,
+  outBase,
+  log = console.log,
+}) {
   const total = deck.slides.length;
   const pages = parseRangeString(total, options.range);
-  if (!pages.length) throw new Error(`export: the range "${options.range}" matches no slide (the deck has ${total})`);
+  if (!pages.length)
+    throw new Error(
+      `export: the range "${options.range}" matches no slide (the deck has ${total})`,
+    );
   const target = outBase + EXTENSION[options.format];
   await mkdir(dirname(outBase), { recursive: true });
 
   const browser = await launchBrowser(options.executablePath);
   try {
     // The page size does not matter for the PDF, but it must hold a slide so that lazy content (iframes) loads.
-    const context = await browser.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: options.scale });
+    const context = await browser.newContext({
+      viewport: { width: 1280, height: 720 },
+      deviceScaleFactor: options.scale,
+    });
     const page = await context.newPage();
     const batches = options.perSlide ? pages.map(String) : [options.range];
     const parts = [];
     for (const [i, range] of batches.entries()) {
-      const url = printUrl({ ...served, routerMode, query: printQuery({ withClicks: options.withClicks, range }) });
+      const url = printUrl({
+        ...served,
+        routerMode,
+        query: printQuery({ withClicks: options.withClicks, range }),
+      });
       await loadPrintPage(page, { url, ...options, warn: (m) => log(`warning: ${m}`) });
       const listed = await listPages(page);
       const size = await page.locator('.print-slide-container').first().boundingBox();
       parts.push(await capture(page, listed, size, options));
-      log(`rendered ${options.perSlide ? i + 1 : listed.length}/${options.perSlide ? batches.length : listed.length}`);
+      log(
+        `rendered ${options.perSlide ? i + 1 : listed.length}/${options.perSlide ? batches.length : listed.length}`,
+      );
     }
     await write(target, parts, { deck, options, outBase });
   } finally {
@@ -55,12 +74,24 @@ async function write(target, parts, { deck, options, outBase }) {
   const { width, height } = parts[0].size;
   const pictures = parts.flatMap((p) => p.pictures ?? []);
   if (options.format === 'pdf') {
-    const bytes = await buildPdf({ buffers: parts.map((p) => p.pdf), pages: listed, slides: deck.slides, headmatter: deck.headmatter, withToc: options.withToc });
+    const bytes = await buildPdf({
+      buffers: parts.map((p) => p.pdf),
+      pages: listed,
+      slides: deck.slides,
+      headmatter: deck.headmatter,
+      withToc: options.withToc,
+    });
     await writeFile(target, bytes);
   } else if (options.format === 'png') {
     await writePictures(target, pictures);
   } else if (options.format === 'pptx') {
-    await writePptx(target, { pictures, slides: deck.slides, headmatter: deck.headmatter, width, height });
+    await writePptx(target, {
+      pictures,
+      slides: deck.slides,
+      headmatter: deck.headmatter,
+      width,
+      height,
+    });
   } else {
     const folder = `${basename(outBase)}-images`;
     await writePictures(`${outBase}-images`, pictures);
@@ -76,10 +107,20 @@ export async function exportNotes({ options, served, routerMode, outBase, log = 
   try {
     const page = await (await browser.newContext()).newPage();
     await page.emulateMedia({ media: 'screen' });
-    await page.goto(printUrl({ ...served, routerMode, query: '', path: 'presenter/print' }), { waitUntil: options.waitUntil, timeout: options.timeout });
+    await page.goto(printUrl({ ...served, routerMode, query: '', path: 'presenter/print' }), {
+      waitUntil: options.waitUntil,
+      timeout: options.timeout,
+    });
     await page.locator('[data-slide-ng-print="ready"]').waitFor({ timeout: options.timeout });
     if (options.wait) await page.waitForTimeout(options.wait);
-    await writeFile(target, await page.pdf({ margin: { top: 0, right: 0, bottom: 0, left: 0 }, printBackground: true, preferCSSPageSize: true }));
+    await writeFile(
+      target,
+      await page.pdf({
+        margin: { top: 0, right: 0, bottom: 0, left: 0 },
+        printBackground: true,
+        preferCSSPageSize: true,
+      }),
+    );
     log('notes written');
   } finally {
     await browser.close();

@@ -1,4 +1,12 @@
-import { Component, ViewContainerRef, effect, input, signal, untracked, viewChild } from '@angular/core';
+import {
+  Component,
+  ViewContainerRef,
+  effect,
+  input,
+  signal,
+  untracked,
+  viewChild,
+} from '@angular/core';
 import { DrawingPreview } from '../drawing/drawing-preview';
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../lib/canvas';
 import { CLICKS_MAX, ClicksContext } from '../lib/clicks';
@@ -41,7 +49,9 @@ export class PrintFrame {
 
   constructor() {
     effect(() => {
-      const no = this.no(), at = this.at(), host = this.host();
+      const no = this.no(),
+        at = this.at(),
+        host = this.host();
       untracked(() => {
         const slide = mountSlide(host, no, 'print').instance;
         slide.clicks.setCurrent(at);

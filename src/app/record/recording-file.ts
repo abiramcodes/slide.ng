@@ -9,7 +9,11 @@ export function pickMimeType(isSupported: (type: string) => boolean): string {
 
 /** `my-talk-2025-03-09-14-30-05.webm`: the deck title, made safe for a file name, and the time. */
 export function recordingName(title: string, now: Date): string {
-  const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'slides';
+  const slug =
+    title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'slides';
   const pad = (n: number) => String(n).padStart(2, '0');
   const stamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}-${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
   return `${slug}-${stamp}.webm`;

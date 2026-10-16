@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { rebase, rebaseCss, rebaseHtml } from './asset-paths.mjs';
 import { slideSource } from './emit.mjs';
 
-const HTML = '<p><img src="/a.png" alt="x"></p><video src="/v.mp4" poster=\'/p.png\'></video><div style="background: url(/b.png)"></div>';
+const HTML =
+  '<p><img src="/a.png" alt="x"></p><video src="/v.mp4" poster=\'/p.png\'></video><div style="background: url(/b.png)"></div>';
 
 describe('rebase', () => {
   it('puts the base in front, or makes the address relative for ./', () => {
@@ -28,15 +29,19 @@ describe('rebaseHtml', () => {
     expect(out).toContain('url(b.png)');
   });
   it('does not touch web addresses, protocol-relative addresses, relative ones or code samples', () => {
-    const same = '<img src="https://x.test/a.png"><img src="//cdn.test/a.png"><img src="a.png"><pre><code>&lt;img src="/a.png"&gt; url(/b.png)</code></pre><code>src="/c.png"</code>';
+    const same =
+      '<img src="https://x.test/a.png"><img src="//cdn.test/a.png"><img src="a.png"><pre><code>&lt;img src="/a.png"&gt; url(/b.png)</code></pre><code>src="/c.png"</code>';
     expect(rebaseHtml(same, '/talk/')).toBe(same);
   });
 });
 
 describe('rebaseCss', () => {
-  const css = '.a { background: url("/a.png"); } .b { background: url(//cdn.test/b.png); } .c { background: url(c.png); }';
+  const css =
+    '.a { background: url("/a.png"); } .b { background: url(//cdn.test/b.png); } .c { background: url(c.png); }';
   it('prefixes a path base and leaves the rest', () => {
-    expect(rebaseCss(css, '/talk/')).toBe('.a { background: url("/talk/a.png"); } .b { background: url(//cdn.test/b.png); } .c { background: url(c.png); }');
+    expect(rebaseCss(css, '/talk/')).toBe(
+      '.a { background: url("/talk/a.png"); } .b { background: url(//cdn.test/b.png); } .c { background: url(c.png); }',
+    );
   });
   it('leaves slide styles alone for ./ (the build would try to bundle a relative address) and for the root base', () => {
     expect(rebaseCss(css, './')).toBe(css);
@@ -45,7 +50,11 @@ describe('rebaseCss', () => {
 });
 
 describe('a generated slide', () => {
-  const slide = { content: '# Hi\n\n![p](/pic.png)\n\n<style>\n.x { background: url(/pic.png); }\n</style>\n', frontmatter: {}, file: 'slides.md' };
+  const slide = {
+    content: '# Hi\n\n![p](/pic.png)\n\n<style>\n.x { background: url(/pic.png); }\n</style>\n',
+    frontmatter: {},
+    file: 'slides.md',
+  };
   it('gets the base in front of its pictures and styles', () => {
     const source = slideSource(slide, 1, { assetBase: '/talk/' });
     expect(source).toContain('src=\\"/talk/pic.png\\"');

@@ -19,13 +19,16 @@ export function findLayers(dir = 'src/app/layers') {
  */
 export function findLayerFiles(sources) {
   const files = {};
-  for (const { dir, importDir } of sources) for (const name of findLayers(dir)) files[name] = `${importDir}/${name}`;
+  for (const { dir, importDir } of sources)
+    for (const name of findLayers(dir)) files[name] = `${importDir}/${name}`;
   return files;
 }
 
 /** The source of generated/layers.ts. `found` is a list of names in src/app/layers, or a map from name to import path. */
 export function layersSource(found) {
-  const files = Array.isArray(found) ? Object.fromEntries(found.map((n) => [n, `../../app/layers/${n}`])) : found;
+  const files = Array.isArray(found)
+    ? Object.fromEntries(found.map((n) => [n, `../../app/layers/${n}`]))
+    : found;
   const imports = Object.keys(files).map((n) => `import ${camel(n)} from '${files[n]}';`);
   const entries = LAYER_NAMES.map((n) => `  '${n}': ${files[n] ? camel(n) : 'null'},`);
   return `// GENERATED: the layer components found in layers folders - do not edit

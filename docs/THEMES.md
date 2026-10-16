@@ -7,7 +7,7 @@ guide is [WRITING-A-THEME.md](WRITING-A-THEME.md). The working example is [`exam
 
 ```yaml
 ---
-theme: ./my-theme          # a folder next to the deck, an absolute path, or a package name
+theme: ./my-theme # a folder next to the deck, an absolute path, or a package name
 addons:
   - ./my-addon
   - slide-ng-addon-charts
@@ -34,13 +34,13 @@ and published from a separate repository, slide.ng-themes, the way Slidev keeps 
 `@slide-ng/theme-<name>` that follow the contract below. Each has a README that credits the original author and lists what is ported and what is simplified,
 and the repository's `examples/<name>.md` has a slide for every layout.
 
-| `theme:` | Package | Original | Layouts |
-| --- | --- | --- | --- |
-| `default` | none: the built-in theme (`src/app/layouts`, `src/styles/layouts.css`) | `@slidev/theme-default` | `cover`, `intro`, `fact`, `statement`, `quote`, `section` |
-| `seriph` | `@slide-ng/theme-seriph` | `@slidev/theme-seriph` | `cover` |
-| `shibainu` | `@slide-ng/theme-shibainu` | `@slidev/theme-shibainu` | 14 (`cover`, `default`, `center`, `section`, `default-2` to `default-7`, `right`, `quote`, ...) |
-| `bricks` | `@slide-ng/theme-bricks` | `@slidev/theme-bricks` | 9; components `<polygon-1 />` to `<polygon-11 />` |
-| `apple-basic` | `@slide-ng/theme-apple-basic` | `@slidev/theme-apple-basic` | 10 |
+| `theme:`      | Package                                                                | Original                    | Layouts                                                                                         |
+| ------------- | ---------------------------------------------------------------------- | --------------------------- | ----------------------------------------------------------------------------------------------- |
+| `default`     | none: the built-in theme (`src/app/layouts`, `src/styles/layouts.css`) | `@slidev/theme-default`     | `cover`, `intro`, `fact`, `statement`, `quote`, `section`                                       |
+| `seriph`      | `@slide-ng/theme-seriph`                                               | `@slidev/theme-seriph`      | `cover`                                                                                         |
+| `shibainu`    | `@slide-ng/theme-shibainu`                                             | `@slidev/theme-shibainu`    | 14 (`cover`, `default`, `center`, `section`, `default-2` to `default-7`, `right`, `quote`, ...) |
+| `bricks`      | `@slide-ng/theme-bricks`                                               | `@slidev/theme-bricks`      | 9; components `<polygon-1 />` to `<polygon-11 />`                                               |
+| `apple-basic` | `@slide-ng/theme-apple-basic`                                          | `@slidev/theme-apple-basic` | 10                                                                                              |
 
 `default` is a port of Slidev's default theme already; its web fonts (Avenir Next, Nunito Sans) are not loaded for it, set `fonts:` to get them.
 
@@ -62,17 +62,17 @@ folders listed below; the rest of it (your markdown, `node_modules`, ...) is nev
 
 ## What a root can contain
 
-| Folder or file | What it does |
-| --- | --- |
-| `layouts/<name>.ts` | A layout. `<name>` is what a slide writes in `layout:`. The same name replaces a built-in layout. |
-| `components/*.ts` | Components that slides can use as tags. Found by their `selector`. |
-| `layers/<name>.ts` | A layer component: `global-top`, `global-bottom`, `slide-top`, `slide-bottom` (default export). |
-| `styles/index.css` | CSS. Added after the app's styles, so it can override them. |
-| `public/` | Files served from the site root (`/logo.png`). Merged; the later root wins on the same name. |
-| `setup/*.ts` | Setup hooks: `shiki`, `katex`, `transformers`, `preparser`, `mermaid`, `monaco`, `code-runners`, `shortcuts`, `context-menu`, `main`, `root`. Written out in [SETUP.md](SETUP.md). |
-| `setup/providers.ts` | Angular providers (default export: an array; `setup/main.ts` is the newer way). See "Setup hooks". |
-| `uno.config.mjs` | UnoCSS settings (default export). Merged into the app's: `presets`, `rules`, `safelist`, `variants` are added; `shortcuts` and `theme` are merged key by key. |
-| `theme.json` | Name, default headmatter and layout inputs. See below. |
+| Folder or file       | What it does                                                                                                                                                                       |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `layouts/<name>.ts`  | A layout. `<name>` is what a slide writes in `layout:`. The same name replaces a built-in layout.                                                                                  |
+| `components/*.ts`    | Components that slides can use as tags. Found by their `selector`.                                                                                                                 |
+| `layers/<name>.ts`   | A layer component: `global-top`, `global-bottom`, `slide-top`, `slide-bottom` (default export).                                                                                    |
+| `styles/index.css`   | CSS. Added after the app's styles, so it can override them.                                                                                                                        |
+| `public/`            | Files served from the site root (`/logo.png`). Merged; the later root wins on the same name.                                                                                       |
+| `setup/*.ts`         | Setup hooks: `shiki`, `katex`, `transformers`, `preparser`, `mermaid`, `monaco`, `code-runners`, `shortcuts`, `context-menu`, `main`, `root`. Written out in [SETUP.md](SETUP.md). |
+| `setup/providers.ts` | Angular providers (default export: an array; `setup/main.ts` is the newer way). See "Setup hooks".                                                                                 |
+| `uno.config.mjs`     | UnoCSS settings (default export). Merged into the app's: `presets`, `rules`, `safelist`, `variants` are added; `shortcuts` and `theme` are merged key by key.                      |
+| `theme.json`         | Name, default headmatter and layout inputs. See below.                                                                                                                             |
 
 ### Layouts
 
@@ -119,11 +119,11 @@ The hooks of a theme or addon work the same as in a deck and are listed, with ex
 
 `setup/providers.ts` default-exports an array of Angular providers. They are added to the application, so a theme can use any token the app injects:
 
-| Token | From | Use |
-| --- | --- | --- |
-| `SHORTCUTS_SETUP` | `slide-ng/lib/shortcuts` | A function `(actions, list) => list`: add, change or remove keyboard shortcuts. One provider is used; the last root that provides it wins. |
-| `CODE_RUNNERS` | `slide-ng/code/runners` | `{ provide: CODE_RUNNERS, multi: true, useValue: { javascript: (code) => result } }`: replace how `{monaco-run}` runs a language. The key is Monaco's language id (`javascript`, `typescript`). |
-| `SYNC_TRANSPORTS` | `slide-ng/sync/transport` | Another way to carry presenter sync (multi). |
+| Token             | From                      | Use                                                                                                                                                                                             |
+| ----------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SHORTCUTS_SETUP` | `slide-ng/lib/shortcuts`  | A function `(actions, list) => list`: add, change or remove keyboard shortcuts. One provider is used; the last root that provides it wins.                                                      |
+| `CODE_RUNNERS`    | `slide-ng/code/runners`   | `{ provide: CODE_RUNNERS, multi: true, useValue: { javascript: (code) => result } }`: replace how `{monaco-run}` runs a language. The key is Monaco's language id (`javascript`, `typescript`). |
+| `SYNC_TRANSPORTS` | `slide-ng/sync/transport` | Another way to carry presenter sync (multi).                                                                                                                                                    |
 
 ## `slide-ng theme eject`
 

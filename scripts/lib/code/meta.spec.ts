@@ -23,7 +23,14 @@ describe('fence info', () => {
 
 describe('options', () => {
   it('converts true, false, numbers, quotes and bare words', () => {
-    expect(parseOptions("{a:true, b:false, c: 3, d:'x y', e:\"z\", f:200px}")).toEqual({ a: true, b: false, c: 3, d: 'x y', e: 'z', f: '200px' });
+    expect(parseOptions('{a:true, b:false, c: 3, d:\'x y\', e:"z", f:200px}')).toEqual({
+      a: true,
+      b: false,
+      c: 3,
+      d: 'x y',
+      e: 'z',
+      f: '200px',
+    });
   });
   it('keeps a comma inside quotes', () => {
     expect(parseOptions("{title:'a, b'}")).toEqual({ title: 'a, b' });
@@ -35,7 +42,11 @@ describe('titles and monaco info', () => {
     expect(cleanTitle('npm ~i-uil:github~')).toBe('npm');
   });
   it('reads {monaco}, {monaco-diff} and {monaco-run} with options', () => {
-    expect(parseMonacoInfo('ts {monaco-run} {autorun:false}')).toEqual({ lang: 'ts', kind: 'monaco-run', options: { autorun: false } });
+    expect(parseMonacoInfo('ts {monaco-run} {autorun:false}')).toEqual({
+      lang: 'ts',
+      kind: 'monaco-run',
+      options: { autorun: false },
+    });
     expect(parseMonacoInfo('ts {2,3}')).toBeNull();
   });
 });

@@ -13,11 +13,18 @@ export const drawingsKey = () => `slide-ng-drawings${diskScope()}`;
 
 /** Drawings saved in this browser. Storage may be blocked, then there are none. */
 export function readStored(): DrawingsState {
-  try { return cleanDrawings(JSON.parse(localStorage.getItem(drawingsKey()) ?? '{}')); } catch { return {}; }
+  try {
+    return cleanDrawings(JSON.parse(localStorage.getItem(drawingsKey()) ?? '{}'));
+  } catch {
+    return {};
+  }
 }
 
 /** What to start with: the drawings baked in by the generator, then whatever this browser saved on top. */
-export const initialDrawings = (): DrawingsState => ({ ...cleanDrawings(DRAWINGS), ...readStored() });
+export const initialDrawings = (): DrawingsState => ({
+  ...cleanDrawings(DRAWINGS),
+  ...readStored(),
+});
 
 /** Fill the shared drawings once, and write every change to localStorage (a little later, drawing makes many changes). */
 export function startPersistence(persist: boolean) {
@@ -28,7 +35,11 @@ export function startPersistence(persist: boolean) {
     const state = sync.drawings();
     clearTimeout(timer);
     timer = setTimeout(() => {
-      try { localStorage.setItem(drawingsKey(), JSON.stringify(state)); } catch { /* the drawing just is not remembered */ }
+      try {
+        localStorage.setItem(drawingsKey(), JSON.stringify(state));
+      } catch {
+        /* the drawing just is not remembered */
+      }
     }, 300);
   });
 
@@ -44,7 +55,11 @@ export function startPersistence(persist: boolean) {
     diskTimer = setTimeout(async () => {
       if (writing) return;
       writing = true;
-      try { onDisk = await saveDrawings(api, onDisk, state); } finally { writing = false; }
+      try {
+        onDisk = await saveDrawings(api, onDisk, state);
+      } finally {
+        writing = false;
+      }
     }, 800);
   });
 }

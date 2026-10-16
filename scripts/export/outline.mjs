@@ -10,7 +10,8 @@ export function outlineTree(entries) {
   const add = (list, entry, depth) => {
     const last = list[list.length - 1];
     const titleLevel = entry.level;
-    if (titleLevel && titleLevel > depth && last && last.titleLevel < titleLevel) add(last.children, entry, depth + 1);
+    if (titleLevel && titleLevel > depth && last && last.titleLevel < titleLevel)
+      add(last.children, entry, depth + 1);
     else list.push({ ...entry, titleLevel: titleLevel ?? depth, children: [] });
   };
   entries.forEach((e) => add(tree, e, 1));
@@ -38,7 +39,11 @@ export function addOutline(pdf, tree) {
       if (i < items.length - 1) entry.Next = refs[i + 1];
       if (item.children.length) {
         const kids = writeLevel(item.children, refs[i]);
-        Object.assign(entry, { First: kids.first, Last: kids.last, Count: PDFNumber.of(kids.count) });
+        Object.assign(entry, {
+          First: kids.first,
+          Last: kids.last,
+          Count: PDFNumber.of(kids.count),
+        });
         count += kids.count;
       }
       ctx.assign(refs[i], ctx.obj(entry));
@@ -47,7 +52,10 @@ export function addOutline(pdf, tree) {
   };
 
   const top = writeLevel(tree, rootRef);
-  ctx.assign(rootRef, ctx.obj({ Type: 'Outlines', First: top.first, Last: top.last, Count: PDFNumber.of(top.count) }));
+  ctx.assign(
+    rootRef,
+    ctx.obj({ Type: 'Outlines', First: top.first, Last: top.last, Count: PDFNumber.of(top.count) }),
+  );
   pdf.catalog.set(PDFName.of('Outlines'), rootRef);
   pdf.catalog.set(PDFName.of('PageMode'), PDFName.of('UseOutlines'));
 }

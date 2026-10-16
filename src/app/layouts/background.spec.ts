@@ -24,7 +24,9 @@ describe('background', () => {
       expect(resolveAssetUrl('a.png')).toBe('a.png');
       expect(resolveAssetUrl('https://x.test/a.png')).toBe('https://x.test/a.png');
       expect(background('/a.png')['background-image']).toBe('url("/talk/a.png")');
-    } finally { base.remove(); }
+    } finally {
+      base.remove();
+    }
   });
   it('can dim the image and change its size', () => {
     const s = background('/a.png', true, 'contain');

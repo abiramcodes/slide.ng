@@ -34,7 +34,11 @@ export const LAYOUTS = {
   quote: entry('quote', 'QuoteLayout'),
   section: entry('section', 'SectionLayout'),
   statement: entry('statement', 'StatementLayout'),
-  'two-cols': entry('two-cols', 'TwoColsLayout', { props: ['layoutClass'], classProp: true, slots: ['left', 'right'] }),
+  'two-cols': entry('two-cols', 'TwoColsLayout', {
+    props: ['layoutClass'],
+    classProp: true,
+    slots: ['left', 'right'],
+  }),
   'two-cols-header': entry('two-cols-header', 'TwoColsHeaderLayout', {
     props: ['layoutClass'],
     classProp: true,
@@ -50,6 +54,8 @@ export const LAYOUTS = {
 export function layoutName(frontmatter, index, layouts = LAYOUTS) {
   const wanted = frontmatter.layout ?? (index === 0 ? 'cover' : 'default');
   if (layouts[wanted]) return wanted;
-  console.warn(`[slides] slide ${index + 1}: unknown layout "${wanted}", using "default". Available: ${Object.keys(layouts).join(', ')}`);
+  console.warn(
+    `[slides] slide ${index + 1}: unknown layout "${wanted}", using "default". Available: ${Object.keys(layouts).join(', ')}`,
+  );
   return 'default';
 }

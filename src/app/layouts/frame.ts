@@ -5,7 +5,8 @@ import { DomSanitizer } from '@angular/platform-browser';
 @Component({
   selector: 'sn-frame',
   host: { class: 'block relative', '[style.width]': 'size()', '[style.height]': 'size()' },
-  template: '<iframe class="slidev-layout-iframe" [src]="src()" [style.--slidev-iframe-scale]="scale() || null"></iframe>',
+  template:
+    '<iframe class="slidev-layout-iframe" [src]="src()" [style.--slidev-iframe-scale]="scale() || null"></iframe>',
 })
 export class Frame {
   url = input.required<string>();

@@ -9,7 +9,10 @@ export function loadScript(src: string): Promise<void> {
       script.src = src;
       script.async = true;
       script.onload = () => resolve();
-      script.onerror = () => { loading.delete(src); reject(new Error(`Could not load ${src}`)); };
+      script.onerror = () => {
+        loading.delete(src);
+        reject(new Error(`Could not load ${src}`));
+      };
       document.head.append(script);
     });
     loading.set(src, promise);

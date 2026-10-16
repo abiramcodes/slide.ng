@@ -6,7 +6,13 @@ describe('markOptions', () => {
   });
   it('reads type, colour, delay and opacity from modifiers', () => {
     const o = markOptions('2', 'red.circle.delay500.op50');
-    expect(o).toMatchObject({ at: '2', type: 'circle', color: '#ef4444', delay: 500, opacity: 0.5 });
+    expect(o).toMatchObject({
+      at: '2',
+      type: 'circle',
+      color: '#ef4444',
+      delay: 500,
+      opacity: 0.5,
+    });
   });
   it('knows the type aliases', () => {
     expect(markOptions('', 'strike').type).toBe('strike-through');

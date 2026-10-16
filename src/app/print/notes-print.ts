@@ -18,10 +18,13 @@ import { NoteDisplay } from '../presenter/note-display';
       @for (slide of withNotes; track slide.no; let last = $last) {
         <div class="flex flex-col gap-4 break-inside-avoid-page">
           <h2 class="text-lg font-bold flex gap-2">
-            <span class="opacity-50">{{ slide.no }}/{{ total }}</span>{{ slide.title }}
+            <span class="opacity-50">{{ slide.no }}/{{ total }}</span
+            >{{ slide.title }}
           </h2>
           <app-note-display [html]="slide.html" />
-          @if (!last) { <hr class="border-main mb-8" /> }
+          @if (!last) {
+            <hr class="border-main mb-8" />
+          }
         </div>
       }
     </div>
@@ -31,7 +34,11 @@ export class NotesPrint {
   protected readonly total = SLIDES.length;
   protected readonly title = String(HEADMATTER['title'] ?? 'slide.ng');
   protected readonly date = new Date().toLocaleString();
-  protected readonly withNotes = SLIDES.map((s, i) => ({ no: i + 1, title: s.title, html: s.noteHtml })).filter((s) => s.html);
+  protected readonly withNotes = SLIDES.map((s, i) => ({
+    no: i + 1,
+    title: s.title,
+    html: s.noteHtml,
+  })).filter((s) => s.html);
 
   constructor() {
     inject(Title).setTitle(`Notes - ${this.title}`);
@@ -42,6 +49,9 @@ export class NotesPrint {
     const style = doc.createElement('style');
     style.textContent = '@page { size: A4; margin-top: 1.5cm; margin-bottom: 1cm; }';
     doc.head.append(style);
-    inject(DestroyRef).onDestroy(() => { doc.documentElement.classList.remove('print'); style.remove(); });
+    inject(DestroyRef).onDestroy(() => {
+      doc.documentElement.classList.remove('print');
+      style.remove();
+    });
   }
 }

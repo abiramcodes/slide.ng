@@ -1,20 +1,66 @@
 /* Buttons and small bits of the interface (ported from Slidev's styles/index.css). */
 .slidev-icon-btn {
-  aspect-ratio: 1; user-select: none; outline: none; cursor: pointer; border: 0; background: none; color: inherit; font: inherit;
-  display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; position: relative;
-  opacity: 0.75; padding: 0.25rem; border-radius: 0.25rem; transition: all 0.2s ease-in-out;
+  aspect-ratio: 1;
+  user-select: none;
+  outline: none;
+  cursor: pointer;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  position: relative;
+  opacity: 0.75;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  transition: all 0.2s ease-in-out;
 }
-@media (min-width: 768px) { .slidev-icon-btn { padding: 0.5rem; } }
-.slidev-icon-btn:hover { opacity: 1; background: rgba(156, 163, 175, 0.1); }
-.slidev-icon-btn:focus-visible { opacity: 1; outline: 2px solid black; outline-offset: 2px; }
-html.dark .slidev-icon-btn:focus-visible { outline-color: white; }
-.slidev-icon-btn.active { opacity: 1; }
-.slidev-icon-btn.disabled { opacity: 0.25; pointer-events: none; }
+@media (min-width: 768px) {
+  .slidev-icon-btn {
+    padding: 0.5rem;
+  }
+}
+.slidev-icon-btn:hover {
+  opacity: 1;
+  background: rgba(156, 163, 175, 0.1);
+}
+.slidev-icon-btn:focus-visible {
+  opacity: 1;
+  outline: 2px solid black;
+  outline-offset: 2px;
+}
+html.dark .slidev-icon-btn:focus-visible {
+  outline-color: white;
+}
+.slidev-icon-btn.active {
+  opacity: 1;
+}
+.slidev-icon-btn.disabled {
+  opacity: 0.25;
+  pointer-events: none;
+}
 
 /* Page and thumbnails never show a scrollbar of their own. */
-.slidev-menu-item { display: grid; grid-template-columns: 35px 1fr; padding: 0.5rem 0.5rem 0.5rem 0; cursor: pointer; border-radius: 0.25rem; }
-.slidev-menu-item:hover { background: rgba(156, 163, 175, 0.1); }
-.slidev-menu-item.disabled { opacity: 0.4; cursor: default; pointer-events: none; }
+.slidev-menu-item {
+  display: grid;
+  grid-template-columns: 35px 1fr;
+  padding: 0.5rem 0.5rem 0.5rem 0;
+  cursor: pointer;
+  border-radius: 0.25rem;
+}
+.slidev-menu-item:hover {
+  background: rgba(156, 163, 175, 0.1);
+}
+.slidev-menu-item.disabled {
+  opacity: 0.4;
+  cursor: default;
+  pointer-events: none;
+}
 
 /* Headmatter `presenter: false` (see lib/switches.ts): there is no presenter page to go to. */
-html[data-presenter="off"] #nav-presenter { display: none; }
+html[data-presenter='off'] #nav-presenter {
+  display: none;
+}

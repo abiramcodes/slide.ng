@@ -13,14 +13,22 @@ export const slideName = (no) => `slide-${pad(no)}`;
 export const slideClass = (no) => `Slide${pad(no)}`;
 export { layoutName };
 
-
 // What a transformer in setup/transformers.ts is told about the slide.
-export const slideInfo = (slide, no) => ({ no, index: no - 1, title: slide.title, frontmatter: slide.frontmatter, source: slide.source });
+export const slideInfo = (slide, no) => ({
+  no,
+  index: no - 1,
+  title: slide.title,
+  frontmatter: slide.frontmatter,
+  source: slide.source,
+});
 
 // The layout's opening tag: frontmatter keys the layout knows become attributes (= inputs).
 function openTag(def, frontmatter) {
-  const attrs = def.props.filter((p) => frontmatter[p] != null).map((p) => ` ${p}="${attr(frontmatter[p])}"`);
-  if (frontmatter.class) attrs.push(` ${def.classProp ? 'contentClass' : 'class'}="${attr(frontmatter.class)}"`);
+  const attrs = def.props
+    .filter((p) => frontmatter[p] != null)
+    .map((p) => ` ${p}="${attr(frontmatter[p])}"`);
+  if (frontmatter.class)
+    attrs.push(` ${def.classProp ? 'contentClass' : 'class'}="${attr(frontmatter.class)}"`);
   return `<${def.tag}${attrs.join('')}>`;
 }
 
@@ -30,7 +38,9 @@ function body(markdown, def, no, ctx, layout) {
     .map(([name, text]) => {
       if (name === 'default') return toTemplate(text, ctx);
       if (!def.slots.includes(name)) {
-        console.warn(`[slides] slide ${no}: layout "${layout}" has no slot "${name}", showing it as normal content`);
+        console.warn(
+          `[slides] slide ${no}: layout "${layout}" has no slot "${name}", showing it as normal content`,
+        );
         return toTemplate(text, ctx);
       }
       return `<ng-container ngProjectAs="[${name}]">${toTemplate(text, ctx)}</ng-container>`;
@@ -49,16 +59,25 @@ export function slideSource(slide, no, deck = {}) {
   const layoutKey = slide.layout ?? layoutName(slide.frontmatter, no - 1, layouts);
   const def = layouts[layoutKey];
   const { markdown, css } = extractStyles(tagDragSites(slide.content));
-  const layer = (name) => (deck.layers?.includes(name) ? `<app-slide-layer name="${name}"></app-slide-layer>` : '');
+  const layer = (name) =>
+    deck.layers?.includes(name) ? `<app-slide-layer name="${name}"></app-slide-layer>` : '';
   const layout = `${openTag(def, slide.frontmatter)}${body(markdown, def, no, { file: slide.file, root: deck.root, headmatter: deck.headmatter, codeblocks: deck.transformers?.codeblocks, slide: slideInfo(slide, no) }, layoutKey)}</${def.tag}>`;
   const base = deck.assetBase ?? '/'; // where the deck is served from in a build; `/public` files get it in front
   const html = rebaseHtml(layer('slide-bottom') + layout + layer('slide-top'), base);
 
   // Look for components outside code samples only (code is just text).
-  const markup = html.replace(/<pre[\s\S]*?<\/pre>/g, '').replace(/<code(?:\s[^>]*)?>[\s\S]*?<\/code>/g, '');
+  const markup = html
+    .replace(/<pre[\s\S]*?<\/pre>/g, '')
+    .replace(/<code(?:\s[^>]*)?>[\s\S]*?<\/code>/g, '');
   const used = (deck.components ?? COMPONENTS).filter((c) => c.test.test(markup));
   const imports = [def, ...used];
-  const importLines = [...new Set(imports.map((c) => `import { ${c.className} } from '${c.importPath ?? `../../app/${c.file}`}';`))];
+  const importLines = [
+    ...new Set(
+      imports.map(
+        (c) => `import { ${c.className} } from '${c.importPath ?? `../../app/${c.file}`}';`,
+      ),
+    ),
+  ];
 
   const { clicksStart, clicks } = slide.frontmatter;
   const providers = ['ClicksContext'];

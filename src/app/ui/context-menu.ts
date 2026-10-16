@@ -38,14 +38,19 @@ import { CONTEXT_MENU_SETUP } from '../setup/tokens';
         }
         <div class="w-full my-1 border-t border-main"></div>
         @for (item of items(); track item.label) {
-          <div class="slidev-menu-item w-full" [class.disabled]="item.disabled" (click)="item.run()">
+          <div
+            class="slidev-menu-item w-full"
+            [class.disabled]="item.disabled"
+            (click)="item.run()"
+          >
             <div class="mx-auto flex"><div [class]="item.icon + ' text-1.2em m-auto'"></div></div>
             <div>{{ item.label }}</div>
           </div>
         }
         <div class="w-full my-1 border-t border-main"></div>
         <div class="w-full text-xs p-2 opacity-50">
-          Hold <kbd class="border px-1 py-0.5 border-main rounded text-primary">Shift</kbd> and right click to open the native context menu
+          Hold <kbd class="border px-1 py-0.5 border-main rounded text-primary">Shift</kbd> and
+          right click to open the native context menu
         </div>
       </div>
     }
@@ -60,30 +65,84 @@ export class ContextMenu {
   private menu = viewChild<ElementRef<HTMLElement>>('menu');
 
   protected arrows = computed(() => [
-    { icon: 'i-carbon:arrow-left', title: 'Previous Click', run: () => this.nav.prev(), disabled: !this.nav.hasPrev() },
-    { icon: 'i-carbon:arrow-right', title: 'Next Click', run: () => this.nav.next(), disabled: !this.nav.hasNext() },
-    { icon: 'i-carbon:arrow-up', title: 'Previous Slide', run: () => this.nav.prevSlide(), disabled: this.nav.no() <= 1 },
-    { icon: 'i-carbon:arrow-down', title: 'Next Slide', run: () => this.nav.nextSlide(), disabled: this.nav.no() >= this.nav.total },
+    {
+      icon: 'i-carbon:arrow-left',
+      title: 'Previous Click',
+      run: () => this.nav.prev(),
+      disabled: !this.nav.hasPrev(),
+    },
+    {
+      icon: 'i-carbon:arrow-right',
+      title: 'Next Click',
+      run: () => this.nav.next(),
+      disabled: !this.nav.hasNext(),
+    },
+    {
+      icon: 'i-carbon:arrow-up',
+      title: 'Previous Slide',
+      run: () => this.nav.prevSlide(),
+      disabled: this.nav.no() <= 1,
+    },
+    {
+      icon: 'i-carbon:arrow-down',
+      title: 'Next Slide',
+      run: () => this.nav.nextSlide(),
+      disabled: this.nav.no() >= this.nav.total,
+    },
   ]);
 
-  protected items = computed(() => this.setup([
-    ...(this.drawings.available ? [{ icon: 'i-carbon:pen', label: this.drawings.enabled() ? 'Hide drawing toolbar' : 'Show drawing toolbar', run: () => this.drawings.toggle(), disabled: false }] : []),
-    { icon: 'i-carbon:apps', label: 'Show slide overview', run: () => this.ui.toggleOverview(), disabled: false },
-    ...(presenterEnabled() ? [this.nav.isPresenter
-      ? { icon: 'i-carbon:presentation-file', label: 'Exit Presenter Mode', run: () => this.nav.exitPresenter(), disabled: false }
-      : { icon: 'i-carbon:user-speaker', label: 'Enter Presenter Mode', run: () => this.nav.enterPresenter(), disabled: false }] : []),
-    {
-      icon: this.fullscreen.isFullscreen() ? 'i-carbon:minimize' : 'i-carbon:maximize',
-      label: this.fullscreen.isFullscreen() ? 'Close fullscreen' : 'Enter fullscreen',
-      run: () => this.fullscreen.toggle(),
-      disabled: false,
-    },
-  ]));
+  protected items = computed(() =>
+    this.setup([
+      ...(this.drawings.available
+        ? [
+            {
+              icon: 'i-carbon:pen',
+              label: this.drawings.enabled() ? 'Hide drawing toolbar' : 'Show drawing toolbar',
+              run: () => this.drawings.toggle(),
+              disabled: false,
+            },
+          ]
+        : []),
+      {
+        icon: 'i-carbon:apps',
+        label: 'Show slide overview',
+        run: () => this.ui.toggleOverview(),
+        disabled: false,
+      },
+      ...(presenterEnabled()
+        ? [
+            this.nav.isPresenter
+              ? {
+                  icon: 'i-carbon:presentation-file',
+                  label: 'Exit Presenter Mode',
+                  run: () => this.nav.exitPresenter(),
+                  disabled: false,
+                }
+              : {
+                  icon: 'i-carbon:user-speaker',
+                  label: 'Enter Presenter Mode',
+                  run: () => this.nav.enterPresenter(),
+                  disabled: false,
+                },
+          ]
+        : []),
+      {
+        icon: this.fullscreen.isFullscreen() ? 'i-carbon:minimize' : 'i-carbon:maximize',
+        label: this.fullscreen.isFullscreen() ? 'Close fullscreen' : 'Enter fullscreen',
+        run: () => this.fullscreen.toggle(),
+        disabled: false,
+      },
+    ]),
+  );
 
   // Keep the menu inside the window: if it would stick out, move it back by the overflow.
   private size = signal({ width: 0, height: 0 });
-  protected left = computed(() => this.fit(this.ui.contextMenu()?.x ?? 0, this.size().width, window.innerWidth));
-  protected top = computed(() => this.fit(this.ui.contextMenu()?.y ?? 0, this.size().height, window.innerHeight));
+  protected left = computed(() =>
+    this.fit(this.ui.contextMenu()?.x ?? 0, this.size().width, window.innerWidth),
+  );
+  protected top = computed(() =>
+    this.fit(this.ui.contextMenu()?.y ?? 0, this.size().height, window.innerHeight),
+  );
   private fit = (pos: number, size: number, max: number) => (pos + size > max ? max - size : pos);
 
   constructor() {

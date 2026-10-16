@@ -16,10 +16,14 @@ export class WakeLock {
 
   constructor() {
     if (!this.supported) return;
-    effect(() => { if (this.enabled()) void this.acquire(); else void this.release(); });
+    effect(() => {
+      if (this.enabled()) void this.acquire();
+      else void this.release();
+    });
     // The browser drops the lock when the tab is hidden; ask again when it is back.
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible' && this.enabled() && !this.sentinel) void this.acquire();
+      if (document.visibilityState === 'visible' && this.enabled() && !this.sentinel)
+        void this.acquire();
     });
   }
 
@@ -27,10 +31,15 @@ export class WakeLock {
     if (this.sentinel) return;
     try {
       const sentinel = await navigator.wakeLock.request('screen');
-      sentinel.addEventListener('release', () => { this.sentinel = null; this.held.set(false); });
+      sentinel.addEventListener('release', () => {
+        this.sentinel = null;
+        this.held.set(false);
+      });
       this.sentinel = sentinel;
       this.held.set(true);
-    } catch { /* refused (hidden tab, battery saver): the setting stays on, `held` stays false */ }
+    } catch {
+      /* refused (hidden tab, battery saver): the setting stays on, `held` stays false */
+    }
   }
 
   private async release() {

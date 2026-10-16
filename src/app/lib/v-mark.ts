@@ -1,13 +1,25 @@
 // <span v-mark.red.circle="2">text</span>: draws a hand-made looking mark around the element
 // on a click. Uses rough-notation, loaded only when a slide has a v-mark.
-import { Directive, ElementRef, OnDestroy, OnInit, effect, inject, input, signal } from '@angular/core';
+import {
+  Directive,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  effect,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { RENDER_CONTEXT } from './slide-context';
 import type { RoughAnnotation } from 'rough-notation/lib/model';
 import { ClickInfo, ClicksContext } from './clicks';
 import { markOptions } from './mark-options';
 
 // While the mark is still to be drawn the element has `data-slide-ng-waitfor`, so an exporter can wait for it.
-@Directive({ selector: '[v-mark]', host: { '[attr.data-slide-ng-waitfor]': 'pending() ? "svg.rough-annotation" : null' } })
+@Directive({
+  selector: '[v-mark]',
+  host: { '[attr.data-slide-ng-waitfor]': 'pending() ? "svg.rough-annotation" : null' },
+})
 export class VMark implements OnInit, OnDestroy {
   value = input<unknown>(undefined, { alias: 'v-mark' });
   // The generator moves `.red.circle` out of the attribute name into this one.
@@ -31,11 +43,18 @@ export class VMark implements OnInit, OnDestroy {
       const info = this.info();
       const show = at === true || at === 'true' || (!!info && info.isActive(this.ctx.current()));
       clearTimeout(this.timer);
-      if (!show) { this.pending.set(false); return mark.hide(); }
+      if (!show) {
+        this.pending.set(false);
+        return mark.hide();
+      }
       // rough-notation has no delay option, so we wait ourselves.
       // On paper there is no animation and no delay: the mark is just there.
-      const delay = this.printing ? 0 : this.options.delay ?? 0;
-      this.timer = setTimeout(() => { mark.show(); this.fade(); this.pending.set(false); }, delay);
+      const delay = this.printing ? 0 : (this.options.delay ?? 0);
+      this.timer = setTimeout(() => {
+        mark.show();
+        this.fade();
+        this.pending.set(false);
+      }, delay);
     });
   }
 
@@ -50,7 +69,9 @@ export class VMark implements OnInit, OnDestroy {
     const { annotate } = await import('rough-notation');
     if (this.gone) return;
     const { at: _at, delay: _d, opacity: _o, ...config } = this.options;
-    this.annotation.set(annotate(this.el, (this.printing ? { ...config, animate: false } : config) as never));
+    this.annotation.set(
+      annotate(this.el, (this.printing ? { ...config, animate: false } : config) as never),
+    );
   }
 
   ngOnDestroy() {
@@ -64,7 +85,9 @@ export class VMark implements OnInit, OnDestroy {
   private fade() {
     const { opacity } = this.options;
     if (opacity == null) return;
-    const svg = [this.el.nextElementSibling, this.el.previousElementSibling].find((n) => n?.matches('svg.rough-annotation'));
+    const svg = [this.el.nextElementSibling, this.el.previousElementSibling].find((n) =>
+      n?.matches('svg.rough-annotation'),
+    );
     if (svg) (svg as SVGElement).style.opacity = String(opacity);
   }
 }

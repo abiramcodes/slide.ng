@@ -5,7 +5,9 @@ import { CLICKS_START, ClicksContext, normalizeSingle } from './clicks';
 
 // Makes a ClicksContext; `mount` pretends the slide has been rendered (what afterNextRender does).
 function make(clicksStart = 0, mount = true) {
-  TestBed.configureTestingModule({ providers: [ClicksContext, { provide: CLICKS_START, useValue: clicksStart }] });
+  TestBed.configureTestingModule({
+    providers: [ClicksContext, { provide: CLICKS_START, useValue: clicksStart }],
+  });
   const ctx = TestBed.inject(ClicksContext);
   if (mount) TestBed.tick();
   return ctx;
@@ -142,7 +144,9 @@ describe('total and current', () => {
     ctx.register('a', ctx.calculateSince(2));
     ctx.prev();
     expect(ctx.current()).toBe(0);
-    ctx.next(); ctx.next(); ctx.next();
+    ctx.next();
+    ctx.next();
+    ctx.next();
     expect(ctx.current()).toBe(2);
   });
   it('clicksStart is the first click and the lower limit', () => {

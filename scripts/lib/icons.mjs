@@ -8,7 +8,8 @@ export function installedSets(dir = 'node_modules/@iconify-json') {
   return existsSync(dir) ? readdirSync(dir) : [];
 }
 
-const TAG = /<(\/?)([a-z][a-z0-9]*(?:-[a-z0-9]+)+)((?:\s+[^\s=>/"']+(?:\s*=\s*(?:"[^"]*"|'[^']*'))?)*)\s*(\/?)>/g;
+const TAG =
+  /<(\/?)([a-z][a-z0-9]*(?:-[a-z0-9]+)+)((?:\s+[^\s=>/"']+(?:\s*=\s*(?:"[^"]*"|'[^']*'))?)*)\s*(\/?)>/g;
 
 /** @param {string} html @param {string[]} [sets] */
 export function rewriteIcons(html, sets = installedSets()) {
@@ -21,7 +22,10 @@ export function rewriteIcons(html, sets = installedSets()) {
     const icon = `i-${set}:${name.slice(set.length + 1)}`;
     // An existing class attribute is kept and gets the icon class added.
     let found = false;
-    let rest = attrs.replace(/(\sclass\s*=\s*)(["'])(.*?)\2/, (_, eq, q, value) => { found = true; return `${eq}${q}${icon} ${value}${q}`; });
+    let rest = attrs.replace(/(\sclass\s*=\s*)(["'])(.*?)\2/, (_, eq, q, value) => {
+      found = true;
+      return `${eq}${q}${icon} ${value}${q}`;
+    });
     if (!found) rest = ` class="${icon}"${attrs}`;
     return selfClose ? `<span${rest}></span>` : `<span${rest}>`;
   });

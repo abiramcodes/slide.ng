@@ -53,7 +53,9 @@ function mark(tree: TocItem[], current: number, hasActiveParent = false): boolea
 
 // Removes the items marked `hideInToc` (with their children), like Slidev.
 function withoutHidden(tree: TocItem[]): TocItem[] {
-  return tree.filter((i) => !i.hideInToc).map((i) => ({ ...i, children: withoutHidden(i.children) }));
+  return tree
+    .filter((i) => !i.hideInToc)
+    .map((i) => ({ ...i, children: withoutHidden(i.children) }));
 }
 
 export function buildTocTree(slides: TocSlide[], current: number): TocItem[] {
@@ -92,5 +94,9 @@ function onlySiblings(tree: TocItem[]): TocItem[] {
 
 export function filterToc(tree: TocItem[], o: TocOptions): TocItem[] {
   const deep = byDepth(tree, o);
-  return o.mode === 'onlyCurrentTree' ? onlyCurrentTree(deep) : o.mode === 'onlySiblings' ? onlySiblings(deep) : deep;
+  return o.mode === 'onlyCurrentTree'
+    ? onlyCurrentTree(deep)
+    : o.mode === 'onlySiblings'
+      ? onlySiblings(deep)
+      : deep;
 }

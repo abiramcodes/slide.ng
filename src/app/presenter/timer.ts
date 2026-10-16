@@ -10,8 +10,11 @@ export function parseDuration(value: unknown): number {
   if (typeof value === 'number' && value > 0) return value * 60;
   if (typeof value !== 'string') return 30 * 60;
   const units: Record<string, number> = { h: 3600, hr: 3600, min: 60, m: 60, s: 1 };
-  let seconds = 0, found = false;
-  for (const [, n, unit] of value.toLowerCase().matchAll(/(\d+(?:\.\d+)?)\s*(hr|h|min|m|s)(?![a-z])/g)) {
+  let seconds = 0,
+    found = false;
+  for (const [, n, unit] of value
+    .toLowerCase()
+    .matchAll(/(\d+(?:\.\d+)?)\s*(hr|h|min|m|s)(?![a-z])/g)) {
     seconds += +n * units[unit];
     found = true;
   }
@@ -26,8 +29,14 @@ export function passedMs(t: TimerState, now: number): number {
 }
 
 /** The parts of the clock face. A stopwatch that has not started shows dashes. */
-export function clockParts(mode: 'stopwatch' | 'countdown', durationSec: number, t: TimerState, now: number) {
-  if (mode === 'stopwatch' && (t.status === 'stopped' || !t.startedAt)) return { h: '', m: '-', s: '--' };
+export function clockParts(
+  mode: 'stopwatch' | 'countdown',
+  durationSec: number,
+  t: TimerState,
+  now: number,
+) {
+  if (mode === 'stopwatch' && (t.status === 'stopped' || !t.startedAt))
+    return { h: '', m: '-', s: '--' };
   const total = mode === 'countdown' ? durationSec * 1000 - passedMs(t, now) : passedMs(t, now);
   const negative = total < 0;
   const abs = Math.abs(total);
@@ -44,7 +53,8 @@ export function clockParts(mode: 'stopwatch' | 'countdown', durationSec: number,
 @Injectable({ providedIn: 'root' })
 export class Timer {
   private sync = inject(SyncState);
-  readonly mode: 'stopwatch' | 'countdown' = HEADMATTER['timer'] === 'countdown' ? 'countdown' : 'stopwatch';
+  readonly mode: 'stopwatch' | 'countdown' =
+    HEADMATTER['timer'] === 'countdown' ? 'countdown' : 'stopwatch';
   readonly duration = parseDuration(HEADMATTER['duration']);
   private state = computed(() => this.sync.shared().timer);
   /** The clock; it ticks only while the timer runs. */
@@ -63,7 +73,9 @@ export class Timer {
     });
   }
 
-  private set(timer: TimerState) { this.sync.patchShared({ timer }); }
+  private set(timer: TimerState) {
+    this.sync.patchShared({ timer });
+  }
 
   start() {
     const t = this.state();
@@ -74,9 +86,14 @@ export class Timer {
   }
 
   pause() {
-    if (this.state().status === 'running') this.set({ ...this.state(), status: 'paused', pausedAt: Date.now() });
+    if (this.state().status === 'running')
+      this.set({ ...this.state(), status: 'paused', pausedAt: Date.now() });
   }
 
-  toggle() { this.status() === 'running' ? this.pause() : this.start(); }
-  reset() { this.set({ status: 'stopped', startedAt: 0, pausedAt: 0 }); }
+  toggle() {
+    this.status() === 'running' ? this.pause() : this.start();
+  }
+  reset() {
+    this.set({ status: 'stopped', startedAt: 0, pausedAt: 0 });
+  }
 }

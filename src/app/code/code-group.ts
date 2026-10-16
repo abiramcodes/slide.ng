@@ -8,7 +8,11 @@ import { CodeBlockWrapper } from './code-block-wrapper';
   template: `
     <div class="slidev-code-group-tabs">
       @for (block of blocks(); track $index) {
-        <button class="slidev-code-tab" [class.active]="$index === selected()" (click)="selected.set($index)">
+        <button
+          class="slidev-code-tab"
+          [class.active]="$index === selected()"
+          (click)="selected.set($index)"
+        >
           {{ block.title() || 'Tab ' + ($index + 1) }}
         </button>
       }

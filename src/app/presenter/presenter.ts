@@ -32,47 +32,122 @@ import { TimerInlined } from './timer-inlined';
 // It drives the other windows (see sync/nav-sync.ts). Same navigation as the play page.
 @Component({
   selector: 'app-presenter',
-  imports: [SlideShow, PresenterCursor, DrawingLayer, DrawingControls, DragControls, NextPreview, NoteDisplay, NavBar, ProgressBar, TimerBar, TimerInlined, ClicksSlider, WebCamera, ScreenMirror, Overview, Goto, ContextMenu],
+  imports: [
+    SlideShow,
+    PresenterCursor,
+    DrawingLayer,
+    DrawingControls,
+    DragControls,
+    NextPreview,
+    NoteDisplay,
+    NavBar,
+    ProgressBar,
+    TimerBar,
+    TimerInlined,
+    ClicksSlider,
+    WebCamera,
+    ScreenMirror,
+    Overview,
+    Goto,
+    ContextMenu,
+  ],
   providers: [Nav, Ui, Drawings],
   host: { '(window:keydown)': 'key($event)', class: 'block h-full' },
   template: `
-    <div class="bg-main text-main h-full slidev-presenter grid grid-rows-[max-content_1fr] of-hidden">
+    <div
+      class="bg-main text-main h-full slidev-presenter grid grid-rows-[max-content_1fr] of-hidden"
+    >
       <div>
-        <app-progress-bar [current]="nav.no()" [clicks]="nav.clicks()" [clicksTotal]="nav.clicksTotal()" [total]="nav.total" />
+        <app-progress-bar
+          [current]="nav.no()"
+          [clicks]="nav.clicks()"
+          [clicksTotal]="nav.clicksTotal()"
+          [total]="nav.total"
+        />
         <app-timer-bar />
       </div>
-      <div class="grid-container" [class]="'layout' + prefs.layout()" (contextmenu)="contextMenu($event)">
+      <div
+        class="grid-container"
+        [class]="'layout' + prefs.layout()"
+        (contextmenu)="contextMenu($event)"
+      >
         <div class="relative grid-section main flex flex-col">
           <div class="flex gap-4 items-center border-b border-main p-1">
             <span class="op50 px-2">Current</span>
             <div class="flex rounded border border-main overflow-hidden text-sm ml-auto">
-              <button type="button" id="main-slides" class="px-2 py-0.5" [class.bg-active]="!mirror()" (click)="mirror.set(false)">Slides</button>
-              <button type="button" id="main-mirror" class="px-2 py-0.5" [class.bg-active]="mirror()" (click)="mirror.set(true)">Screen Mirror</button>
+              <button
+                type="button"
+                id="main-slides"
+                class="px-2 py-0.5"
+                [class.bg-active]="!mirror()"
+                (click)="mirror.set(false)"
+              >
+                Slides
+              </button>
+              <button
+                type="button"
+                id="main-mirror"
+                class="px-2 py-0.5"
+                [class.bg-active]="mirror()"
+                (click)="mirror.set(true)"
+              >
+                Screen Mirror
+              </button>
             </div>
           </div>
-          <div class="relative flex-auto p-2 lg:p-4" [style.display]="mirror() ? 'none' : null"><div class="relative h-full w-full"><app-slide-show context="presenter"><app-drawing-layer /><app-drag-controls /><app-presenter-cursor /></app-slide-show></div></div>
-          <div class="relative flex-auto p-2 lg:p-4" [style.display]="mirror() ? null : 'none'"><app-screen-mirror /></div>
+          <div class="relative flex-auto p-2 lg:p-4" [style.display]="mirror() ? 'none' : null">
+            <div class="relative h-full w-full">
+              <app-slide-show context="presenter"
+                ><app-drawing-layer /><app-drag-controls /><app-presenter-cursor
+              /></app-slide-show>
+            </div>
+          </div>
+          <div class="relative flex-auto p-2 lg:p-4" [style.display]="mirror() ? null : 'none'">
+            <app-screen-mirror />
+          </div>
           <app-clicks-slider
             class="w-full pb-2 px-4 flex-none"
-            [current]="nav.clicks()" [total]="nav.clicksTotal()" [start]="nav.ctx()?.clicksStart ?? 0"
+            [current]="nav.clicks()"
+            [total]="nav.clicksTotal()"
+            [start]="nav.ctx()?.clicksStart ?? 0"
             (change)="nav.ctx()?.setCurrent($event)"
           />
         </div>
         <div class="relative grid-section next flex flex-col p-2 lg:p-4">
           <app-next-preview />
-          <div class="absolute left-0 top-0 bg-main border-b border-r border-main px-2 py-1 op50 text-sm">Next</div>
+          <div
+            class="absolute left-0 top-0 bg-main border-b border-r border-main px-2 py-1 op50 text-sm"
+          >
+            Next
+          </div>
         </div>
         <div class="relative grid-section note overflow-hidden">
           <div class="h-full grid grid-rows-[1fr_min-content]">
             <div class="overflow-auto" [style.font-size.em]="prefs.fontSize()">
               <app-note-display
-                [html]="nav.meta().noteHtml" [clicks]="nav.clicks()" [placeholder]="'No notes for Slide ' + nav.no() + '.'"
+                [html]="nav.meta().noteHtml"
+                [clicks]="nav.clicks()"
+                [placeholder]="'No notes for Slide ' + nav.no() + '.'"
                 (markerDblclick)="nav.ctx()?.setCurrent($event)"
               />
             </div>
             <div class="border-t border-main py-1 px-2 text-sm">
-              <button icon-btn id="notes-bigger" title="Increase font size" (click)="prefs.bigger()"><div class="i-carbon:zoom-in"></div></button>
-              <button icon-btn id="notes-smaller" title="Decrease font size" (click)="prefs.smaller()"><div class="i-carbon:zoom-out"></div></button>
+              <button
+                icon-btn
+                id="notes-bigger"
+                title="Increase font size"
+                (click)="prefs.bigger()"
+              >
+                <div class="i-carbon:zoom-in"></div>
+              </button>
+              <button
+                icon-btn
+                id="notes-smaller"
+                title="Decrease font size"
+                (click)="prefs.smaller()"
+              >
+                <div class="i-carbon:zoom-out"></div>
+              </button>
             </div>
           </div>
         </div>
@@ -88,7 +163,9 @@ import { TimerInlined } from './timer-inlined';
     <app-goto />
     <app-overview />
     <app-context-menu />
-    <div id="hud">slide {{ nav.no() }}/{{ nav.total }} clicks {{ nav.clicks() }}/{{ nav.clicksTotal() }}</div>
+    <div id="hud">
+      slide {{ nav.no() }}/{{ nav.total }} clicks {{ nav.clicks() }}/{{ nav.clicksTotal() }}
+    </div>
   `,
 })
 export class Presenter {

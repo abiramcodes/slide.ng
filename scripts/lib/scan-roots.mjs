@@ -6,7 +6,8 @@ import { join } from 'node:path';
 import { COMPONENTS, LAYOUTS } from './registry.mjs';
 
 // `@Component({ ... selector: 'x' ... }) export class Name` (also @Directive).
-const DECLARATION = /@(?:Component|Directive)\(\{[\s\S]*?selector:\s*['"]([^'"]+)['"][\s\S]*?\}\)\s*export\s+class\s+(\w+)/g;
+const DECLARATION =
+  /@(?:Component|Directive)\(\{[\s\S]*?selector:\s*['"]([^'"]+)['"][\s\S]*?\}\)\s*export\s+class\s+(\w+)/g;
 
 /** `[{ selector, className }]` for every component or directive declared in some source text. */
 export function declarations(source) {
@@ -21,7 +22,12 @@ export function selectorTest(selector) {
   return new RegExp(`<${escape(selector)}[\\s>/]`);
 }
 
-const tsFilesIn = (dir) => (existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.ts') && !f.endsWith('.spec.ts')).sort() : []);
+const tsFilesIn = (dir) =>
+  existsSync(dir)
+    ? readdirSync(dir)
+        .filter((f) => f.endsWith('.ts') && !f.endsWith('.spec.ts'))
+        .sort()
+    : [];
 
 /**
  * The layouts and components of the roots on top of the built-in ones. Import paths are relative to
@@ -37,20 +43,33 @@ export function scanRoots(roots) {
     for (const file of tsFilesIn(join(root.dir, 'layouts'))) {
       const name = file.slice(0, -3);
       const found = declarations(readFileSync(join(root.dir, 'layouts', file), 'utf8'))[0];
-      if (!found) { problems.push(`${root.id}/layouts/${file}: no component with a selector and an exported class, ignored`); continue; }
+      if (!found) {
+        problems.push(
+          `${root.id}/layouts/${file}: no component with a selector and an exported class, ignored`,
+        );
+        continue;
+      }
       // A layout that replaces a built-in one keeps its inputs, unless theme.json says otherwise.
       const base = layouts[name] ?? { props: [], slots: [], classProp: false };
       const declared = root.manifest.layouts[name] ?? {};
       layouts[name] = {
-        className: found.className, tag: found.selector, importPath: `./roots/${root.id}/layouts/${name}`,
-        props: declared.props ?? base.props, slots: declared.slots ?? base.slots, classProp: declared.classProp ?? base.classProp,
+        className: found.className,
+        tag: found.selector,
+        importPath: `./roots/${root.id}/layouts/${name}`,
+        props: declared.props ?? base.props,
+        slots: declared.slots ?? base.slots,
+        classProp: declared.classProp ?? base.classProp,
       };
     }
     for (const file of tsFilesIn(join(root.dir, 'components'))) {
       for (const d of declarations(readFileSync(join(root.dir, 'components', file), 'utf8'))) {
         const known = components.findIndex((c) => c.className === d.className);
         if (known >= 0) components.splice(known, 1); // same class name: the later root replaces it
-        components.push({ className: d.className, importPath: `./roots/${root.id}/components/${file.slice(0, -3)}`, test: selectorTest(d.selector) });
+        components.push({
+          className: d.className,
+          importPath: `./roots/${root.id}/components/${file.slice(0, -3)}`,
+          test: selectorTest(d.selector),
+        });
       }
     }
   }

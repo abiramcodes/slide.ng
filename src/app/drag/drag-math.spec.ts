@@ -1,4 +1,15 @@
-import { formatArrow, formatBox, moveArrow, moveArrowEnd, moveBox, nudgeDelta, parseArrow, parseBox, resizeBox, rotationTo } from './drag-math';
+import {
+  formatArrow,
+  formatBox,
+  moveArrow,
+  moveArrowEnd,
+  moveBox,
+  nudgeDelta,
+  parseArrow,
+  parseBox,
+  resizeBox,
+  rotationTo,
+} from './drag-math';
 
 describe('parseBox', () => {
   it('reads both spellings', () => {
@@ -11,7 +22,8 @@ describe('parseBox', () => {
     expect(parseBox('1,2,3')?.h).toBeNaN();
   });
   it('refuses anything else', () => {
-    for (const t of ['', 'square', '1,2', '1,2,3,4,5,6', 'a,b,c', '_,2,3']) expect(parseBox(t)).toBeNull();
+    for (const t of ['', 'square', '1,2', '1,2,3,4,5,6', 'a,b,c', '_,2,3'])
+      expect(parseBox(t)).toBeNull();
   });
 });
 
@@ -29,13 +41,19 @@ describe('formatBox', () => {
   });
   it('can be read back', () => {
     const b = { x: 5, y: 6, w: 70, h: NaN, rot: -20 };
-    for (const style of ['array', 'plain'] as const) expect(parseBox(formatBox(b, style))).toEqual(b);
+    for (const style of ['array', 'plain'] as const)
+      expect(parseBox(formatBox(b, style))).toEqual(b);
   });
 });
 
 describe('moveBox and nudgeDelta', () => {
   it('moves by the given distance', () => {
-    expect(moveBox({ x: 1, y: 2, w: 3, h: 4, rot: 0 }, 10, -5)).toMatchObject({ x: 11, y: -3, w: 3, h: 4 });
+    expect(moveBox({ x: 1, y: 2, w: 3, h: 4, rot: 0 }, 10, -5)).toMatchObject({
+      x: 11,
+      y: -3,
+      w: 3,
+      h: 4,
+    });
   });
   it('nudges 1px with an arrow, 10px with Shift', () => {
     expect(nudgeDelta('ArrowLeft', false)).toEqual({ dx: -1, dy: 0 });

@@ -16,5 +16,7 @@ export class VClickGap implements OnInit, OnDestroy {
     this.ctx.register(this, { delta, max: this.ctx.currentOffset + delta - 1 });
   }
 
-  ngOnDestroy() { this.ctx.unregister(this); }
+  ngOnDestroy() {
+    this.ctx.unregister(this);
+  }
 }

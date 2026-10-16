@@ -11,7 +11,9 @@ export function setHeadmatterKey(markdown, key, value) {
   if (first < 0 || lines[first].trim() !== '---') return `---\n${line}\n---\n\n${markdown}`;
   const close = lines.findIndex((l, i) => i > first && l.trim() === '---');
   if (close < 0) return `---\n${line}\n---\n\n${markdown}`; // an unclosed block is not frontmatter
-  const existing = lines.findIndex((l, i) => i > first && i < close && new RegExp(`^${key}\\s*:`).test(l));
+  const existing = lines.findIndex(
+    (l, i) => i > first && i < close && new RegExp(`^${key}\\s*:`).test(l),
+  );
   if (existing >= 0) lines[existing] = line;
   else lines.splice(first + 1, 0, line);
   return lines.join('\n');

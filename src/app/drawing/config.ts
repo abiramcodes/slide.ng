@@ -13,11 +13,15 @@ export interface DrawingsConfig {
 }
 
 /** The headmatter `drawings:` block with Slidev's defaults. `enabled` may be `dev` or `build` to limit it to development or to the built deck. */
-export function readDrawingsConfig(headmatter: Record<string, unknown>, dev: boolean): DrawingsConfig {
+export function readDrawingsConfig(
+  headmatter: Record<string, unknown>,
+  dev: boolean,
+): DrawingsConfig {
   const raw = (headmatter['drawings'] ?? {}) as Record<string, unknown>;
   const enabled = raw['enabled'];
   return {
-    enabled: enabled === false ? false : enabled === 'dev' ? dev : enabled === 'build' ? !dev : true,
+    enabled:
+      enabled === false ? false : enabled === 'dev' ? dev : enabled === 'build' ? !dev : true,
     persist: !!raw['persist'],
     presenterOnly: !!raw['presenterOnly'],
     syncAll: raw['syncAll'] !== false,

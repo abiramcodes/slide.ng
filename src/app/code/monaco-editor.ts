@@ -1,6 +1,17 @@
 // A code block that is a real editor:  ```ts {monaco}   ```ts {monaco-diff}   ```ts {monaco-run}
 // Port of Slidev's Monaco.vue. Monaco itself is loaded lazily the first time one of these is on screen.
-import { Component, ElementRef, afterNextRender, booleanAttribute, computed, effect, inject, input, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  afterNextRender,
+  booleanAttribute,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { DevApi } from '../dev/dev-api';
 import { Dark } from '../lib/dark';
 import { CodeRunner } from './code-runner';
@@ -15,19 +26,28 @@ const EXTENSIONS: Record<string, string> = { typescript: 'mts', javascript: 'mjs
 let modelCounter = 0;
 
 // `autorun` is true, false or the text "once".
-const toAutorun = (v: unknown): boolean | 'once' => (v === 'once' ? 'once' : !(v === false || v === 'false'));
+const toAutorun = (v: unknown): boolean | 'once' =>
+  v === 'once' ? 'once' : !(v === false || v === 'false');
 
 @Component({
   selector: 'monaco',
   imports: [CodeRunner],
   // The host has `data-slide-ng-waitfor` until Monaco is loaded and the editor exists, so an exporter can wait.
-  host: { class: 'relative slidev-monaco-container block', '[attr.data-slide-ng-waitfor]': 'loaded() ? null : ".monaco-editor"' },
+  host: {
+    class: 'relative slidev-monaco-container block',
+    '[attr.data-slide-ng-waitfor]': 'loaded() ? null : ".monaco-editor"',
+  },
   template: `
     <div class="relative slidev-monaco-container-inner" [style.height]="height()">
       <div #box class="absolute inset-0.5"></div>
     </div>
     @if (runnable()) {
-      <code-runner [code]="code()" [execute]="execute" [autorun]="autorun()" [showOutputAt]="showOutputAt()" />
+      <code-runner
+        [code]="code()"
+        [execute]="execute"
+        [autorun]="autorun()"
+        [showOutputAt]="showOutputAt()"
+      />
     }
   `,
 })
@@ -84,22 +104,43 @@ export class MonacoEditor {
     for (const setup of this.setups) Object.assign(fromSetup, await setup(monaco));
     const lang = LANGUAGES[this.lang()] ?? this.lang();
     const ext = EXTENSIONS[lang] ?? lang;
-    const newModel = (value: string) => monaco.editor.createModel(value, lang, monaco.Uri.parse(`file:///model-${++modelCounter}.${ext}`));
+    const newModel = (value: string) =>
+      monaco.editor.createModel(
+        value,
+        lang,
+        monaco.Uri.parse(`file:///model-${++modelCounter}.${ext}`),
+      );
 
     const model = (this.model = newModel(text));
     this.code.set(text);
     const base = {
-      automaticLayout: true, readOnly: this.readonly(), lineNumbers: this.lines() ? 'on' : 'off',
-      minimap: { enabled: false }, overviewRulerBorder: false, overviewRulerLanes: 0, padding: { top: 10, bottom: 10 },
-      lineNumbersMinChars: 3, bracketPairColorization: { enabled: false }, tabSize: 2, fontSize: 11.5,
-      fontFamily: 'var(--slidev-code-font-family)', scrollBeyondLastLine: false, useInlineViewWhenSpaceIsLimited: false,
+      automaticLayout: true,
+      readOnly: this.readonly(),
+      lineNumbers: this.lines() ? 'on' : 'off',
+      minimap: { enabled: false },
+      overviewRulerBorder: false,
+      overviewRulerLanes: 0,
+      padding: { top: 10, bottom: 10 },
+      lineNumbersMinChars: 3,
+      bracketPairColorization: { enabled: false },
+      tabSize: 2,
+      fontSize: 11.5,
+      fontFamily: 'var(--slidev-code-font-family)',
+      scrollBeyondLastLine: false,
+      useInlineViewWhenSpaceIsLimited: false,
       theme: this.dark.isDark() ? 'vs-dark' : 'vs',
     } as const;
     const options: Monaco.editor.IStandaloneEditorConstructionOptions = { ...base, ...fromSetup };
 
-    const grow = (height: number) => { this.firstHeight.update((h) => h || height); this.contentHeight.set(height); };
+    const grow = (height: number) => {
+      this.firstHeight.update((h) => h || height);
+      this.contentHeight.set(height);
+    };
     if (modified != null) {
-      const editor = monaco.editor.createDiffEditor(this.box().nativeElement, { renderOverviewRuler: false, ...options });
+      const editor = monaco.editor.createDiffEditor(this.box().nativeElement, {
+        renderOverviewRuler: false,
+        ...options,
+      });
       const changed = newModel(modified);
       editor.setModel({ original: model, modified: changed });
       const [a, b] = [editor.getOriginalEditor(), editor.getModifiedEditor()];
@@ -108,7 +149,11 @@ export class MonacoEditor {
       b.onDidContentSizeChange(resize);
       changed.onDidChangeContent(() => this.code.set(changed.getValue()));
     } else {
-      const editor = monaco.editor.create(this.box().nativeElement, { model, lineDecorationsWidth: 0, ...options });
+      const editor = monaco.editor.create(this.box().nativeElement, {
+        model,
+        lineDecorationsWidth: 0,
+        ...options,
+      });
       editor.onDidContentSizeChange((e) => grow(e.contentHeight + 4));
     }
     model.onDidChangeContent(() => {
@@ -125,7 +170,10 @@ export class MonacoEditor {
     const id = this.writeId();
     if (!id) return;
     clearTimeout(this.writeTimer);
-    this.writeTimer = setTimeout(() => void this.api.send('PUT', `/monaco/${id}`, { content: text }), 600);
+    this.writeTimer = setTimeout(
+      () => void this.api.send('PUT', `/monaco/${id}`, { content: text }),
+      600,
+    );
   }
 
   // Runs the editor's text: TypeScript is turned into JavaScript by Monaco's own TypeScript worker.
@@ -141,7 +189,9 @@ export class MonacoEditor {
       const worker = await this.monaco!.typescript.getTypeScriptWorker();
       const client = await worker(this.model.uri);
       const out = await client.getEmitOutput(this.model.uri.toString());
-      js = out.outputFiles.find((f) => f.name.endsWith('.js') || f.name.endsWith('.mjs'))?.text ?? code;
+      js =
+        out.outputFiles.find((f) => f.name.endsWith('.js') || f.name.endsWith('.mjs'))?.text ??
+        code;
     }
     return runJs(js.replace('export {};', ''));
   };

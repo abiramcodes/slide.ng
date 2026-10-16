@@ -3,11 +3,11 @@
 A checklist for the day before a talk in a room with no internet (or one you do not trust). There are three ways to carry
 a deck; pick one, and rehearse it on the machine you will present from.
 
-| | works with no network | needs a first visit online | needs a server | opens by double click |
-| --- | --- | --- | --- | --- |
-| **Offline folder** (`slide-ng build --offline`) | yes | no | no | yes |
-| **PWA** (`pwa: true`, a normal build) | yes, after one visit | **yes** | yes (HTTPS or `localhost`) | no |
-| **PDF** (`slide-ng export`) | yes | no | no | yes |
+|                                                 | works with no network | needs a first visit online | needs a server             | opens by double click |
+| ----------------------------------------------- | --------------------- | -------------------------- | -------------------------- | --------------------- |
+| **Offline folder** (`slide-ng build --offline`) | yes                   | no                         | no                         | yes                   |
+| **PWA** (`pwa: true`, a normal build)           | yes, after one visit  | **yes**                    | yes (HTTPS or `localhost`) | no                    |
+| **PDF** (`slide-ng export`)                     | yes                   | no                         | no                         | yes                   |
 
 What was tested, and where it was not, is written at the end of this page. "Tested" always means Chromium (the engine of Chrome and Edge).
 

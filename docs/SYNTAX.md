@@ -9,12 +9,13 @@ lines at the top of a slide is that slide's frontmatter.
 
 ```md
 ---
-title: My talk          # headmatter: frontmatter of the first slide, describes the deck
+title: My talk # headmatter: frontmatter of the first slide, describes the deck
 ---
 
 # First slide
 
 ---
+
 layout: center
 class: text-red-500
 ---
@@ -24,33 +25,33 @@ class: text-red-500
 
 Keys slide.ng understands:
 
-| key            | what it does                                                        |
-| -------------- | ------------------------------------------------------------------- |
-| `layout`       | one of the layouts below. The first slide is `cover` if you set nothing, all others `default`. |
-| `class`        | extra CSS (UnoCSS) classes on the layout (on the content for layouts that have a `class` prop, see Layouts) |
-| `title`        | slide title (otherwise the first `#` heading); used in the browser tab, the table of contents and the goto box |
-| `level`        | depth in the table of contents (otherwise the number of `#` in the first heading) |
-| `hideInToc`    | leave this slide out of `<slide-toc>`                                |
-| `routeAlias`   | an extra address: `routeAlias: intro` makes `/intro` open this slide  |
-| `hide`, `disabled` | the slide is left out of the deck completely                    |
-| `clicksStart`  | first click number of the slide (default 0)                          |
-| `clicks`       | fixes the number of clicks of the slide, whatever its elements ask for |
-| `transition`   | transition to the next slide, see Transitions                        |
-| `src`          | take the slides from another markdown file, see Importing slides      |
-| `image`, `url`, `scale`, `backgroundSize`, `background`, `layoutClass` | props of some layouts |
+| key                                                                    | what it does                                                                                                   |
+| ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `layout`                                                               | one of the layouts below. The first slide is `cover` if you set nothing, all others `default`.                 |
+| `class`                                                                | extra CSS (UnoCSS) classes on the layout (on the content for layouts that have a `class` prop, see Layouts)    |
+| `title`                                                                | slide title (otherwise the first `#` heading); used in the browser tab, the table of contents and the goto box |
+| `level`                                                                | depth in the table of contents (otherwise the number of `#` in the first heading)                              |
+| `hideInToc`                                                            | leave this slide out of `<slide-toc>`                                                                          |
+| `routeAlias`                                                           | an extra address: `routeAlias: intro` makes `/intro` open this slide                                           |
+| `hide`, `disabled`                                                     | the slide is left out of the deck completely                                                                   |
+| `clicksStart`                                                          | first click number of the slide (default 0)                                                                    |
+| `clicks`                                                               | fixes the number of clicks of the slide, whatever its elements ask for                                         |
+| `transition`                                                           | transition to the next slide, see Transitions                                                                  |
+| `src`                                                                  | take the slides from another markdown file, see Importing slides                                               |
+| `image`, `url`, `scale`, `backgroundSize`, `background`, `layoutClass` | props of some layouts                                                                                          |
 
 In the headmatter (the frontmatter of the first slide) you can also set:
 
-| key            | what it does                                                        |
-| -------------- | ------------------------------------------------------------------- |
-| `title`        | deck title (browser tab, info dialog)                                |
-| `info`         | markdown text shown in the info dialog                               |
-| `colorSchema`  | `auto` (default: follow the system, the user can toggle), `light` or `dark` (fixed, no toggle) |
-| `transition`   | the transition of every slide that sets none                         |
-| `defaults`     | frontmatter that every slide starts from, e.g. `defaults: { layout: center }`; a slide's own keys win |
-| `theme`, `addons` | the look of the deck: a folder, a package name, or `default`; see "Themes and addons" below |
-| `titleTemplate`, `author`, `keywords`, `favicon`, `lang`, `htmlAttrs`, `seoMeta` | the page's `<head>`, see "The page, export and build" below |
-| `download`, `exportFilename`, `export`, `remoteAssets`, `pwa` | export and build settings, see below |
+| key                                                                              | what it does                                                                                          |
+| -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `title`                                                                          | deck title (browser tab, info dialog)                                                                 |
+| `info`                                                                           | markdown text shown in the info dialog                                                                |
+| `colorSchema`                                                                    | `auto` (default: follow the system, the user can toggle), `light` or `dark` (fixed, no toggle)        |
+| `transition`                                                                     | the transition of every slide that sets none                                                          |
+| `defaults`                                                                       | frontmatter that every slide starts from, e.g. `defaults: { layout: center }`; a slide's own keys win |
+| `theme`, `addons`                                                                | the look of the deck: a folder, a package name, or `default`; see "Themes and addons" below           |
+| `titleTemplate`, `author`, `keywords`, `favicon`, `lang`, `htmlAttrs`, `seoMeta` | the page's `<head>`, see "The page, export and build" below                                           |
+| `download`, `exportFilename`, `export`, `remoteAssets`, `pwa`                    | export and build settings, see below                                                                  |
 
 Any other key is kept in the slide's metadata and ignored.
 
@@ -82,26 +83,26 @@ The last HTML comment of a slide is its note:
 
 All layouts of Slidev, with the same names and props (see `docs/screenshots/` for pictures).
 
-| layout | use | props (frontmatter) |
-| ------ | --- | ------------------- |
-| `default` | normal content | |
-| `cover` | title slide | `background` (colour or image, dimmed) |
-| `intro` | introduce the talk | |
-| `center` | content in the middle of the screen (add `class: text-center` to centre the text too) | |
-| `section` | start of a new section | |
-| `statement` | a statement as the main content | |
-| `fact` | one big fact or number | |
-| `quote` | a quotation | |
-| `end` | last slide; shows `END` when empty | |
-| `full` | content uses the whole screen, no padding | |
-| `none` | no styling at all | |
-| `image` | an image as the whole slide | `image`, `backgroundSize` |
-| `image-left`, `image-right` | image on one side, content on the other | `image`, `backgroundSize`, `class` (goes to the content) |
-| `iframe` | a web page as the whole slide | `url`, `scale` |
-| `iframe-left`, `iframe-right` | web page on one side | `url`, `scale`, `class` (goes to the content) |
-| `two-cols` | two columns, slots `::left::` (also the default text) and `::right::` | `class` (both columns), `layoutClass` (the whole layout) |
-| `two-cols-header` | a header, two columns and a bottom row: `::left::`, `::right::`, `::bottom::`; the text before the first marker is the header | `class`, `layoutClass` |
-| `404`, `error` | shown when an address matches no slide, or a slide fails | |
+| layout                        | use                                                                                                                           | props (frontmatter)                                      |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| `default`                     | normal content                                                                                                                |                                                          |
+| `cover`                       | title slide                                                                                                                   | `background` (colour or image, dimmed)                   |
+| `intro`                       | introduce the talk                                                                                                            |                                                          |
+| `center`                      | content in the middle of the screen (add `class: text-center` to centre the text too)                                         |                                                          |
+| `section`                     | start of a new section                                                                                                        |                                                          |
+| `statement`                   | a statement as the main content                                                                                               |                                                          |
+| `fact`                        | one big fact or number                                                                                                        |                                                          |
+| `quote`                       | a quotation                                                                                                                   |                                                          |
+| `end`                         | last slide; shows `END` when empty                                                                                            |                                                          |
+| `full`                        | content uses the whole screen, no padding                                                                                     |                                                          |
+| `none`                        | no styling at all                                                                                                             |                                                          |
+| `image`                       | an image as the whole slide                                                                                                   | `image`, `backgroundSize`                                |
+| `image-left`, `image-right`   | image on one side, content on the other                                                                                       | `image`, `backgroundSize`, `class` (goes to the content) |
+| `iframe`                      | a web page as the whole slide                                                                                                 | `url`, `scale`                                           |
+| `iframe-left`, `iframe-right` | web page on one side                                                                                                          | `url`, `scale`, `class` (goes to the content)            |
+| `two-cols`                    | two columns, slots `::left::` (also the default text) and `::right::`                                                         | `class` (both columns), `layoutClass` (the whole layout) |
+| `two-cols-header`             | a header, two columns and a bottom row: `::left::`, `::right::`, `::bottom::`; the text before the first marker is the header | `class`, `layoutClass`                                   |
+| `404`, `error`                | shown when an address matches no slide, or a slide fails                                                                      |                                                          |
 
 `image` is an address (`/photo.png` is served from the `public/` folder) or a colour for the
 background. An unknown layout name prints a warning that lists the names and uses `default`.
@@ -194,25 +195,25 @@ turn the list into HTML. Options: `depth="2"` (include nested lists), `every="2"
 
 Available in every slide without importing anything.
 
-| tag | what it does |
-| --- | ------------ |
-| `<slide-toc />` | table of contents from the slides' `title` and `level`. Options: `columns="2"`, `listClass="..."`, `start="1"`, `listStyle="..."`, `minDepth`, `maxDepth`, `mode="all\|onlyCurrentTree\|onlySiblings"` |
-| `<slide-current-no />` | the number of the slide it is on |
-| `<slides-total />` | the number of slides |
-| `<slide-link to="3">text</slide-link>` | a link to slide 3, or to a `routeAlias`. (Called `slide-link` because `link` is a built-in HTML tag.) |
-| `<light-or-dark>` | shows `<div dark>...</div>` in dark mode and `<div light>...</div>` in light mode |
-| `<render-when context="slide">` | content only where the slide is drawn: `slide`, `presenter`, `print`, `overview`, or `main` (slide or presenter). `[context]="['slide','overview']"` takes several. Content marked `<div fallback>` shows everywhere else |
-| `<v-switch>` | one child per click: `<v-switch><div at="1">a</div><div at="2">b</div><div at="3-5">c</div></v-switch>` (a number lasts until the next one starts, `3-5` is explicit) |
-| `<v-click-gap size="2" />` | leaves two clicks empty |
-| `<v-clicks>`, `v-click`, `v-after` | see Clicks |
-| `<arrow x1="10" y1="20" x2="100" y2="200" color="red" width="2" two-way />` | an arrow on the slide (SVG, positions in slide pixels). `two-way` adds a head at the start |
-| `<transform scale="0.5" origin="top left">` | scales what is inside |
-| `<auto-fit-text min="10" max="60" class="w-60 h-20">text</auto-fit-text>` | the biggest font size (between `min` and `max`) that fits the box. `multi-line="false"` keeps it on one line |
-| `<youtube id="luoMHjh-XcQ" width="560" height="315" />` | an embedded YouTube video (`id` is the video id; no start time or playlist options) |
-| `<slide-video autoplay="true" autoreset="click" controls poster="...">` | a video that plays when its slide (or its `v-click`) comes. `autoplay="once"` plays once; `timestamp` starts at a second. Put `<source>` tags inside |
-| `<tweet id="20" scale="0.8" conversation="none" cards="hidden" />` | an embedded tweet (loads Twitter's script, needs the network) |
-| `<blue-sky uri="at://did:.../app.bsky.feed.post/..." scale="0.8" />` | an embedded Bluesky post (needs the network). `uri` can also be the post's web address |
-| `<code-group>`, `<code-block-wrapper>`, `<shiki-magic-move>`, `<katex-block-wrapper>`, `<mermaid>`, `<plant-uml>`, `<monaco>` | written by the generator for code fences and math; you normally use the markdown forms below |
+| tag                                                                                                                           | what it does                                                                                                                                                                                                              |
+| ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `<slide-toc />`                                                                                                               | table of contents from the slides' `title` and `level`. Options: `columns="2"`, `listClass="..."`, `start="1"`, `listStyle="..."`, `minDepth`, `maxDepth`, `mode="all\|onlyCurrentTree\|onlySiblings"`                    |
+| `<slide-current-no />`                                                                                                        | the number of the slide it is on                                                                                                                                                                                          |
+| `<slides-total />`                                                                                                            | the number of slides                                                                                                                                                                                                      |
+| `<slide-link to="3">text</slide-link>`                                                                                        | a link to slide 3, or to a `routeAlias`. (Called `slide-link` because `link` is a built-in HTML tag.)                                                                                                                     |
+| `<light-or-dark>`                                                                                                             | shows `<div dark>...</div>` in dark mode and `<div light>...</div>` in light mode                                                                                                                                         |
+| `<render-when context="slide">`                                                                                               | content only where the slide is drawn: `slide`, `presenter`, `print`, `overview`, or `main` (slide or presenter). `[context]="['slide','overview']"` takes several. Content marked `<div fallback>` shows everywhere else |
+| `<v-switch>`                                                                                                                  | one child per click: `<v-switch><div at="1">a</div><div at="2">b</div><div at="3-5">c</div></v-switch>` (a number lasts until the next one starts, `3-5` is explicit)                                                     |
+| `<v-click-gap size="2" />`                                                                                                    | leaves two clicks empty                                                                                                                                                                                                   |
+| `<v-clicks>`, `v-click`, `v-after`                                                                                            | see Clicks                                                                                                                                                                                                                |
+| `<arrow x1="10" y1="20" x2="100" y2="200" color="red" width="2" two-way />`                                                   | an arrow on the slide (SVG, positions in slide pixels). `two-way` adds a head at the start                                                                                                                                |
+| `<transform scale="0.5" origin="top left">`                                                                                   | scales what is inside                                                                                                                                                                                                     |
+| `<auto-fit-text min="10" max="60" class="w-60 h-20">text</auto-fit-text>`                                                     | the biggest font size (between `min` and `max`) that fits the box. `multi-line="false"` keeps it on one line                                                                                                              |
+| `<youtube id="luoMHjh-XcQ" width="560" height="315" />`                                                                       | an embedded YouTube video (`id` is the video id; no start time or playlist options)                                                                                                                                       |
+| `<slide-video autoplay="true" autoreset="click" controls poster="...">`                                                       | a video that plays when its slide (or its `v-click`) comes. `autoplay="once"` plays once; `timestamp` starts at a second. Put `<source>` tags inside                                                                      |
+| `<tweet id="20" scale="0.8" conversation="none" cards="hidden" />`                                                            | an embedded tweet (loads Twitter's script, needs the network)                                                                                                                                                             |
+| `<blue-sky uri="at://did:.../app.bsky.feed.post/..." scale="0.8" />`                                                          | an embedded Bluesky post (needs the network). `uri` can also be the post's web address                                                                                                                                    |
+| `<code-group>`, `<code-block-wrapper>`, `<shiki-magic-move>`, `<katex-block-wrapper>`, `<mermaid>`, `<plant-uml>`, `<monaco>` | written by the generator for code fences and math; you normally use the markdown forms below                                                                                                                              |
 
 The table of contents lists every slide that has a title and is not `hideInToc`. A slide whose level is higher than the one
 before it becomes its child: `# A`, `## A.1`, `## A.2`, `# B` gives A (with A.1, A.2) and B. In `mode="onlyCurrentTree"` only the path to
@@ -225,19 +226,19 @@ The language is the first word. Everything after it is optional and written in S
 
 ````md
 ```ts [title.ts] {2,3|5|all} {lines:true, startLine:5, maxHeight:'100px'}
-const a = 1
+const a = 1;
 ```
 ````
 
-| part | meaning |
-| ---- | ------- |
-| `[title.ts]` | a title bar above the block |
-| `{2,3}` | lines 2 and 3 are highlighted, the others are dimmed. `{*}` highlights nothing and keeps every line normal |
-| `{1\|3-4\|all}` | one range **per click**: line 1, then lines 3 and 4, then everything (`hide` shows nothing; `all` shows all lines). Each `\|` adds one click to the slide |
-| `{at:'+1', finally:'last'}` | in the options: the first click of the ranges (default `+1`) and what is shown after the last click (`last`, `all`, `hide` or a range) |
-| `lines:true` | line numbers (set `lineNumbers: true` in the headmatter for every block) |
-| `startLine:5` | the first line number |
-| `maxHeight:'100px'` | scroll inside the block |
+| part                        | meaning                                                                                                                                                   |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `[title.ts]`                | a title bar above the block                                                                                                                               |
+| `{2,3}`                     | lines 2 and 3 are highlighted, the others are dimmed. `{*}` highlights nothing and keeps every line normal                                                |
+| `{1\|3-4\|all}`             | one range **per click**: line 1, then lines 3 and 4, then everything (`hide` shows nothing; `all` shows all lines). Each `\|` adds one click to the slide |
+| `{at:'+1', finally:'last'}` | in the options: the first click of the ranges (default `+1`) and what is shown after the last click (`last`, `all`, `hide` or a range)                    |
+| `lines:true`                | line numbers (set `lineNumbers: true` in the headmatter for every block)                                                                                  |
+| `startLine:5`               | the first line number                                                                                                                                     |
+| `maxHeight:'100px'`         | scroll inside the block                                                                                                                                   |
 
 The ranges and the options are two separate braces, as in Slidev. Options only take simple values (numbers, `true`/`false`, text).
 Hover a block to get the copy button. Colours: `shiki: { themes: { light: 'vitesse-light', dark: 'vitesse-dark' } }` in the headmatter,
@@ -285,13 +286,15 @@ Use a fence with **four** backticks and `magic-move` after the language, holding
 `````md
 ````md magic-move {lines: true}
 ```js {*|1|2-3}
-let count = 1
-function add() { count++ }
+let count = 1;
+function add() {
+  count++;
+}
 ```
 
 ```ts
-let count: number = 1
-const add = () => count += 1
+let count: number = 1;
+const add = () => (count += 1);
 ```
 ````
 `````
@@ -350,17 +353,16 @@ An editor in the slide (the Monaco editor, loaded only when a deck has one, no n
 
 ````md
 ```ts {monaco}
-const message: string = 'edit me'
+const message: string = 'edit me';
 ```
 
 ```ts {monaco-diff}
-console.log('Original text')
-~~~
-console.log('Modified text')
+console.log('Original text');
+~~~console.log('Modified text');
 ```
 
 ```ts {monaco-run} {autorun:false, showOutputAt:'+1', height:'auto'}
-console.log('runs on a click and the result appears')
+console.log('runs on a click and the result appears');
 ```
 ````
 
@@ -378,7 +380,7 @@ Add `twoslash` after the language and hover the code to see types (worked out wh
 
 ````md
 ```ts twoslash
-const count = Math.max(1, 2)
+const count = Math.max(1, 2);
 //    ^?
 ```
 ````
@@ -508,8 +510,8 @@ Windows of one browser follow each other with no server; other devices need the 
 
 ```md
 ---
-duration: 30min     # 30min, 1h30min, 90s, or a number of minutes
-timer: countdown    # or stopwatch (default)
+duration: 30min # 30min, 1h30min, 90s, or a number of minutes
+timer: countdown # or stopwatch (default)
 ---
 ```
 
@@ -524,10 +526,10 @@ Drawings are per slide, shared between windows, and kept in the browser. Headmat
 ```md
 ---
 drawings:
-  enabled: true       # false, or dev / build to allow it only while developing / only in the built deck
-  persist: true       # while `npm start` runs, save .slide-ng/drawings/<slide>.svg; builds show those files
+  enabled: true # false, or dev / build to allow it only while developing / only in the built deck
+  persist: true # while `npm start` runs, save .slide-ng/drawings/<slide>.svg; builds show those files
   presenterOnly: false
-  syncAll: true       # false: viewers' drawings stay on their own screen
+  syncAll: true # false: viewers' drawings stay on their own screen
 ---
 ```
 
@@ -545,7 +547,7 @@ Dark mode, slide scale, hide idle cursor, keep the screen awake (headmatter `wak
 ## Moving things: `v-drag`
 
 ```md
-<img v-drag="[100, 200, 300, 150]" src="/pic.png">   <!-- x, y, width, height, in slide pixels -->
+<img v-drag="[100, 200, 300, 150]" src="/pic.png"> <!-- x, y, width, height, in slide pixels -->
 <div v-drag="square">named: numbers in the frontmatter</div>
 <div v-drag>starts where it is and can be moved</div>
 <v-drag pos="100,200,300,_">height follows the content</v-drag>
@@ -567,10 +569,10 @@ Put the element directly in the slide (not inside a positioned wrapper), as in S
 
 ```md
 ---
-canvasWidth: 980       # default 980, like Slidev
-aspectRatio: 16/9      # or 4/3, 1.6 ...
-zoom: 0.8              # all slides; a slide's own `zoom:` wins
-routerMode: hash       # addresses look like /#/3 (default: history)
+canvasWidth: 980 # default 980, like Slidev
+aspectRatio: 16/9 # or 4/3, 1.6 ...
+zoom: 0.8 # all slides; a slide's own `zoom:` wins
+routerMode: hash # addresses look like /#/3 (default: history)
 ---
 ```
 
@@ -597,30 +599,32 @@ Keys in the headmatter (the first frontmatter) that matter for `slide-ng build` 
 ```md
 ---
 title: My talk
-titleTemplate: '%s | Conf 2026'   # %s is the title; the browser tab shows "My talk | Conf 2026"
-info: |                           # markdown for the info dialog; without markup, up to 300 characters, it is also the page description
+titleTemplate: '%s | Conf 2026' # %s is the title; the browser tab shows "My talk | Conf 2026"
+info:
+  | # markdown for the info dialog; without markup, up to 300 characters, it is also the page description
   ## About this talk
 author: Ada
-keywords: [angular, slides]       # a list or a comma separated text
-lang: en                          # <html lang>
-favicon: /favicon.ico             # a file of public/, or a web address
-htmlAttrs: { data-theme: x }      # more attributes on <html>
-seoMeta:                          # Open Graph and Twitter tags (ogTitle, ogDescription, ogImage, ogUrl, twitterCard, ...)
-  ogImage: auto                   # auto = a screenshot of slide 1 made by the build; or a web address. An og-image.png next to slides.md is used when none is given
+keywords: [angular, slides] # a list or a comma separated text
+lang: en # <html lang>
+favicon: /favicon.ico # a file of public/, or a web address
+htmlAttrs: { data-theme: x } # more attributes on <html>
+seoMeta: # Open Graph and Twitter tags (ogTitle, ogDescription, ogImage, ogUrl, twitterCard, ...)
+  ogImage: auto # auto = a screenshot of slide 1 made by the build; or a web address. An og-image.png next to slides.md is used when none is given
   ogUrl: https://example.org/talk # the public address; makes the picture's address complete
-download: true                    # a PDF button in the bar (the PDF is made by `slide-ng build --download`); or a file name or address
-exportFilename: my-talk           # the name of the exported file, without the extension. Only a plain name: folders and .. are removed
-export:                           # defaults for `slide-ng export`; command line flags win
+download: true # a PDF button in the bar (the PDF is made by `slide-ng build --download`); or a file name or address
+exportFilename: my-talk # the name of the exported file, without the extension. Only a plain name: folders and .. are removed
+export: # defaults for `slide-ng export`; command line flags win
   format: pdf
   withClicks: true
   dark: false
-remoteAssets: true                # a build downloads pictures with http(s) addresses and serves them itself
-pwa: true                         # a build adds a manifest, install icons and a service worker: the deck opens offline after one visit
-                                  # (icon: public/icon.png, public/icon.svg or a local favicon, else a letter from the title)
-fonts:                            # web fonts, as in Slidev (sans, serif, mono, local, weights, italic, fallbacks, provider)
+remoteAssets: true # a build downloads pictures with http(s) addresses and serves them itself
+pwa:
+  true # a build adds a manifest, install icons and a service worker: the deck opens offline after one visit
+  # (icon: public/icon.png, public/icon.svg or a local favicon, else a letter from the title)
+fonts: # web fonts, as in Slidev (sans, serif, mono, local, weights, italic, fallbacks, provider)
   sans: Inter
-  selfHost: true                  # a build downloads the font files and serves them itself (default on with `pwa` and `build --offline`; false turns it off)
-  provider: google                # google, coollabs, none, or the address of a Google-compatible css2 endpoint
+  selfHost: true # a build downloads the font files and serves them itself (default on with `pwa` and `build --offline`; false turns it off)
+  provider: google # google, coollabs, none, or the address of a Google-compatible css2 endpoint
 ---
 ```
 
@@ -635,7 +639,7 @@ In an exported PDF a slide that has clicks shows its last state, unless `--with-
 
 ```md
 ---
-theme: ./my-theme       # a folder next to the deck, or a package: `ocean` means @slide-ng/theme-ocean or slide-ng-theme-ocean
+theme: ./my-theme # a folder next to the deck, or a package: `ocean` means @slide-ng/theme-ocean or slide-ng-theme-ocean
 addons: [./charts]
 ---
 ```
@@ -646,17 +650,17 @@ A package name that is not installed stops the run with the command that install
 
 ## Keys, mouse and the interface
 
-| key | action |
-| --- | ------ |
-| right, space, page down | next click, or next slide |
-| left, shift + space, page up | previous click, or previous slide |
-| down, shift + right | next slide (skips the clicks) |
-| up, shift + left | previous slide |
-| `f` | fullscreen |
-| `o` or backtick | slide overview (arrows move, Enter opens, Escape closes) |
-| `d` | dark / light |
-| `g` | go to a slide: type a number or part of a title, Enter |
-| Escape | close the overview, dialogs and menus |
+| key                          | action                                                   |
+| ---------------------------- | -------------------------------------------------------- |
+| right, space, page down      | next click, or next slide                                |
+| left, shift + space, page up | previous click, or previous slide                        |
+| down, shift + right          | next slide (skips the clicks)                            |
+| up, shift + left             | previous slide                                           |
+| `f`                          | fullscreen                                               |
+| `o` or backtick              | slide overview (arrows move, Enter opens, Escape closes) |
+| `d`                          | dark / light                                             |
+| `g`                          | go to a slide: type a number or part of a title, Enter   |
+| Escape                       | close the overview, dialogs and menus                    |
 
 The bar at the bottom left (fullscreen, previous, next, overview, dark mode, drawing, presenter mode, info, settings, counter)
 shows when the mouse is there. Drawing, presenter mode, camera and recording (when `record` is on) and the dev-only editor button are live. Right click opens a menu with the same actions;
@@ -668,11 +672,14 @@ Change the keys by providing `SHORTCUTS_SETUP` in `src/app/app.config.ts`. It ge
 import { SHORTCUTS_SETUP } from './lib/shortcuts';
 
 providers: [
-  { provide: SHORTCUTS_SETUP, useValue: (actions, list) => [
-      ...list.filter((s) => s.name !== 'next_space'),               // remove one
-      { name: 'my_next', key: 'n', run: () => actions.next() },    // add one
-  ] },
-]
+  {
+    provide: SHORTCUTS_SETUP,
+    useValue: (actions, list) => [
+      ...list.filter((s) => s.name !== 'next_space'), // remove one
+      { name: 'my_next', key: 'n', run: () => actions.next() }, // add one
+    ],
+  },
+];
 ```
 
 Dark mode follows the system until the user presses `d` or the sun/moon button; the choice is kept in the browser

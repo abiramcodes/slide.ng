@@ -13,15 +13,26 @@ import { emptyFolder } from './remote-assets.mjs';
 const MAX_BYTES = 5 * 1024 * 1024;
 const TIMEOUT_MS = 20_000;
 // Providers answer with the best format the browser says it understands; without a modern browser name they send big TrueType files.
-const BROWSER = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36';
-const EXTENSIONS = { 'font/woff2': '.woff2', 'font/woff': '.woff', 'font/ttf': '.ttf', 'font/otf': '.otf', 'application/font-woff2': '.woff2', 'application/font-woff': '.woff', 'application/x-font-ttf': '.ttf' };
+const BROWSER =
+  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36';
+const EXTENSIONS = {
+  'font/woff2': '.woff2',
+  'font/woff': '.woff',
+  'font/ttf': '.ttf',
+  'font/otf': '.otf',
+  'application/font-woff2': '.woff2',
+  'application/font-woff': '.woff',
+  'application/x-font-ttf': '.ttf',
+};
 
 /** Should this build download the fonts? `building` is a production build, `offline` is `--offline`. */
 export function wantsFontFiles(headmatter, { building, offline }) {
   const fonts = headmatter.fonts;
   if (!building || !fonts || typeof fonts !== 'object') return false;
   if (fonts.selfHost === false) return false;
-  return fonts.selfHost === true || offline || headmatter.pwa === true || headmatter.pwa === 'build';
+  return (
+    fonts.selfHost === true || offline || headmatter.pwa === true || headmatter.pwa === 'build'
+  );
 }
 
 /** Every `url(...)` of a style sheet that is a web address, without duplicates. */
@@ -42,7 +53,11 @@ export function fontFileName(url, contentType = '') {
 // The bytes at an address, or null with a warning.
 async function download(url, warn, fetchImpl, headers = {}) {
   try {
-    const res = await fetchImpl(url, { signal: AbortSignal.timeout(TIMEOUT_MS), redirect: 'follow', headers });
+    const res = await fetchImpl(url, {
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+      redirect: 'follow',
+      headers,
+    });
     if (!res.ok) return warn(`${url} answered ${res.status}`);
     const bytes = Buffer.from(await res.arrayBuffer());
     if (bytes.length > MAX_BYTES) return warn(`${url} is larger than 5 MB`);
@@ -61,7 +76,12 @@ export async function bundleFonts(headmatter, folder, warn = console.warn, fetch
   emptyFolder(folder);
   const sheet = fontsUrl(resolveFonts(headmatter.fonts));
   if (!sheet) return null;
-  const answer = await download(sheet, (m) => warn(`fonts: ${m}; the deck will load them from the provider`), fetchImpl, { 'user-agent': BROWSER });
+  const answer = await download(
+    sheet,
+    (m) => warn(`fonts: ${m}; the deck will load them from the provider`),
+    fetchImpl,
+    { 'user-agent': BROWSER },
+  );
   if (!answer) return null;
   let css = answer.bytes.toString('utf8');
   let taken = 0;

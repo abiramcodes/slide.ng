@@ -17,20 +17,20 @@ There are two kinds of hooks:
 - **Browser hooks** become part of the app: `main`, `root`, `shortcuts`, `context-menu`, `mermaid`, `monaco`, `code-runners`. They must be `.ts`
   files; Angular compiles them with the rest of the app, so `import type { ... } from 'slide-ng/...'` and `@angular/core` work.
 
-| File | Runs | Function receives | Returns |
-| --- | --- | --- | --- |
-| `setup/shiki.ts` | generating | `{}` | Shiki options |
-| `setup/katex.ts` | generating | nothing | KaTeX options |
-| `setup/transformers.ts` | generating | nothing | `{ pre, codeblocks }` |
-| `setup/preparser.ts` | generating | `{ filepath, headmatter, mode }` | a list of extensions |
-| `setup/mermaid.ts` | browser | nothing | Mermaid config |
-| `setup/monaco.ts` | browser | `monaco` | editor options (or nothing) |
-| `setup/code-runners.ts` | browser | nothing | `{ language: run }` |
-| `setup/shortcuts.ts` | browser | `(actions, list)` | the list of shortcuts |
-| `setup/context-menu.ts` | browser | `items` | the list of entries |
-| `setup/main.ts` | browser, at start | nothing | Angular providers |
-| `setup/root.ts` | browser, at start | nothing | nothing |
-| `setup/providers.ts` | browser, at start | (the older way) | an array of providers is the default export |
+| File                    | Runs              | Function receives                | Returns                                     |
+| ----------------------- | ----------------- | -------------------------------- | ------------------------------------------- |
+| `setup/shiki.ts`        | generating        | `{}`                             | Shiki options                               |
+| `setup/katex.ts`        | generating        | nothing                          | KaTeX options                               |
+| `setup/transformers.ts` | generating        | nothing                          | `{ pre, codeblocks }`                       |
+| `setup/preparser.ts`    | generating        | `{ filepath, headmatter, mode }` | a list of extensions                        |
+| `setup/mermaid.ts`      | browser           | nothing                          | Mermaid config                              |
+| `setup/monaco.ts`       | browser           | `monaco`                         | editor options (or nothing)                 |
+| `setup/code-runners.ts` | browser           | nothing                          | `{ language: run }`                         |
+| `setup/shortcuts.ts`    | browser           | `(actions, list)`                | the list of shortcuts                       |
+| `setup/context-menu.ts` | browser           | `items`                          | the list of entries                         |
+| `setup/main.ts`         | browser, at start | nothing                          | Angular providers                           |
+| `setup/root.ts`         | browser, at start | nothing                          | nothing                                     |
+| `setup/providers.ts`    | browser, at start | (the older way)                  | an array of providers is the default export |
 
 ## Shiki: `setup/shiki.ts`
 
@@ -74,7 +74,10 @@ Returns `{ pre, codeblocks }`, as in Slidev.
 // setup/transformers.ts
 export default () => ({
   pre: [({ s }) => s.replace(/\[\[\[(.*?)\]\]\]/g, (_all, text) => `<b>${text}</b>`)],
-  codeblocks: [({ info, code }) => (info.startsWith('count') ? `<p>${code.trim().length} characters</p>` : undefined)],
+  codeblocks: [
+    ({ info, code }) =>
+      info.startsWith('count') ? `<p>${code.trim().length} characters</p>` : undefined,
+  ],
 });
 ```
 
@@ -90,7 +93,9 @@ export default () => [
   {
     name: 'shout',
     transformRawLines(lines: string[]) {
-      lines.forEach((line, i) => { if (line.startsWith('!! ')) lines[i] = `# ${line.slice(3).toUpperCase()}`; });
+      lines.forEach((line, i) => {
+        if (line.startsWith('!! ')) lines[i] = `# ${line.slice(3).toUpperCase()}`;
+      });
     },
   },
 ];

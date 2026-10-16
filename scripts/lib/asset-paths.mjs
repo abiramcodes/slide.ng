@@ -20,9 +20,23 @@ const CSS_URL = new RegExp(`(url\\(\\s*)(["']?)${ROOT}([^)"'\\s]*)\\2(\\s*\\))`,
  */
 export function rebaseHtml(html, base) {
   if (base === '/') return html;
-  return html.split(CODE).map((part, i) => (i % 2 ? part : part
-    .replace(ATTRIBUTE, (_, name, quote, rest) => `${name}${quote}${rebase(`/${rest}`, base)}${quote}`)
-    .replace(CSS_URL, (_, open, quote, rest, close) => `${open}${quote}${rebase(`/${rest}`, base)}${quote}${close}`))).join('');
+  return html
+    .split(CODE)
+    .map((part, i) =>
+      i % 2
+        ? part
+        : part
+            .replace(
+              ATTRIBUTE,
+              (_, name, quote, rest) => `${name}${quote}${rebase(`/${rest}`, base)}${quote}`,
+            )
+            .replace(
+              CSS_URL,
+              (_, open, quote, rest, close) =>
+                `${open}${quote}${rebase(`/${rest}`, base)}${quote}${close}`,
+            ),
+    )
+    .join('');
 }
 
 /**
@@ -31,5 +45,8 @@ export function rebaseHtml(html, base) {
  */
 export function rebaseCss(css, base) {
   if (base === '/' || base === './') return css;
-  return css.replace(CSS_URL, (_, open, quote, rest, close) => `${open}${quote}${rebase(`/${rest}`, base)}${quote}${close}`);
+  return css.replace(
+    CSS_URL,
+    (_, open, quote, rest, close) => `${open}${quote}${rebase(`/${rest}`, base)}${quote}${close}`,
+  );
 }

@@ -15,8 +15,14 @@ export async function resolvePostUri(input: string): Promise<string | undefined>
   try {
     const m = POST_URL.exec(new URL(input).pathname);
     if (!m) return undefined;
-    const handle = await (await fetch(`${API}/com.atproto.identity.resolveHandle?handle=${encodeURIComponent(decodeURIComponent(m[1]))}`)).json();
-    return handle.did ? `at://${handle.did}/app.bsky.feed.post/${decodeURIComponent(m[2])}` : undefined;
+    const handle = await (
+      await fetch(
+        `${API}/com.atproto.identity.resolveHandle?handle=${encodeURIComponent(decodeURIComponent(m[1]))}`,
+      )
+    ).json();
+    return handle.did
+      ? `at://${handle.did}/app.bsky.feed.post/${decodeURIComponent(m[2])}`
+      : undefined;
   } catch {
     return undefined;
   }
@@ -29,13 +35,19 @@ export async function resolvePostUri(input: string): Promise<string | undefined>
     <transform [scale]="scale() || 1">
       <div #box class="slidev-bluesky">
         @if (uri2()) {
-          <blockquote class="bluesky-embed" [attr.data-bluesky-uri]="uri2()" [attr.data-bluesky-embed-color-mode]="dark.isDark() ? 'dark' : 'light'"></blockquote>
+          <blockquote
+            class="bluesky-embed"
+            [attr.data-bluesky-uri]="uri2()"
+            [attr.data-bluesky-embed-color-mode]="dark.isDark() ? 'dark' : 'light'"
+          ></blockquote>
         }
         @if (!loaded() || notFound()) {
           <div class="h-30 w-30 my-10px bg-gray-400 bg-opacity-10 rounded-lg flex opacity-50">
             <div class="m-auto animate-pulse text-4xl">
               <div class="i-carbon:logo-twitter"></div>
-              @if (notFound()) { <span>Could not load Bluesky post</span> }
+              @if (notFound()) {
+                <span>Could not load Bluesky post</span>
+              }
             </div>
           </div>
         }
@@ -56,12 +68,20 @@ export class BlueSky implements OnInit {
 
   async ngOnInit() {
     const resolved = await resolvePostUri(this.uri());
-    if (!resolved) { this.notFound.set(true); this.loaded.set(true); return; }
+    if (!resolved) {
+      this.notFound.set(true);
+      this.loaded.set(true);
+      return;
+    }
     this.uri2.set(resolved);
     try {
       await loadScript('https://embed.bsky.app/static/embed.js');
       // The script finds <blockquote class="bluesky-embed"> in the box and replaces it with an iframe.
-      setTimeout(() => (window as unknown as { bluesky?: { scan(el?: HTMLElement): void } }).bluesky?.scan(this.box().nativeElement));
+      setTimeout(() =>
+        (window as unknown as { bluesky?: { scan(el?: HTMLElement): void } }).bluesky?.scan(
+          this.box().nativeElement,
+        ),
+      );
     } catch (e) {
       console.warn(e);
       this.notFound.set(true);

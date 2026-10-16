@@ -47,12 +47,12 @@ node bin/slide-ng.mjs theme eject              # copy the theme in use into ./th
 node bin/slide-ng.mjs mcp [slides.md]          # MCP server on stdio: read and edit slides with a tool client
 ```
 
-| command | flags |
-| --- | --- |
-| `dev` | `--port`/`-p` (4230), `--open`/`-o`, `--remote[=password]`, `--bind <address>`, `--log error\|warn\|info\|silent`, `--force`/`-f` (clear the build cache), `--theme`/`-t`. `--tunnel` and `--base` are refused with a message |
-| `build` | `--out`/`-o` (`dist`), `--base /talk/`, `--offline` (a folder that opens from disk; no `--base`), `--download` (also make the PDF and a download button), `--without-notes`, `--theme`/`-t`, `--executable-path`, `--timeout` |
+| command  | flags                                                                                                                                                                                                                                                                                                                               |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `dev`    | `--port`/`-p` (4230), `--open`/`-o`, `--remote[=password]`, `--bind <address>`, `--log error\|warn\|info\|silent`, `--force`/`-f` (clear the build cache), `--theme`/`-t`. `--tunnel` and `--base` are refused with a message                                                                                                       |
+| `build`  | `--out`/`-o` (`dist`), `--base /talk/`, `--offline` (a folder that opens from disk; no `--base`), `--download` (also make the PDF and a download button), `--without-notes`, `--theme`/`-t`, `--executable-path`, `--timeout`                                                                                                       |
 | `export` | `--format pdf\|png\|pptx\|md`, `--output`/`-o`, `--range 1,4-5`, `--with-clicks`/`-c`, `--dark`, `--timeout`, `--wait`, `--wait-until`, `--executable-path`, `--per-slide`, `--scale`, `--omit-background`, `--with-toc`, `--theme`/`-t`, and `--dist <folder>` / `--url <address>` to export an existing build or a running server |
-| `create` | `<folder>`, `--force` (add the missing files to a folder that has files) |
+| `create` | `<folder>`, `--force` (add the missing files to a folder that has files)                                                                                                                                                                                                                                                            |
 
 The export needs a Chromium: set `CHROME_PATH` or pass `--executable-path`. It never downloads one. The headmatter can set `exportFilename`, `export: { ... }` (the same names as the flags) and `download`.
 Hosting, `--base`, the PDF button, the offline mode and the head tags are in [docs/HOSTING.md](docs/HOSTING.md); going offline for a talk is in [docs/OFFLINE.md](docs/OFFLINE.md). Setup files (`setup/shiki.ts`, `katex.ts`, `mermaid.ts`, `monaco.ts`, `shortcuts.ts`, ...) are in [docs/SETUP.md](docs/SETUP.md). Themes and addons are in [docs/THEMES.md](docs/THEMES.md) and [docs/WRITING-A-THEME.md](docs/WRITING-A-THEME.md); the official themes are packages `@slide-ng/theme-<name>` in the separate slide.ng-themes repository.

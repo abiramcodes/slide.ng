@@ -6,7 +6,12 @@ const entry = (title: string, level: number | null, page: number) => ({ title, l
 
 describe('outlineTree', () => {
   it('nests a deeper title inside the one before', () => {
-    const tree = outlineTree([entry('A', 1, 0), entry('A.1', 2, 1), entry('A.2', 2, 2), entry('B', 1, 3)]);
+    const tree = outlineTree([
+      entry('A', 1, 0),
+      entry('A.1', 2, 1),
+      entry('A.2', 2, 2),
+      entry('B', 1, 3),
+    ]);
     expect(tree.map((t: any) => t.title)).toEqual(['A', 'B']);
     expect(tree[0].children.map((t: any) => t.title)).toEqual(['A.1', 'A.2']);
   });

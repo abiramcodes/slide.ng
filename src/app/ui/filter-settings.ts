@@ -9,10 +9,25 @@ import { ViewPrefs } from '../lib/view-prefs';
     @for (f of fields; track f.key) {
       <label class="flex items-center gap-2">
         <span class="mr-auto">{{ f.label }}</span>
-        <input type="range" class="w-24" [id]="'filter-' + f.key" [min]="f.min" [max]="f.max" [value]="prefs.filters()[f.key]" (input)="set(f.key, +$any($event.target).value)" />
+        <input
+          type="range"
+          class="w-24"
+          [id]="'filter-' + f.key"
+          [min]="f.min"
+          [max]="f.max"
+          [value]="prefs.filters()[f.key]"
+          (input)="set(f.key, +$any($event.target).value)"
+        />
       </label>
     }
-    <button type="button" id="filter-reset" class="text-xs op70 hover:op100 text-left" (click)="prefs.filters.set(defaults)">Reset filters</button>
+    <button
+      type="button"
+      id="filter-reset"
+      class="text-xs op70 hover:op100 text-left"
+      (click)="prefs.filters.set(defaults)"
+    >
+      Reset filters
+    </button>
   `,
 })
 export class FilterSettings {

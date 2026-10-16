@@ -3,7 +3,11 @@ import { Component, computed, input } from '@angular/core';
 
 @Component({
   selector: 'transform',
-  host: { '[style.transform]': 'transform()', '[style.transform-origin]': 'origin() || "top left"', style: 'display: block' },
+  host: {
+    '[style.transform]': 'transform()',
+    '[style.transform-origin]': 'origin() || "top left"',
+    style: 'display: block',
+  },
   template: '<ng-content />',
 })
 export class Transform {

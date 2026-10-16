@@ -3,7 +3,13 @@
 // travel is decided by the SYNC_TRANSPORTS that are provided (see transport.ts).
 import { Injectable, inject, signal } from '@angular/core';
 import { storedSignal } from '../lib/stored-signal';
-import { DrawingsState, SharedState, cleanDrawings, cleanShared, initialShared } from './shared-state';
+import {
+  DrawingsState,
+  SharedState,
+  cleanDrawings,
+  cleanShared,
+  initialShared,
+} from './shared-state';
 import { SYNC_TRANSPORTS } from './transport';
 
 export interface SyncDirections {
@@ -23,7 +29,10 @@ export class SyncState {
   readonly drawings = signal<DrawingsState>({});
   /** Slidev's "sync mode" menu: which way navigation may travel for viewers and presenters. */
   readonly directions = storedSignal<SyncDirections>('slidev-sync-directions', {
-    viewerSend: true, viewerReceive: true, presenterSend: true, presenterReceive: true,
+    viewerSend: true,
+    viewerReceive: true,
+    presenterSend: true,
+    presenterReceive: true,
   });
 
   private helloHandlers: (() => void)[] = [];
@@ -46,10 +55,16 @@ export class SyncState {
   }
 
   /** A window that just opened asks for the current position; presenters answer (see nav-sync). */
-  sendHello() { this.send('hello', {}); }
-  onHello(fn: () => void) { this.helloHandlers.push(fn); }
+  sendHello() {
+    this.send('hello', {});
+  }
+  onHello(fn: () => void) {
+    this.helloHandlers.push(fn);
+  }
   /** Called when drawings arrive from outside (not for our own patches). */
-  onRemoteDrawings(fn: (patch: DrawingsState) => void) { this.drawingHandlers.push(fn); }
+  onRemoteDrawings(fn: (patch: DrawingsState) => void) {
+    this.drawingHandlers.push(fn);
+  }
 
   private send(channel: string, data: unknown) {
     for (const t of this.transports) t.send(channel, data);

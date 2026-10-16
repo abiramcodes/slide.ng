@@ -6,12 +6,15 @@ const ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
 
 // Three bytes become four characters of 6 bits each.
 function threeBytes(b1, b2, b3) {
-  return [b1 >> 2, ((b1 & 3) << 4) | (b2 >> 4), ((b2 & 15) << 2) | (b3 >> 6), b3 & 63].map((n) => ALPHABET[n]).join('');
+  return [b1 >> 2, ((b1 & 3) << 4) | (b2 >> 4), ((b2 & 15) << 2) | (b3 >> 6), b3 & 63]
+    .map((n) => ALPHABET[n])
+    .join('');
 }
 
 export function encodePlantUml(text) {
   const data = deflateRawSync(Buffer.from(text, 'utf8'), { level: 9 });
   let out = '';
-  for (let i = 0; i < data.length; i += 3) out += threeBytes(data[i], data[i + 1] ?? 0, data[i + 2] ?? 0);
+  for (let i = 0; i < data.length; i += 3)
+    out += threeBytes(data[i], data[i + 1] ?? 0, data[i + 2] ?? 0);
   return out;
 }

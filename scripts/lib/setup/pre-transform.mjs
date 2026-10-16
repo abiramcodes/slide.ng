@@ -8,7 +8,8 @@ export async function applyPreTransformers(slides, transformers, headmatter) {
   if (!transformers.length) return;
   for (const [i, slide] of slides.entries()) {
     const s = new MagicString(slide.content);
-    for (const transform of transformers) await transform({ s, slide: slideInfo(slide, i + 1), options: { data: { headmatter } } });
+    for (const transform of transformers)
+      await transform({ s, slide: slideInfo(slide, i + 1), options: { data: { headmatter } } });
     slide.content = s.toString();
   }
 }

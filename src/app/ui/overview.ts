@@ -12,8 +12,15 @@ import { Thumbnail } from './thumbnail';
   host: { '(window:resize)': 'measure()' },
   template: `
     @if (ui.overview()) {
-      <div id="overview" class="fixed inset-0 z-modal bg-main bg-opacity-75! p-16 py-20 overflow-y-auto backdrop-blur-5px select-none text-main" (click)="close()">
-        <div class="grid gap-y-4 gap-x-8 w-full" [style.grid-template-columns]="'repeat(auto-fit, minmax(' + cardWidth + 'px, 1fr))'">
+      <div
+        id="overview"
+        class="fixed inset-0 z-modal bg-main bg-opacity-75! p-16 py-20 overflow-y-auto backdrop-blur-5px select-none text-main"
+        (click)="close()"
+      >
+        <div
+          class="grid gap-y-4 gap-x-8 w-full"
+          [style.grid-template-columns]="'repeat(auto-fit, minmax(' + cardWidth + 'px, 1fr))'"
+        >
           @for (slide of nav.slides; track $index) {
             <div class="relative">
               <div
@@ -25,10 +32,12 @@ import { Thumbnail } from './thumbnail';
                 @defer (on viewport) {
                   <app-thumbnail [no]="$index + 1" [width]="cardWidth" />
                 } @placeholder {
-                  <div [style.width.px]="cardWidth" [style.height.px]="cardWidth * 9 / 16"></div>
+                  <div [style.width.px]="cardWidth" [style.height.px]="(cardWidth * 9) / 16"></div>
                 }
               </div>
-              <div class="absolute top-0 opacity-50" [style.left.px]="cardWidth + 5">{{ $index + 1 }}</div>
+              <div class="absolute top-0 opacity-50" [style.left.px]="cardWidth + 5">
+                {{ $index + 1 }}
+              </div>
             </div>
           }
         </div>
@@ -53,14 +62,20 @@ export class Overview {
       if (!this.ui.overview()) return;
       untracked(() => {
         this.ui.overviewPage.set(this.nav.no());
-        this.ui.overviewColumns.set(Math.max(1, Math.floor((this.width() - 128) / (this.cardWidth + 32))));
+        this.ui.overviewColumns.set(
+          Math.max(1, Math.floor((this.width() - 128) / (this.cardWidth + 32))),
+        );
       });
     });
   }
 
-  measure() { this.width.set(window.innerWidth); }
+  measure() {
+    this.width.set(window.innerWidth);
+  }
 
-  close() { this.ui.overview.set(false); }
+  close() {
+    this.ui.overview.set(false);
+  }
 
   go(no: number, e: Event) {
     e.stopPropagation(); // the backdrop would close the overview a second time

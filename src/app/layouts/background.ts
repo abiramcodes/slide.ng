@@ -7,7 +7,9 @@ function baseUrl(): string {
   try {
     const path = new URL(document.baseURI).pathname;
     return path.endsWith('/') ? path : `${path.slice(0, path.lastIndexOf('/') + 1)}`;
-  } catch { return '/'; }
+  } catch {
+    return '/';
+  }
 }
 
 /** `/pic.png` is relative to the deck's base (`/talk/pic.png` in a deck built with `--base /talk/`), like Slidev's resolveAssetUrl. */

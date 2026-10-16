@@ -4,13 +4,14 @@
 export type Highlight = (code: string) => string;
 
 export async function createEditorHighlighter(): Promise<Highlight> {
-  const [{ createHighlighterCore }, { createJavaScriptRegexEngine }, markdown, light, dark] = await Promise.all([
-    import('shiki/core'),
-    import('shiki/engine/javascript'),
-    import('shiki/langs/markdown.mjs'),
-    import('shiki/themes/vitesse-light.mjs'),
-    import('shiki/themes/vitesse-dark.mjs'),
-  ]);
+  const [{ createHighlighterCore }, { createJavaScriptRegexEngine }, markdown, light, dark] =
+    await Promise.all([
+      import('shiki/core'),
+      import('shiki/engine/javascript'),
+      import('shiki/langs/markdown.mjs'),
+      import('shiki/themes/vitesse-light.mjs'),
+      import('shiki/themes/vitesse-dark.mjs'),
+    ]);
   const highlighter = await createHighlighterCore({
     engine: createJavaScriptRegexEngine(),
     langs: [markdown.default],
@@ -18,5 +19,10 @@ export async function createEditorHighlighter(): Promise<Highlight> {
   });
   // Both colours are written as CSS variables; styles/code.css picks one by the `dark` class, like the code in slides.
   // The trailing space keeps a last empty line (after a final newline) as tall as the textarea draws it.
-  return (code) => highlighter.codeToHtml(`${code} `, { lang: 'markdown', themes: { light: 'vitesse-light', dark: 'vitesse-dark' }, defaultColor: false });
+  return (code) =>
+    highlighter.codeToHtml(`${code} `, {
+      lang: 'markdown',
+      themes: { light: 'vitesse-light', dark: 'vitesse-dark' },
+      defaultColor: false,
+    });
 }

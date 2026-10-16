@@ -25,19 +25,25 @@ export function setupSource(roots) {
   const has = (r, name) => existsSync(join(r.dir, 'setup', `${name}.ts`));
   const imports = [];
   const list = [];
-  roots.filter((r) => has(r, 'providers')).forEach((r, i) => {
-    imports.push(`import providers${i} from './roots/${r.id}/setup/providers';`);
-    list.push(`...providers${i}`);
-  });
-  for (const [name, helper] of BROWSER_SETUPS) {
-    const names = roots.filter((r) => has(r, name)).map((r) => {
-      const id = `${name.replace(/-(\w)/g, (_, c) => c.toUpperCase())}${imports.length}`;
-      imports.push(`import ${id} from './roots/${r.id}/setup/${name}';`);
-      return id;
+  roots
+    .filter((r) => has(r, 'providers'))
+    .forEach((r, i) => {
+      imports.push(`import providers${i} from './roots/${r.id}/setup/providers';`);
+      list.push(`...providers${i}`);
     });
+  for (const [name, helper] of BROWSER_SETUPS) {
+    const names = roots
+      .filter((r) => has(r, name))
+      .map((r) => {
+        const id = `${name.replace(/-(\w)/g, (_, c) => c.toUpperCase())}${imports.length}`;
+        imports.push(`import ${id} from './roots/${r.id}/setup/${name}';`);
+        return id;
+      });
     if (names.length) list.push(`...${helper}([${names.join(', ')}])`);
   }
-  const helpers = BROWSER_SETUPS.filter(([, h]) => list.some((l) => l.startsWith(`...${h}(`))).map(([, h]) => h);
+  const helpers = BROWSER_SETUPS.filter(([, h]) => list.some((l) => l.startsWith(`...${h}(`))).map(
+    ([, h]) => h,
+  );
   return `// GENERATED: providers from the setup/*.ts of themes, addons and the deck - do not edit
 import type { EnvironmentProviders, Provider } from '@angular/core';
 ${helpers.length ? `import { ${helpers.join(', ')} } from '../../app/setup';\n` : ''}${imports.join('\n')}
@@ -49,10 +55,16 @@ export const SETUP_PROVIDERS: (Provider | EnvironmentProviders)[] = [${list.join
 /** `src/slides/generated/theme.css`: the deck's `fonts`, then the style sheets of the roots (`styles/index.css`), weakest first. */
 /** @param {{ id: string, dir: string }[]} roots @param {Record<string, any>} [headmatter] @param {string | null} [fontFaces] */
 export function themeCss(roots, headmatter = {}, fontFaces = null) {
-  const imports = roots.filter((r) => existsSync(join(r.dir, 'styles', 'index.css'))).map((r) => `@import './roots/${r.id}/styles/index.css';`);
+  const imports = roots
+    .filter((r) => existsSync(join(r.dir, 'styles', 'index.css')))
+    .map((r) => `@import './roots/${r.id}/styles/index.css';`);
   // An @import must come before the rules, so the font @import is written first and the font rules after the roots' imports.
   const lines = fontsCss(headmatter, fontFaces).split('\n').filter(Boolean);
-  const text = [...lines.filter((l) => l.startsWith('@import')), ...imports, ...lines.filter((l) => !l.startsWith('@import'))].join('\n');
+  const text = [
+    ...lines.filter((l) => l.startsWith('@import')),
+    ...imports,
+    ...lines.filter((l) => !l.startsWith('@import')),
+  ].join('\n');
   return text ? `${text}\n` : '/* no theme styles */\n';
 }
 
@@ -82,7 +94,8 @@ export async function applyRoots(deck, out, write, warn) {
   const unoConfigs = [];
   for (const root of deck.roots) {
     const file = join(root.dir, 'uno.config.mjs');
-    if (existsSync(file)) unoConfigs.push((await import(`${pathToFileURL(file).href}?v=${Date.now()}`)).default);
+    if (existsSync(file))
+      unoConfigs.push((await import(`${pathToFileURL(file).href}?v=${Date.now()}`)).default);
   }
   return { unoConfigs };
 }

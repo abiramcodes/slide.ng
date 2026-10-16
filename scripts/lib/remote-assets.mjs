@@ -26,7 +26,15 @@ export function findRemoteImages(text) {
   return [...found];
 }
 
-const EXTENSIONS = { 'image/png': '.png', 'image/jpeg': '.jpg', 'image/gif': '.gif', 'image/webp': '.webp', 'image/svg+xml': '.svg', 'image/avif': '.avif', 'image/x-icon': '.ico' };
+const EXTENSIONS = {
+  'image/png': '.png',
+  'image/jpeg': '.jpg',
+  'image/gif': '.gif',
+  'image/webp': '.webp',
+  'image/svg+xml': '.svg',
+  'image/avif': '.avif',
+  'image/x-icon': '.ico',
+};
 
 /** File name in the build for an address: a hash of the address plus the extension that fits the content type. */
 export function localName(url, contentType) {
@@ -37,9 +45,13 @@ export function localName(url, contentType) {
 /** Downloads one picture. Returns `{ name, bytes }`, or null when it is not an image (a warning is given). */
 export async function downloadImage(url, warn, fetchImpl = fetch) {
   try {
-    const res = await fetchImpl(url, { signal: AbortSignal.timeout(TIMEOUT_MS), redirect: 'follow' });
+    const res = await fetchImpl(url, {
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+      redirect: 'follow',
+    });
     const type = res.headers.get('content-type') ?? '';
-    if (!res.ok || !type.toLowerCase().startsWith('image/')) return warn(`${url} is not an image (status ${res.status}, type "${type}"), left as it is`);
+    if (!res.ok || !type.toLowerCase().startsWith('image/'))
+      return warn(`${url} is not an image (status ${res.status}, type "${type}"), left as it is`);
     const bytes = Buffer.from(await res.arrayBuffer());
     if (bytes.length > MAX_BYTES) return warn(`${url} is larger than 20 MB, left as it is`);
     return { name: localName(url, type), bytes };
@@ -52,7 +64,8 @@ export async function downloadImage(url, warn, fetchImpl = fetch) {
 export function rewriteAddresses(text, mapping) {
   let result = text;
   // Longest first, so an address that starts like another one is not cut.
-  for (const url of Object.keys(mapping).sort((a, b) => b.length - a.length)) result = result.split(url).join(mapping[url]);
+  for (const url of Object.keys(mapping).sort((a, b) => b.length - a.length))
+    result = result.split(url).join(mapping[url]);
   return result;
 }
 
@@ -67,7 +80,9 @@ export function emptyFolder(folder) {
  * Returns how many were bundled. `folder` is emptied first.
  */
 export async function bundleRemoteAssets(slides, folder, warn = console.warn, fetchImpl = fetch) {
-  const texts = slides.map((s) => `${s.content}\n${JSON.stringify(s.frontmatter).replace(/\\"/g, '"')}`);
+  const texts = slides.map(
+    (s) => `${s.content}\n${JSON.stringify(s.frontmatter).replace(/\\"/g, '"')}`,
+  );
   const urls = [...new Set(texts.flatMap(findRemoteImages))];
   emptyFolder(folder);
   if (!urls.length) return 0;

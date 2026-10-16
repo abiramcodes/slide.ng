@@ -7,7 +7,12 @@ import { chromium } from 'playwright-core';
 // Serves a folder like a single-page app: unknown paths return index.html.
 // `extra(req, res)` can answer an address itself (return true) before the files are looked at.
 export function serve(root, extra = () => false) {
-  const types = { '.js': 'text/javascript', '.css': 'text/css', '.html': 'text/html', '.ico': 'image/x-icon' };
+  const types = {
+    '.js': 'text/javascript',
+    '.css': 'text/css',
+    '.html': 'text/html',
+    '.ico': 'image/x-icon',
+  };
   const server = http.createServer((req, res) => {
     if (extra(req, res)) return;
     let file = path.join(root, req.url.split('?')[0]);
@@ -15,15 +20,18 @@ export function serve(root, extra = () => false) {
     res.setHeader('content-type', types[path.extname(file)] ?? 'text/plain');
     res.end(readFileSync(file));
   });
-  return new Promise((resolve) => server.listen(0, () => resolve({ server, port: server.address().port })));
+  return new Promise((resolve) =>
+    server.listen(0, () => resolve({ server, port: server.address().port })),
+  );
 }
 
 // Chromium location: set CHROME_PATH to use another one.
 // `args` adds Chromium flags (the camera and recording tests use fake devices).
-export const launch = (args = []) => chromium.launch({
-  executablePath: process.env.CHROME_PATH ?? '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
-  args: ['--no-sandbox', ...args],
-});
+export const launch = (args = []) =>
+  chromium.launch({
+    executablePath: process.env.CHROME_PATH ?? '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
+    args: ['--no-sandbox', ...args],
+  });
 
 // Collects pass/fail lines and counts them.
 export function reporter() {

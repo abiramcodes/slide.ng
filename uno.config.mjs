@@ -8,7 +8,10 @@ import { presetWind3 } from '@unocss/preset-wind3';
 export default {
   presets: [
     presetWind3({ dark: 'class' }),
-    presetIcons({ scale: 1.2, extraProperties: { display: 'inline-block', 'vertical-align': 'middle' } }),
+    presetIcons({
+      scale: 1.2,
+      extraProperties: { display: 'inline-block', 'vertical-align': 'middle' },
+    }),
   ],
   shortcuts: {
     'bg-main': 'bg-white dark:bg-[#121212]',
@@ -28,7 +31,10 @@ export default {
     (matcher) => {
       const dir = ['forward', 'backward'].find((d) => matcher.startsWith(`${d}:`));
       if (!dir) return matcher;
-      return { matcher: matcher.slice(dir.length + 1), selector: (s) => `.slidev-nav-go-${dir} ${s}` };
+      return {
+        matcher: matcher.slice(dir.length + 1),
+        selector: (s) => `.slidev-nav-go-${dir} ${s}`,
+      };
     },
   ],
   safelist: ['!opacity-0'],

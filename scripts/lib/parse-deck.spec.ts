@@ -41,7 +41,11 @@ describe('parseDeck', async () => {
     expect(headmatter).toMatchObject({ title: 'My deck', theme: 'default' });
   });
   it('carries the frontmatter of each slide, unknown keys included', () => {
-    expect(slides[1].frontmatter).toEqual({ layout: 'center', class: 'text-red-500', unknownKey: 42 });
+    expect(slides[1].frontmatter).toEqual({
+      layout: 'center',
+      class: 'text-red-500',
+      unknownKey: 42,
+    });
     expect(slides[2].frontmatter).toEqual({});
   });
   it('takes the last HTML comment as the note and removes it from the content', () => {
@@ -49,12 +53,16 @@ describe('parseDeck', async () => {
     expect(slides[1].content).not.toContain('speaker note');
   });
   it('reads a yaml block at the top of a slide as its frontmatter', async () => {
-    const out = await parse('---\ntitle: T\n---\n\n# One\n\n---\n\n```yaml\nlayout: quote\n```\n\n# Two\n');
+    const out = await parse(
+      '---\ntitle: T\n---\n\n# One\n\n---\n\n```yaml\nlayout: quote\n```\n\n# Two\n',
+    );
     expect((out.slides[1].frontmatter as { layout?: string }).layout).toBe('quote');
     expect(out.slides[1].content).not.toContain('layout: quote');
   });
   it('removes slides with hide or disabled', async () => {
-    const result = await parse('# A\n\n---\nhide: true\n---\n\n# B\n\n---\ndisabled: true\n---\n\n# C\n\n---\n\n# D\n');
+    const result = await parse(
+      '# A\n\n---\nhide: true\n---\n\n# B\n\n---\ndisabled: true\n---\n\n# C\n\n---\n\n# D\n',
+    );
     expect(result.slides.map((s) => s.title)).toEqual(['A', 'D']);
   });
   it('does not split at --- inside a code fence', async () => {
@@ -73,7 +81,9 @@ describe('parseDeck: title, level and defaults', () => {
     expect(slides[1].title).toBe('Named');
   });
   it('merges headmatter `defaults` under every slide, the slide wins', async () => {
-    const { slides } = await parse('---\ndefaults:\n  layout: center\n  transition: fade\n---\n\n# A\n\n---\nlayout: quote\n---\n\n# B\n');
+    const { slides } = await parse(
+      '---\ndefaults:\n  layout: center\n  transition: fade\n---\n\n# A\n\n---\nlayout: quote\n---\n\n# B\n',
+    );
     expect(slides[0].frontmatter).toMatchObject({ layout: 'center', transition: 'fade' });
     expect(slides[1].frontmatter).toMatchObject({ layout: 'quote', transition: 'fade' });
   });
@@ -83,15 +93,27 @@ describe('parseDeck: src imports', () => {
   // A real folder, because the parser checks that imported files exist.
   const dir = mkdtempSync(join(tmpdir(), 'slideng-'));
   mkdirSync(join(dir, 'pages'));
-  writeFileSync(join(dir, 'pages', 'extra.md'), '# Extra one\n\n---\nlayout: center\nclass: from-page\n---\n\n# Extra two\n\n---\n\n# Extra three\n');
+  writeFileSync(
+    join(dir, 'pages', 'extra.md'),
+    '# Extra one\n\n---\nlayout: center\nclass: from-page\n---\n\n# Extra two\n\n---\n\n# Extra three\n',
+  );
   const main = (src: string) => {
-    writeFileSync(join(dir, 'slides.md'), `# First\n\n---\nsrc: ${src}\nclass: from-main\n---\n\nignored text\n\n---\n\n# Last\n`);
+    writeFileSync(
+      join(dir, 'slides.md'),
+      `# First\n\n---\nsrc: ${src}\nclass: from-main\n---\n\nignored text\n\n---\n\n# Last\n`,
+    );
     return parseDeck(join(dir, 'slides.md'));
   };
 
   it('replaces the slide by the slides of the imported file', async () => {
     const { slides, files } = await main('./pages/extra.md');
-    expect(slides.map((s) => s.title)).toEqual(['First', 'Extra one', 'Extra two', 'Extra three', 'Last']);
+    expect(slides.map((s) => s.title)).toEqual([
+      'First',
+      'Extra one',
+      'Extra two',
+      'Extra three',
+      'Last',
+    ]);
     expect(files.length).toBe(2);
   });
   it('lets the importing slide win when frontmatter keys clash', async () => {

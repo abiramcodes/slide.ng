@@ -25,7 +25,19 @@ const WAIT_UNTIL = ['networkidle', 'load', 'domcontentloaded', 'none'];
 
 // Keys the headmatter may set. `executablePath` and `output` are left out on purpose: a deck can come from
 // someone else, and it must not choose which program runs or where files go (see filename.mjs).
-const FROM_HEADMATTER = ['format', 'range', 'withClicks', 'dark', 'timeout', 'wait', 'waitUntil', 'withToc', 'perSlide', 'scale', 'omitBackground'];
+const FROM_HEADMATTER = [
+  'format',
+  'range',
+  'withClicks',
+  'dark',
+  'timeout',
+  'wait',
+  'waitUntil',
+  'withToc',
+  'perSlide',
+  'scale',
+  'omitBackground',
+];
 
 const camel = (name) => name.replace(/-(\w)/g, (_, c) => c.toUpperCase());
 
@@ -35,16 +47,30 @@ function check(name, ok, message) {
 
 /** `flags` are the parsed command line (kebab-case keys), `headmatter` the deck's headmatter. */
 export function resolveExportOptions(flags, headmatter = {}) {
-  const fromDeck = Object.fromEntries(Object.entries(headmatter.export ?? {}).filter(([k]) => FROM_HEADMATTER.includes(k)));
+  const fromDeck = Object.fromEntries(
+    Object.entries(headmatter.export ?? {}).filter(([k]) => FROM_HEADMATTER.includes(k)),
+  );
   const fromCli = Object.fromEntries(Object.entries(flags).map(([k, v]) => [camel(k), v]));
   const o = { ...fromDeck, ...fromCli };
 
   const format = o.format ?? 'pdf';
-  check('format', FORMATS.includes(format), `format must be one of ${FORMATS.join(', ')}, got "${format}"`);
+  check(
+    'format',
+    FORMATS.includes(format),
+    `format must be one of ${FORMATS.join(', ')}, got "${format}"`,
+  );
   const waitUntil = o.waitUntil ?? 'networkidle';
-  check('wait-until', WAIT_UNTIL.includes(waitUntil), `wait-until must be one of ${WAIT_UNTIL.join(', ')}`);
+  check(
+    'wait-until',
+    WAIT_UNTIL.includes(waitUntil),
+    `wait-until must be one of ${WAIT_UNTIL.join(', ')}`,
+  );
   const timeout = o.timeout ?? 30000;
-  check('timeout', timeout >= 1000 && timeout <= 600000, 'timeout is in milliseconds, between 1000 and 600000');
+  check(
+    'timeout',
+    timeout >= 1000 && timeout <= 600000,
+    'timeout is in milliseconds, between 1000 and 600000',
+  );
   const wait = o.wait ?? 0;
   check('wait', wait >= 0 && wait <= 120000, 'wait is in milliseconds, between 0 and 120000');
   const scale = o.scale ?? 2;
@@ -57,7 +83,8 @@ export function resolveExportOptions(flags, headmatter = {}) {
     // Slides in a pptx are one per click step, like Slidev.
     withClicks: o.withClicks ?? format === 'pptx',
     dark: Boolean(o.dark) || headmatter.colorSchema === 'dark',
-    timeout, wait,
+    timeout,
+    wait,
     waitUntil: waitUntil === 'none' ? undefined : waitUntil,
     executablePath: flags['executable-path'] ?? process.env.CHROME_PATH, // CLI or environment only
     perSlide: Boolean(o.perSlide),

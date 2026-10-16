@@ -3,7 +3,15 @@ import { rewriteImports } from './theme.mjs';
 
 describe('rewriteImports', () => {
   it('points built-in relative imports at slide-ng/', () => {
-    expect(rewriteImports("import { ClicksContext } from '../lib/clicks';\nimport { x } from './background';")).toBe("import { ClicksContext } from 'slide-ng/lib/clicks';\nimport { x } from './background';");
-    expect(rewriteImports("import { a } from '@angular/core';")).toBe("import { a } from '@angular/core';");
+    expect(
+      rewriteImports(
+        "import { ClicksContext } from '../lib/clicks';\nimport { x } from './background';",
+      ),
+    ).toBe(
+      "import { ClicksContext } from 'slide-ng/lib/clicks';\nimport { x } from './background';",
+    );
+    expect(rewriteImports("import { a } from '@angular/core';")).toBe(
+      "import { a } from '@angular/core';",
+    );
   });
 });

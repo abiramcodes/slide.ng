@@ -10,8 +10,12 @@ export const offlineReady = signal(false);
  */
 export function registerOfflineWorker() {
   if (!PWA || isDevMode() || !('serviceWorker' in navigator)) return;
-  navigator.serviceWorker.ready.then(() => offlineReady.set(true), () => {});
-  const register = () => navigator.serviceWorker.register(new URL('sw.js', document.baseURI).href).catch(() => {});
+  navigator.serviceWorker.ready.then(
+    () => offlineReady.set(true),
+    () => {},
+  );
+  const register = () =>
+    navigator.serviceWorker.register(new URL('sw.js', document.baseURI).href).catch(() => {});
   // Wait for the page to finish loading, so the worker's downloads do not compete with it.
   if (document.readyState === 'complete') void register();
   else window.addEventListener('load', () => void register(), { once: true });

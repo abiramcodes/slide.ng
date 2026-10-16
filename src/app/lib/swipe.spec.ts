@@ -6,7 +6,8 @@ describe('swipeAction', () => {
     expect(swipeAction(-100, 0, 1000, 600)).toBe('next');
     expect(swipeAction(100, 0, 1000, 600)).toBe('prev');
   });
-  it('counts 30% of a narrow window as long', () => expect(swipeAction(-40, 0, 100, 600)).toBe('next'));
+  it('counts 30% of a narrow window as long', () =>
+    expect(swipeAction(-40, 0, 100, 600)).toBe('next'));
   it('goes to the next slide on an upward swipe and the previous one on a downward swipe', () => {
     expect(swipeAction(0, -250, 1000, 600)).toBe('nextSlide');
     expect(swipeAction(0, 250, 1000, 600)).toBe('prevSlide');

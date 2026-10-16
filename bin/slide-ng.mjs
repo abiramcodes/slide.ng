@@ -25,7 +25,8 @@ const COMMANDS = {
   dev: async (args) => (await import('../scripts/cli/dev.mjs')).devCommand(args),
   build: async (args) => (await import('../scripts/cli/build.mjs')).buildCommand(args),
   export: async (args) => (await import('../scripts/cli/export.mjs')).exportCommand(args),
-  'export-notes': async (args) => (await import('../scripts/cli/export.mjs')).exportCommand(args, { notes: true }),
+  'export-notes': async (args) =>
+    (await import('../scripts/cli/export.mjs')).exportCommand(args, { notes: true }),
   format: async (args) => (await import('../scripts/cli/format.mjs')).formatCommand(args),
   theme: async (args) => (await import('../scripts/cli/theme.mjs')).themeCommand(args),
   mcp: async (args) => (await import('../scripts/mcp/index.mjs')).mcpCommand(args),
@@ -34,8 +35,15 @@ const COMMANDS = {
 
 const [command, args] = pickCommand(process.argv.slice(2));
 try {
-  if (command === 'help' || args.includes('--help') || args.includes('-h') || process.argv[2] === '--help') console.log(HELP);
-  else if (!COMMANDS[command]) throw new Error(`Unknown command "${command}". Run slide-ng --help for the list.`);
+  if (
+    command === 'help' ||
+    args.includes('--help') ||
+    args.includes('-h') ||
+    process.argv[2] === '--help'
+  )
+    console.log(HELP);
+  else if (!COMMANDS[command])
+    throw new Error(`Unknown command "${command}". Run slide-ng --help for the list.`);
   else await COMMANDS[command](args);
 } catch (error) {
   console.error(`slide-ng: ${error.message}`);

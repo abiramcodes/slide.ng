@@ -25,7 +25,9 @@ describe('createCommand', () => {
     const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'));
     expect(pkg.name).toBe('my-deck');
     expect(pkg.dependencies['slide-ng']).toMatch(/^\^\d/);
-    expect(readdirSync(dir)).toEqual(expect.arrayContaining(['slides.md', 'package.json', '.gitignore', 'README.md']));
+    expect(readdirSync(dir)).toEqual(
+      expect.arrayContaining(['slides.md', 'package.json', '.gitignore', 'README.md']),
+    );
     expect(existsSync(join(dir, '_gitignore'))).toBe(false);
     expect(readFileSync(join(dir, 'README.md'), 'utf8')).toContain('# my-deck');
   });

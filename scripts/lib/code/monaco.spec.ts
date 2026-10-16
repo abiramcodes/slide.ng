@@ -2,7 +2,12 @@ import { inflateRawSync } from 'node:zlib';
 import { isMonaco, renderMonaco } from './monaco.mjs';
 import { hasMonaco } from '../features.mjs';
 
-const unpack = (html: string, name: string) => JSON.parse(inflateRawSync(Buffer.from(new RegExp(`${name}="([^"]+)"`).exec(html)![1], 'base64')).toString());
+const unpack = (html: string, name: string) =>
+  JSON.parse(
+    inflateRawSync(
+      Buffer.from(new RegExp(`${name}="([^"]+)"`).exec(html)![1], 'base64'),
+    ).toString(),
+  );
 
 describe('monaco fences', () => {
   it('knows {monaco}, {monaco-diff} and {monaco-run} but not line ranges', () => {
@@ -21,7 +26,10 @@ describe('monaco fences', () => {
     expect(unpack(html, 'diff')).toBe('two');
   });
   it('passes the run options on', () => {
-    const html = renderMonaco({ info: "ts {monaco-run} {autorun:false,showOutputAt:'+1',height:'auto'}", code: 'x' });
+    const html = renderMonaco({
+      info: "ts {monaco-run} {autorun:false,showOutputAt:'+1',height:'auto'}",
+      code: 'x',
+    });
     expect(html).toContain('runnable="true"');
     expect(html).toContain('autorun="false"');
     expect(html).toContain('showOutputAt="+1"');

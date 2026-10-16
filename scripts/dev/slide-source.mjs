@@ -8,7 +8,9 @@ import { dragName, setDragPosition, toPlainStyle } from '../lib/drag-sites.mjs';
 function withEol(text, edit) {
   const crlf = text.includes('\r\n');
   const result = edit(text.replace(/\r\n/g, '\n'));
-  return result.text == null ? result : { text: crlf ? result.text.replace(/\n/g, '\r\n') : result.text };
+  return result.text == null
+    ? result
+    : { text: crlf ? result.text.replace(/\n/g, '\r\n') : result.text };
 }
 
 /** Replace lines [from, to) of `text` with `replacement`. */
@@ -29,7 +31,8 @@ export const sourceOf = (text, slide) =>
 export const replaceSource = (text, slide, raw) =>
   withEol(text, (t) => {
     let body = raw.replace(/\r\n/g, '\n');
-    if (slide.start > 0 && slide.contentStart === slide.start && !/^(\n|---)/.test(body)) body = `\n${body}`;
+    if (slide.start > 0 && slide.contentStart === slide.start && !/^(\n|---)/.test(body))
+      body = `\n${body}`;
     return { text: spliceLines(t, slide.start, slide.end, body) };
   });
 
@@ -39,12 +42,24 @@ function setFrontmatter(text, slide, path, value) {
   if (!hasBlock) {
     // The first slide opens its own block; later slides already have the `---` separator above them.
     const yaml = path.length === 2 ? `${path[0]}:\n  ${path[1]}: ${value}` : `${path[0]}: ${value}`;
-    return { text: spliceLines(text, slide.start, slide.start, slide.start === 0 ? `---\n${yaml}\n---` : `${yaml}\n---`) };
+    return {
+      text: spliceLines(
+        text,
+        slide.start,
+        slide.start,
+        slide.start === 0 ? `---\n${yaml}\n---` : `${yaml}\n---`,
+      ),
+    };
   }
-  const from = slide.start + 1, to = slide.contentStart - 1; // the lines between the two ---
+  const from = slide.start + 1,
+    to = slide.contentStart - 1; // the lines between the two ---
   const doc = parseDocument(text.split('\n').slice(from, to).join('\n'));
   if (doc.errors.length) return { error: 'the frontmatter of this slide is not valid YAML' };
-  try { doc.setIn(path, value); } catch { return { error: `${path[0]} in the frontmatter is not a map` }; }
+  try {
+    doc.setIn(path, value);
+  } catch {
+    return { error: `${path[0]} in the frontmatter is not a map` };
+  }
   return { text: spliceLines(text, from, to, doc.toString().trimEnd()) };
 }
 

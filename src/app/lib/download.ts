@@ -35,6 +35,8 @@ export class Download {
     try {
       const res = await fetch(url, { method: 'HEAD' });
       this.available.set(res.ok && (res.headers.get('content-type') ?? '').includes('pdf'));
-    } catch { /* file:// or offline: stays unavailable */ }
+    } catch {
+      /* file:// or offline: stays unavailable */
+    }
   }
 }

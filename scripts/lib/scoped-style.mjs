@@ -6,7 +6,12 @@ export function extractStyles(markdown) {
   const parts = markdown.split(/(^```.*\n[\s\S]*?^```$)/gm);
   const text = parts
     .map((part, i) =>
-      i % 2 ? part : part.replace(/<style[^>]*>([\s\S]*?)<\/style>/g, (_, body) => (css.push(body.trim()), '')),
+      i % 2
+        ? part
+        : part.replace(
+            /<style[^>]*>([\s\S]*?)<\/style>/g,
+            (_, body) => (css.push(body.trim()), ''),
+          ),
     )
     .join('');
   return { markdown: text, css: css.join('\n') };

@@ -6,7 +6,9 @@ function read<T>(key: string, initial: T): T {
     // Merge objects with the default so a value saved by an older version still has every key.
     if (text == null) return initial;
     const value = JSON.parse(text);
-    return initial && typeof initial === 'object' && !Array.isArray(initial) ? { ...initial, ...value } : value;
+    return initial && typeof initial === 'object' && !Array.isArray(initial)
+      ? { ...initial, ...value }
+      : value;
   } catch {
     return initial; // storage blocked or the text is not JSON: start from the default
   }
@@ -20,7 +22,11 @@ export function storedSignal<T>(key: string, initial: T): WritableSignal<T> {
   const value = signal<T>(read(key, initial));
   effect(() => {
     const current = value();
-    try { localStorage.setItem(key, JSON.stringify(current)); } catch { /* the choice just is not remembered */ }
+    try {
+      localStorage.setItem(key, JSON.stringify(current));
+    } catch {
+      /* the choice just is not remembered */
+    }
   });
   return value;
 }

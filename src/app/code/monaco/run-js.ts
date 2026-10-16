@@ -3,7 +3,10 @@ import { frameHtml } from './runner-frame';
 
 /** One line of output: the values given to one console.log call. */
 export type OutputLine = string[];
-export interface RunResult { lines: OutputLine[]; error?: string }
+export interface RunResult {
+  lines: OutputLine[];
+  error?: string;
+}
 
 const TIMEOUT_MS = 5000;
 let counter = 0;
@@ -31,7 +34,10 @@ export function runJs(js: string): Promise<RunResult> {
       if (e.data.done) finish();
     };
     // Code that never ends (an endless loop, a promise that never settles) is cut off.
-    const timer = setTimeout(() => { result.error = `Stopped after ${TIMEOUT_MS / 1000} seconds`; finish(); }, TIMEOUT_MS);
+    const timer = setTimeout(() => {
+      result.error = `Stopped after ${TIMEOUT_MS / 1000} seconds`;
+      finish();
+    }, TIMEOUT_MS);
 
     window.addEventListener('message', onMessage);
     frame.srcdoc = frameHtml(js, id);

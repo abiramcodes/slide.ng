@@ -18,10 +18,18 @@ export function markAlerts(html) {
     const [title, icon] = KINDS[kind];
     let start = m.index + m[0].length;
     let body = '<p>';
-    if (html.startsWith('</p>', start)) { start += 4; body = ''; } // the marker was alone on its line
+    if (html.startsWith('</p>', start)) {
+      start += 4;
+      body = '';
+    } // the marker was alone on its line
     const head = `<div class="markdown-alert markdown-alert-${kind}"><p class="markdown-alert-title"><span class="i-carbon:${icon}"></span>${title}</p>${body}`;
     const end = matchingClose(html, start);
-    html = html.slice(0, m.index) + head + html.slice(start, end) + '</div>' + html.slice(end + '</blockquote>'.length);
+    html =
+      html.slice(0, m.index) +
+      head +
+      html.slice(start, end) +
+      '</div>' +
+      html.slice(end + '</blockquote>'.length);
   }
   return html;
 }

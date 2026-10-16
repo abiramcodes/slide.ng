@@ -1,7 +1,8 @@
 import { extractFences as extract } from './fences.mjs';
 
 // The generator is plain JS, so the fence list is loosely typed here.
-const extractFences = (md: string, ctx?: object) => extract(md, ctx) as { markdown: string; fences: any[] };
+const extractFences = (md: string, ctx?: object) =>
+  extract(md, ctx) as { markdown: string; fences: any[] };
 
 describe('extractFences', () => {
   it('replaces a fence by a placeholder and keeps its info and code', () => {
@@ -17,7 +18,9 @@ describe('extractFences', () => {
     expect(fences[0].code).toBe('```js\na\n```\n```js\nb\n```');
   });
   it('collects the fences of a ::code-group', () => {
-    const { markdown, fences } = extractFences('::code-group\n\n```sh [npm]\na\n```\n\n```sh [yarn]\nb\n```\n\n::\ntext');
+    const { markdown, fences } = extractFences(
+      '::code-group\n\n```sh [npm]\na\n```\n\n```sh [yarn]\nb\n```\n\n::\ntext',
+    );
     expect(fences).toHaveLength(1);
     expect(fences[0].group.map((f: { info: string }) => f.info)).toEqual(['sh [npm]', 'sh [yarn]']);
     expect(markdown).toContain('text');

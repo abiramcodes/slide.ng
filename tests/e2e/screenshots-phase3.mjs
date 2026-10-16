@@ -7,11 +7,20 @@ import { launch, serve } from './browser.mjs';
 
 const OUT = 'docs/screenshots';
 mkdirSync(OUT, { recursive: true });
-if (!existsSync('dist/phase3/browser')) throw new Error('run `node tests/e2e/phase3.mjs` first: it builds dist/phase3');
+if (!existsSync('dist/phase3/browser'))
+  throw new Error('run `node tests/e2e/phase3.mjs` first: it builds dist/phase3');
 const { server, port } = await serve('dist/phase3/browser');
-const browser = await launch(['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream']);
+const browser = await launch([
+  '--use-fake-device-for-media-stream',
+  '--use-fake-ui-for-media-stream',
+]);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const ready = (page) => page.waitForFunction(() => /clicks \d+\/\d+/.test(document.querySelector('#hud')?.innerText ?? ''), null, { timeout: 60000 });
+const ready = (page) =>
+  page.waitForFunction(
+    () => /clicks \d+\/\d+/.test(document.querySelector('#hud')?.innerText ?? ''),
+    null,
+    { timeout: 60000 },
+  );
 
 const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
 const presenter = await ctx.newPage();
@@ -19,7 +28,10 @@ await presenter.goto(`http://localhost:${port}/presenter/2?clicks=1`);
 await ready(presenter);
 await presenter.waitForTimeout(500);
 for (const layout of [1, 2, 3]) {
-  await presenter.evaluate((n) => localStorage.setItem('slidev-presenter-layout', String(n)), layout);
+  await presenter.evaluate(
+    (n) => localStorage.setItem('slidev-presenter-layout', String(n)),
+    layout,
+  );
   await presenter.reload();
   await ready(presenter);
   await presenter.mouse.move(640, 300);
@@ -51,7 +63,11 @@ await play.screenshot({ path: `${OUT}/drawing-toolbar.png` });
 await play.locator('#nav-drawing').click({ force: true });
 
 await play.locator('#nav-camera').click({ force: true });
-await play.waitForFunction(() => document.querySelector('#web-camera video')?.videoWidth > 0, null, { timeout: 10000 });
+await play.waitForFunction(
+  () => document.querySelector('#web-camera video')?.videoWidth > 0,
+  null,
+  { timeout: 10000 },
+);
 await play.waitForTimeout(500);
 await play.screenshot({ path: `${OUT}/camera-bubble.png` });
 await play.locator('#nav-camera').click({ force: true });
@@ -69,20 +85,39 @@ server.close();
 const WORK = 'tests/e2e/dev/work.md';
 copyFileSync('tests/e2e/dev/slides.md', WORK);
 copyFileSync('tests/e2e/dev/snippet.ts', 'tests/e2e/dev/work-snippet.ts');
-const dev = spawn('npm', ['start', '--', '--port', '4222'], { stdio: 'ignore', detached: true, env: { ...process.env, SLIDES_FILE: WORK } });
+const dev = spawn('npm', ['start', '--', '--port', '4222'], {
+  stdio: 'ignore',
+  detached: true,
+  env: { ...process.env, SLIDES_FILE: WORK },
+});
 try {
-  for (let i = 0; i < 180; i++) { try { if ((await fetch('http://localhost:4222')).ok) break; } catch { /* not up */ } await sleep(1000); }
+  for (let i = 0; i < 180; i++) {
+    try {
+      if ((await fetch('http://localhost:4222')).ok) break;
+    } catch {
+      /* not up */
+    }
+    await sleep(1000);
+  }
   const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
   await page.goto('http://localhost:4222/2');
   await ready(page);
   await page.waitForTimeout(1500);
   await page.locator('#nav-editor').click({ force: true });
-  await page.waitForFunction(() => document.querySelector('#editor-text')?.value.includes('# Two'), null, { timeout: 15000 });
+  await page.waitForFunction(
+    () => document.querySelector('#editor-text')?.value.includes('# Two'),
+    null,
+    { timeout: 15000 },
+  );
   await page.mouse.move(640, 100);
   await page.waitForTimeout(500);
   await page.screenshot({ path: `${OUT}/side-editor.png` });
 } finally {
-  try { process.kill(-dev.pid, 'SIGTERM'); } catch { /* gone */ }
+  try {
+    process.kill(-dev.pid, 'SIGTERM');
+  } catch {
+    /* gone */
+  }
   for (const f of [WORK, 'tests/e2e/dev/work-snippet.ts']) rmSync(f, { force: true });
   rmSync('tests/e2e/dev/.slide-ng', { recursive: true, force: true });
   await browser.close();

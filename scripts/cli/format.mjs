@@ -19,7 +19,10 @@ export async function formatCommand(argv) {
   for (const file of files) {
     const before = await readFile(file, 'utf8');
     const after = await formatMarkdown(before, file);
-    if (after === before) { console.log(`${file}: already formatted`); continue; }
+    if (after === before) {
+      console.log(`${file}: already formatted`);
+      continue;
+    }
     await writeFile(file, after);
     console.log(`${file}: formatted`);
   }

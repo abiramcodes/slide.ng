@@ -2,7 +2,17 @@
 //   <slide-video v-click autoplay="true" controls><source src="/clip.mp4" type="video/mp4" /></slide-video>
 // `autoplay`: "true" plays every time it appears, "once" only the first time. `autoreset`: "slide" or "click"
 // goes back to the `timestamp` when it disappears. Called `slide-video` (Slidev: SlidevVideo) to stay clear of <video>.
-import { Component, ElementRef, booleanAttribute, computed, effect, inject, input, numberAttribute, viewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  booleanAttribute,
+  computed,
+  effect,
+  inject,
+  input,
+  numberAttribute,
+  viewChild,
+} from '@angular/core';
 import { Nav } from '../lib/nav';
 import { RENDER_CONTEXT, SLIDE_NO } from '../lib/slide-context';
 import { VClick } from '../lib/v-click';
@@ -10,12 +20,21 @@ import { VClick } from '../lib/v-click';
 @Component({
   selector: 'slide-video',
   template: `
-    <video #video [attr.poster]="poster()" [controls]="controls() && canPlay" (play)="played = true"><ng-content /></video>
+    <video
+      #video
+      [attr.poster]="poster()"
+      [controls]="controls() && canPlay"
+      (play)="played = true"
+    >
+      <ng-content />
+    </video>
   `,
   host: { style: 'display: inline-block' },
 })
 export class SlideVideo {
-  autoplay = input<boolean | 'once', unknown>(false, { transform: (v) => (v === 'once' ? 'once' : booleanAttribute(v)) });
+  autoplay = input<boolean | 'once', unknown>(false, {
+    transform: (v) => (v === 'once' ? 'once' : booleanAttribute(v)),
+  });
   autoreset = input<'slide' | 'click'>();
   poster = input<string>();
   timestamp = input(0, { transform: numberAttribute });
@@ -39,11 +58,13 @@ export class SlideVideo {
       const shown = this.shown();
       const autoplay = this.autoplay();
       if (shown) {
-        if (autoplay === true || (autoplay === 'once' && !this.played)) void video.play().catch(() => undefined);
+        if (autoplay === true || (autoplay === 'once' && !this.played))
+          void video.play().catch(() => undefined);
       } else {
         video.pause();
         const reset = this.autoreset();
-        if (reset === 'click' || (reset === 'slide' && !this.onSlide())) video.currentTime = this.timestamp();
+        if (reset === 'click' || (reset === 'slide' && !this.onSlide()))
+          video.currentTime = this.timestamp();
       }
     });
   }

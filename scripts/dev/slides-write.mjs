@@ -14,8 +14,13 @@ async function locate(ctx, no) {
   const slide = deck.slides[no - 1];
   if (!slide?.source) throw new HttpError(404, 'no such slide');
   const file = confine(ctx.root, relative(ctx.root, slide.source.filepath));
-  if (!file || !file.endsWith('.md') || !existsSync(file)) throw new HttpError(403, 'this slide is not in a file of the project');
-  return { slide: { ...slide.source, content: slide.content }, file, text: readFileSync(file, 'utf8') };
+  if (!file || !file.endsWith('.md') || !existsSync(file))
+    throw new HttpError(403, 'this slide is not in a file of the project');
+  return {
+    slide: { ...slide.source, content: slide.content },
+    file,
+    text: readFileSync(file, 'utf8'),
+  };
 }
 
 function save(file, result) {

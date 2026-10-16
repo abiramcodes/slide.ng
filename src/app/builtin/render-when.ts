@@ -20,6 +20,8 @@ export class RenderWhen {
 
   protected show = computed(() => {
     const wanted = [this.context()].flat();
-    return wanted.some((w) => w === this.current || (w === 'main' && ['slide', 'presenter'].includes(this.current)));
+    return wanted.some(
+      (w) => w === this.current || (w === 'main' && ['slide', 'presenter'].includes(this.current)),
+    );
   });
 }

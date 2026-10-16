@@ -9,7 +9,10 @@ import { Ui } from '../lib/ui-state';
     @if (ui.info()) {
       <div id="info-dialog" class="fixed inset-0 grid z-modal">
         <div class="absolute inset-0 -z-1 bg-black/80" (click)="ui.info.set(false)"></div>
-        <div class="slidev-layout m-auto rounded-md bg-main text-main shadow dark:border dark:border-gray/20 px-6 py-4 flex flex-col gap-4 text-base max-w-150" style="height: auto">
+        <div
+          class="slidev-layout m-auto rounded-md bg-main text-main shadow dark:border dark:border-gray/20 px-6 py-4 flex flex-col gap-4 text-base max-w-150"
+          style="height: auto"
+        >
           @if (infoHtml) {
             <div [innerHTML]="infoHtml"></div>
           } @else {

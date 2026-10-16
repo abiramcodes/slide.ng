@@ -10,23 +10,73 @@
 @import './styles/presenter.css';
 @import './styles/print.css';
 
-html, body { height: 100%; margin: 0; overflow: hidden; background: var(--slidev-slide-container-background); font-family: ui-sans-serif, system-ui, sans-serif; }
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: var(--slidev-slide-container-background);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
 
 /* The stage fills the window; the canvas is centred and scaled by the deck (see lib/canvas.ts). */
-.stage { position: fixed; inset: 0; background: var(--slidev-slide-container-background); }
-.slide-show { position: absolute; inset: 0; display: block; }
-.canvas { position: absolute; left: 50%; top: 50%; overflow: hidden; transform-origin: center; background: #fff; color: #181818; }
-html.dark .canvas { background: #121212; color: #ddd; }
+.stage {
+  position: fixed;
+  inset: 0;
+  background: var(--slidev-slide-container-background);
+}
+.slide-show {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+.canvas {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  overflow: hidden;
+  transform-origin: center;
+  background: #fff;
+  color: #181818;
+}
+html.dark .canvas {
+  background: #121212;
+  color: #ddd;
+}
 
 /* Slides are stacked on top of each other so that a transition can show two at once. */
-.canvas > * { position: absolute; inset: 0; display: block; }
+.canvas > * {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
 /* `zoom: 0.8`: draw the layout 1/0.8 times bigger than the slide, then scale it down from the top left corner. */
-[data-zoom] > .slidev-layout { width: calc(100% / var(--slidev-zoom)); height: calc(100% / var(--slidev-zoom)); transform: scale(var(--slidev-zoom)); transform-origin: top left; }
+[data-zoom] > .slidev-layout {
+  width: calc(100% / var(--slidev-zoom));
+  height: calc(100% / var(--slidev-zoom));
+  transform: scale(var(--slidev-zoom));
+  transform-origin: top left;
+}
 
 /* The readout the tests use (slide number and clicks). Hidden from the eye, still in the page. */
-#hud { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+#hud {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 
 /* Ported from Slidev's vclick.css: hidden elements keep their space but cannot be seen or clicked. */
-.slidev-vclick-target { transition: all 0.1s ease; }
-.slidev-vclick-hidden { opacity: 0 !important; pointer-events: none !important; user-select: none !important; }
-.slidev-vclick-display-none { display: none !important; }
+.slidev-vclick-target {
+  transition: all 0.1s ease;
+}
+.slidev-vclick-hidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  user-select: none !important;
+}
+.slidev-vclick-display-none {
+  display: none !important;
+}

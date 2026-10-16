@@ -26,4 +26,5 @@ export const WORKER_SHIM = `(function () {
 `;
 
 /** The text of `workers.js`: the bundled worker sources by file name. */
-export const workersScript = (sources) => `window.__slideNgWorkers = Object.assign(window.__slideNgWorkers || {}, ${JSON.stringify(sources)});\n`;
+export const workersScript = (sources) =>
+  `window.__slideNgWorkers = Object.assign(window.__slideNgWorkers || {}, ${JSON.stringify(sources)});\n`;

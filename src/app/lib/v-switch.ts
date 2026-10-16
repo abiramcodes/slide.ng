@@ -1,10 +1,23 @@
 // <v-switch> shows one child at a time, one per click. Port of Slidev's VSwitch, where the
 // children are slots named 1, 2, 5-7. Here the children are elements with an `at` attribute:
 //   <v-switch><div at="1">first</div><div at="2">second</div><div at="3-5">third, for 3 clicks</div></v-switch>
-import { Component, ElementRef, Injector, OnDestroy, OnInit, effect, inject, input } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  Injector,
+  OnDestroy,
+  OnInit,
+  effect,
+  inject,
+  input,
+} from '@angular/core';
 import { ClicksContext, RawSingleAt } from './clicks';
 
-interface Slot { el: Element; start: number; end: number }
+interface Slot {
+  el: Element;
+  start: number;
+  end: number;
+}
 
 // Slidev's rule: a single number lasts until the next slot starts; `a-b` is explicit.
 export function parseSlots(items: { el: Element; at: string }[]): Slot[] {
@@ -17,7 +30,8 @@ export function parseSlots(items: { el: Element; at: string }[]): Slot[] {
       return slot;
     }
     const [start, end] = at.split('-').map(Number);
-    if (!Number.isFinite(start) || !Number.isFinite(end)) throw new Error(`Invalid range for v-switch: ${at}`);
+    if (!Number.isFinite(start) || !Number.isFinite(end))
+      throw new Error(`Invalid range for v-switch: ${at}`);
     lastStart = start;
     return { el, start, end };
   });
@@ -31,7 +45,9 @@ export class VSwitch implements OnInit, OnDestroy {
   private injector = inject(Injector);
 
   ngOnInit() {
-    const items = Array.from(this.el.children).filter((c) => c.hasAttribute('at')).map((el) => ({ el, at: el.getAttribute('at')! }));
+    const items = Array.from(this.el.children)
+      .filter((c) => c.hasAttribute('at'))
+      .map((el) => ({ el, at: el.getAttribute('at')! }));
     const slots = parseSlots(items);
     const size = Math.max(...slots.map((s) => s.end)) - 1;
     const info = this.ctx.calculateSince(this.at(), size);
@@ -41,15 +57,20 @@ export class VSwitch implements OnInit, OnDestroy {
       el.classList.add('slidev-vclick-target');
       el.setAttribute('data-slidev-clicks-start', String(start));
       el.setAttribute('data-slidev-clicks-end', String(end));
-      effect(() => {
-        // 1 = the click where the switch starts; before that nothing is shown.
-        const offset = info ? this.ctx.current() - info.start + 1 : 0;
-        el.classList.toggle('slidev-vclick-display-none', !(start <= offset && offset < end));
-        el.classList.toggle('slidev-vclick-current', offset === start);
-        el.classList.toggle('slidev-vclick-prior', offset >= end);
-      }, { injector: this.injector });
+      effect(
+        () => {
+          // 1 = the click where the switch starts; before that nothing is shown.
+          const offset = info ? this.ctx.current() - info.start + 1 : 0;
+          el.classList.toggle('slidev-vclick-display-none', !(start <= offset && offset < end));
+          el.classList.toggle('slidev-vclick-current', offset === start);
+          el.classList.toggle('slidev-vclick-prior', offset >= end);
+        },
+        { injector: this.injector },
+      );
     }
   }
 
-  ngOnDestroy() { this.ctx.unregister(this); }
+  ngOnDestroy() {
+    this.ctx.unregister(this);
+  }
 }

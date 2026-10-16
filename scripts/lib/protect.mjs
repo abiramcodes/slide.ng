@@ -12,7 +12,11 @@ export const escapeCode = (s) =>
 
 // Escape a value for use inside a double-quoted HTML attribute.
 export const attr = (s) =>
-  String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/[{}@]/g, (c) => `&#${c.charCodeAt(0)};`);
+  String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/[{}@]/g, (c) => `&#${c.charCodeAt(0)};`);
 
 // `name="value"` for each entry that has a value (booleans and numbers are written as text).
 export const attrs = (obj) =>

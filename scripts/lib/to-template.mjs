@@ -43,18 +43,28 @@ export function toTemplate(markdown, ctx = {}) {
   md = md.replace(/^[ \t]*(\}[ \t]*)?(@\w+.*\{|\})[ \t]*$/gm, hide); // @if (..) {   }   } @else {
   md = md.replace(/^[ \t]*@let\s.*;[ \t]*$/gm, hide); // @let x = 1;
   md = md.replace(new RegExp(`^[ \\t]*${ANGULAR_TAG}[ \\t]*$`, 'gm'), hide); // tag alone on a line
-  md = md.replace(new RegExp(`^([ \\t]*)(${ANGULAR_TAG})(?=[ \\t]*\\S)`, 'gm'), (_, ws, tag) => ws + hide(tag));
+  md = md.replace(
+    new RegExp(`^([ \\t]*)(${ANGULAR_TAG})(?=[ \\t]*\\S)`, 'gm'),
+    (_, ws, tag) => ws + hide(tag),
+  );
   md = md.replace(new RegExp(ANGULAR_TAG, 'g'), keep); // tag inside a paragraph
   md = md.replace(/\{\{[\s\S]*?\}\}/g, keep); // {{ interpolation }}
 
   // 3. Markdown -> HTML, then make the remaining braces and @ harmless.
   let html = protect(markAlerts(marked.parse(md, { async: false })));
-  html = finishFootnotes(html, footnotes.notes, (note) => protect(marked.parseInline(note, { async: false })));
+  html = finishFootnotes(html, footnotes.notes, (note) =>
+    protect(marked.parseInline(note, { async: false })),
+  );
 
   // 4. Put everything back.
   html = html.replace(/<p>NGMATH(\d+)X<\/p>/g, (_, i) => renderMath(math.maths[+i]));
   html = html.replace(/NGMATH(\d+)X/g, (_, i) => renderMath(math.maths[+i]));
   html = html.replace(/<p>NGFENCE(\d+)X<\/p>/g, (_, i) => renderFence(fences[+i], ctx));
-  html = html.replace(/NGCODE(\d+)X/g, (_, i) => `<code ngNonBindable>${escapeCode(inlines[+i])}</code>`);
-  return html.replace(/<!--NGKEEP(\d+)X-->/g, (_, i) => kept[+i]).replace(/NGKEEP(\d+)X/g, (_, i) => kept[+i]);
+  html = html.replace(
+    /NGCODE(\d+)X/g,
+    (_, i) => `<code ngNonBindable>${escapeCode(inlines[+i])}</code>`,
+  );
+  return html
+    .replace(/<!--NGKEEP(\d+)X-->/g, (_, i) => kept[+i])
+    .replace(/NGKEEP(\d+)X/g, (_, i) => kept[+i]);
 }

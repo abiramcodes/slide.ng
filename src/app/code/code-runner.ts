@@ -1,6 +1,16 @@
 // The output area under a `{monaco-run}` editor: a run button, the result, and "show at click N".
 // Port of Slidev's CodeRunner.vue. What actually runs the code is passed in as `execute`.
-import { Component, OnDestroy, OnInit, computed, inject, input, signal, effect, untracked } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  computed,
+  inject,
+  input,
+  signal,
+  effect,
+  untracked,
+} from '@angular/core';
 import { ClickInfo, ClicksContext, RawSingleAt } from '../lib/clicks';
 import type { RunResult } from './monaco/run-js';
 
@@ -21,11 +31,17 @@ import type { RunResult } from './monaco/run-js';
         @for (line of result()!.lines; track $index) {
           <div class="output-line">{{ line.join(', ') }}</div>
         }
-        @if (result()!.error) { <div class="text-red-500">{{ result()!.error }}</div> }
+        @if (result()!.error) {
+          <div class="text-red-500">{{ result()!.error }}</div>
+        }
       </div>
     }
     @if (code().trim()) {
-      <button class="slidev-runner-run absolute right-1 top-1 w-8 h-8 flex justify-center items-center" title="Run code" (click)="run()">
+      <button
+        class="slidev-runner-run absolute right-1 top-1 w-8 h-8 flex justify-center items-center"
+        title="Run code"
+        (click)="run()"
+      >
         <div class="i-carbon:play"></div>
       </button>
     }
@@ -71,7 +87,10 @@ export class CodeRunner implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy() { clearTimeout(this.timer); this.clicks.unregister(this); }
+  ngOnDestroy() {
+    clearTimeout(this.timer);
+    this.clicks.unregister(this);
+  }
 
   protected async run() {
     this.running.set(true);

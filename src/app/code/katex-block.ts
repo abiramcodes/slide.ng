@@ -9,7 +9,9 @@ const COLUMNS = '.mtable > [class*=col-align]';
 const CELLS = ':scope > .vlist-t > .vlist-r > .vlist > span > .mord';
 
 export function collectRows(root: Element): Element[][] {
-  const columns = Array.from(root.querySelectorAll(COLUMNS)).filter((c) => !c.parentElement?.closest(COLUMNS));
+  const columns = Array.from(root.querySelectorAll(COLUMNS)).filter(
+    (c) => !c.parentElement?.closest(COLUMNS),
+  );
   const rows: Element[][] = [];
   for (const column of columns) {
     column.querySelectorAll(CELLS).forEach((cell, i) => (rows[i] ??= []).push(cell));

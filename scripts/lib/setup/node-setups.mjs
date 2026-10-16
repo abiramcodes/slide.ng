@@ -9,7 +9,9 @@ const EXTENSIONS = ['.ts', '.mts', '.mjs', '.js'];
 
 /** The file of a setup in a folder (`setup/<name>.ts`, `.mts`, `.mjs` or `.js`), or null. */
 export function findSetupFile(dir, name) {
-  return EXTENSIONS.map((ext) => join(dir, 'setup', `${name}${ext}`)).find((f) => existsSync(f)) ?? null;
+  return (
+    EXTENSIONS.map((ext) => join(dir, 'setup', `${name}${ext}`)).find((f) => existsSync(f)) ?? null
+  );
 }
 
 /**
@@ -47,7 +49,12 @@ export async function shikiSetup(roots) {
   delete options.langs;
   // `theme` and `themes` together: `themes` wins. A `theme` object without a name is the old way to write `themes`.
   if ('theme' in options && 'themes' in options) delete options.theme;
-  if (options.theme && typeof options.theme === 'object' && !options.theme.name && !options.theme.tokenColors) {
+  if (
+    options.theme &&
+    typeof options.theme === 'object' &&
+    !options.theme.name &&
+    !options.theme.tokenColors
+  ) {
     options.themes = options.theme;
     delete options.theme;
   }
@@ -58,11 +65,19 @@ export async function shikiSetup(roots) {
     if (Array.isArray(langs)) {
       for (const lang of langs.flat()) {
         if (typeof lang === 'string') langNames.push(lang);
-        else if (lang && typeof lang === 'object' && lang.name) grammars.push({ name: lang.name, input: lang });
-        else console.warn('[slides] setup/shiki: a `langs` entry is neither a name nor a grammar with a name, ignored');
+        else if (lang && typeof lang === 'object' && lang.name)
+          grammars.push({ name: lang.name, input: lang });
+        else
+          console.warn(
+            '[slides] setup/shiki: a `langs` entry is neither a name nor a grammar with a name, ignored',
+          );
       }
     } else if (typeof langs === 'object') {
-      for (const [name, grammar] of Object.entries(langs)) grammars.push({ name, input: typeof grammar === 'function' ? grammar : { ...grammar, name } });
+      for (const [name, grammar] of Object.entries(langs))
+        grammars.push({
+          name,
+          input: typeof grammar === 'function' ? grammar : { ...grammar, name },
+        });
     }
   }
   return { options, langNames, grammars };
@@ -76,7 +91,9 @@ export async function shikiSetup(roots) {
  */
 export async function transformersSetup(roots) {
   const returns = (await runSetups(roots, 'transformers')).filter(Boolean);
-  const pre = ['pre', 'preCodeblock', 'postCodeblock'].flatMap((key) => [...returns].reverse().flatMap((r) => r[key] ?? [])).filter(Boolean);
+  const pre = ['pre', 'preCodeblock', 'postCodeblock']
+    .flatMap((key) => [...returns].reverse().flatMap((r) => r[key] ?? []))
+    .filter(Boolean);
   const codeblocks = returns.flatMap((r) => r.codeblocks ?? []).filter(Boolean);
   return { pre, codeblocks };
 }

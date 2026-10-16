@@ -1,6 +1,15 @@
 // What code blocks and math blocks share: a list of ranges ("2-3|5|all"), one per click.
 // A subclass reads `shown()` (the range for the current click) and applies it to its own lines.
-import { Directive, OnDestroy, OnInit, computed, inject, input, numberAttribute, signal } from '@angular/core';
+import {
+  Directive,
+  OnDestroy,
+  OnInit,
+  computed,
+  inject,
+  input,
+  numberAttribute,
+  signal,
+} from '@angular/core';
 import { CLICKS_MAX, ClickInfo, ClicksContext, RawSingleAt } from '../lib/clicks';
 import { rangeAt } from './ranges';
 
@@ -19,7 +28,7 @@ export abstract class RangedBlock implements OnInit, OnDestroy {
   protected shown = computed(() => {
     const info = this.info();
     const index = info ? Math.max(0, this.clicks.current() - info.start + 1) : CLICKS_MAX;
-    const last = this.finally() === 'last' ? this.ranges().at(-1) ?? 'all' : this.finally();
+    const last = this.finally() === 'last' ? (this.ranges().at(-1) ?? 'all') : this.finally();
     return rangeAt(this.ranges(), index, last);
   });
 
@@ -31,5 +40,7 @@ export abstract class RangedBlock implements OnInit, OnDestroy {
     this.clicks.register(this, info);
   }
 
-  ngOnDestroy() { this.clicks.unregister(this); }
+  ngOnDestroy() {
+    this.clicks.unregister(this);
+  }
 }

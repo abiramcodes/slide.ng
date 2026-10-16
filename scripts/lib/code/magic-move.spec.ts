@@ -5,7 +5,8 @@ import { extractFences } from '../fences.mjs';
 
 beforeAll(() => initHighlighter({ langs: ['js', 'ts'] }));
 
-const source = '````md magic-move [a.js] {duration:300}\n```js {*|1}\nlet a = 1\n```\n\nsome text between\n\n```ts {lines:true}\nlet a: number = 1\nlet b = 2\n```\n````';
+const source =
+  '````md magic-move [a.js] {duration:300}\n```js {*|1}\nlet a = 1\n```\n\nsome text between\n\n```ts {lines:true}\nlet a: number = 1\nlet b = 2\n```\n````';
 const fence = () => (extractFences(source) as { fences: any[] }).fences[0];
 
 describe('magic move', () => {

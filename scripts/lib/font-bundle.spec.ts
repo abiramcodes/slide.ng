@@ -14,13 +14,18 @@ const CSS = `/* latin */
 `;
 
 // A fetch that answers from a table and records what was asked.
-function fakeFetch(table: Record<string, { type: string; body: string | Buffer; status?: number }>) {
+function fakeFetch(
+  table: Record<string, { type: string; body: string | Buffer; status?: number }>,
+) {
   const asked: { url: string; headers: Record<string, string> }[] = [];
   const impl = async (url: string, init: { headers?: Record<string, string> } = {}) => {
     asked.push({ url, headers: init.headers ?? {} });
     const hit = table[url];
     if (!hit) return new Response('no', { status: 404 });
-    return new Response(typeof hit.body === 'string' ? hit.body : new Uint8Array(hit.body), { status: hit.status ?? 200, headers: { 'content-type': hit.type } });
+    return new Response(typeof hit.body === 'string' ? hit.body : new Uint8Array(hit.body), {
+      status: hit.status ?? 200,
+      headers: { 'content-type': hit.type },
+    });
   };
   return { impl: impl as unknown as typeof fetch, asked };
 }
@@ -28,7 +33,9 @@ function fakeFetch(table: Record<string, { type: string; body: string | Buffer; 
 describe('wantsFontFiles', () => {
   const fonts = { sans: 'Robot' };
   it('needs a production build and a fonts object', () => {
-    expect(wantsFontFiles({ fonts: { ...fonts, selfHost: true } }, { building: false, offline: true })).toBe(false);
+    expect(
+      wantsFontFiles({ fonts: { ...fonts, selfHost: true } }, { building: false, offline: true }),
+    ).toBe(false);
     expect(wantsFontFiles({}, { building: true, offline: true })).toBe(false);
   });
   it('is on for an offline folder and for pwa, off for a plain build', () => {
@@ -37,14 +44,24 @@ describe('wantsFontFiles', () => {
     expect(wantsFontFiles({ fonts }, { building: true, offline: false })).toBe(false);
   });
   it('can be asked for, or switched off', () => {
-    expect(wantsFontFiles({ fonts: { ...fonts, selfHost: true } }, { building: true, offline: false })).toBe(true);
-    expect(wantsFontFiles({ fonts: { ...fonts, selfHost: false }, pwa: true }, { building: true, offline: true })).toBe(false);
+    expect(
+      wantsFontFiles({ fonts: { ...fonts, selfHost: true } }, { building: true, offline: false }),
+    ).toBe(true);
+    expect(
+      wantsFontFiles(
+        { fonts: { ...fonts, selfHost: false }, pwa: true },
+        { building: true, offline: true },
+      ),
+    ).toBe(false);
   });
 });
 
 describe('fontAddresses and fontFileName', () => {
   it('lists each web address once, quoted or not', () => {
-    expect(fontAddresses(CSS)).toEqual(['https://fonts.test/a/robot-latin.woff2', 'https://fonts.test/a/robot-ext.woff2']);
+    expect(fontAddresses(CSS)).toEqual([
+      'https://fonts.test/a/robot-latin.woff2',
+      'https://fonts.test/a/robot-ext.woff2',
+    ]);
   });
   it('ignores addresses that are not on the web', () => {
     expect(fontAddresses('src: url(data:font/woff2;base64,AAAA), url(./local.woff2)')).toEqual([]);
@@ -52,12 +69,16 @@ describe('fontAddresses and fontFileName', () => {
   it('names the file by hash and by content type, then by the address', () => {
     expect(fontFileName('https://x.test/a', 'font/woff2')).toMatch(/^[0-9a-f]{16}\.woff2$/);
     expect(fontFileName('https://x.test/a.ttf?v=1', 'application/octet-stream')).toMatch(/\.ttf$/);
-    expect(fontFileName('https://x.test/a', 'font/woff2')).not.toBe(fontFileName('https://x.test/b', 'font/woff2'));
+    expect(fontFileName('https://x.test/a', 'font/woff2')).not.toBe(
+      fontFileName('https://x.test/b', 'font/woff2'),
+    );
   });
 });
 
 describe('bundleFonts', () => {
-  const head = { fonts: { sans: 'Robot', weights: '400,600', provider: 'https://fonts.test/css2' } };
+  const head = {
+    fonts: { sans: 'Robot', weights: '400,600', provider: 'https://fonts.test/css2' },
+  };
   const sheet = fontsUrl(resolveFonts(head.fonts))!;
   const ok = { type: 'font/woff2', body: Buffer.from('wOF2-data') };
 
@@ -66,7 +87,8 @@ describe('bundleFonts', () => {
     writeFileSync(join(dir, 'stale.woff2'), 'old');
     const { impl, asked } = fakeFetch({
       [sheet]: { type: 'text/css', body: CSS },
-      'https://fonts.test/a/robot-latin.woff2': ok, 'https://fonts.test/a/robot-ext.woff2': ok,
+      'https://fonts.test/a/robot-latin.woff2': ok,
+      'https://fonts.test/a/robot-ext.woff2': ok,
     });
     const result = await bundleFonts(head, dir, () => null, impl);
     expect(result?.files).toBe(2);
@@ -80,15 +102,34 @@ describe('bundleFonts', () => {
   it('keeps the provider when the style sheet cannot be fetched', async () => {
     const warnings: string[] = [];
     const { impl } = fakeFetch({});
-    const result = await bundleFonts(head, mkdtempSync(join(tmpdir(), 'fonts-')), (m: string) => { warnings.push(m); return null; }, impl);
+    const result = await bundleFonts(
+      head,
+      mkdtempSync(join(tmpdir(), 'fonts-')),
+      (m: string) => {
+        warnings.push(m);
+        return null;
+      },
+      impl,
+    );
     expect(result).toBeNull();
     expect(warnings[0]).toMatch(/load them from the provider/);
   });
 
   it('leaves a file it cannot get as it is and reports it', async () => {
     const warnings: string[] = [];
-    const { impl } = fakeFetch({ [sheet]: { type: 'text/css', body: CSS }, 'https://fonts.test/a/robot-latin.woff2': ok });
-    const result = await bundleFonts(head, mkdtempSync(join(tmpdir(), 'fonts-')), (m: string) => { warnings.push(m); return null; }, impl);
+    const { impl } = fakeFetch({
+      [sheet]: { type: 'text/css', body: CSS },
+      'https://fonts.test/a/robot-latin.woff2': ok,
+    });
+    const result = await bundleFonts(
+      head,
+      mkdtempSync(join(tmpdir(), 'fonts-')),
+      (m: string) => {
+        warnings.push(m);
+        return null;
+      },
+      impl,
+    );
     expect(result?.files).toBe(1);
     expect(result?.css).toContain('https://fonts.test/a/robot-ext.woff2');
     expect(warnings.some((w) => w.includes('robot-ext'))).toBe(true);
@@ -96,24 +137,40 @@ describe('bundleFonts', () => {
 
   it('does nothing for provider none', async () => {
     const { impl, asked } = fakeFetch({});
-    expect(await bundleFonts({ fonts: { sans: 'Robot', provider: 'none' } }, mkdtempSync(join(tmpdir(), 'fonts-')), () => null, impl)).toBeNull();
+    expect(
+      await bundleFonts(
+        { fonts: { sans: 'Robot', provider: 'none' } },
+        mkdtempSync(join(tmpdir(), 'fonts-')),
+        () => null,
+        impl,
+      ),
+    ).toBeNull();
     expect(asked).toEqual([]);
   });
 });
 
 describe('the style sheet of a self-hosted deck', () => {
   it('uses the downloaded faces instead of the @import', () => {
-    const css = fontsCss({ fonts: { sans: 'Robot' } }, '@font-face { font-family: Robot; src: url(./fonts/a.woff2); }');
+    const css = fontsCss(
+      { fonts: { sans: 'Robot' } },
+      '@font-face { font-family: Robot; src: url(./fonts/a.woff2); }',
+    );
     expect(css).toContain('url(./fonts/a.woff2)');
     expect(css).not.toContain('@import');
     expect(css).toContain('--slidev-font-sans: "Robot"');
   });
   it('keeps the roots` imports first in theme.css', () => {
-    const css = themeCss([], { fonts: { sans: 'Robot' } }, '@font-face { font-family: Robot; src: url(./fonts/a.woff2); }');
+    const css = themeCss(
+      [],
+      { fonts: { sans: 'Robot' } },
+      '@font-face { font-family: Robot; src: url(./fonts/a.woff2); }',
+    );
     expect(css.startsWith('@font-face')).toBe(true);
   });
   it('accepts the address of a css2 endpoint as the provider', () => {
-    expect(fontsUrl(resolveFonts({ sans: 'Robot', provider: 'http://127.0.0.1:9/css2' }))).toBe('http://127.0.0.1:9/css2?family=Robot:wght@200;400;600&display=swap');
+    expect(fontsUrl(resolveFonts({ sans: 'Robot', provider: 'http://127.0.0.1:9/css2' }))).toBe(
+      'http://127.0.0.1:9/css2?family=Robot:wght@200;400;600&display=swap',
+    );
     expect(fontsUrl(resolveFonts({ sans: 'Robot', provider: 'javascript:alert(1)' }))).toBeNull();
   });
 });

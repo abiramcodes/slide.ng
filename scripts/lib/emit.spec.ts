@@ -7,7 +7,12 @@ import { initHighlighter } from './code/highlighter.mjs';
 // Code fences are highlighted while generating, so the highlighter must be ready.
 beforeAll(() => initHighlighter({ langs: ['ts', 'html'] }));
 
-const slide = (frontmatter: Record<string, unknown>, content: string) => ({ title: null, frontmatter, content, note: undefined });
+const slide = (frontmatter: Record<string, unknown>, content: string) => ({
+  title: null,
+  frontmatter,
+  content,
+  note: undefined,
+});
 
 describe('layoutName', () => {
   it('first slide defaults to cover, the others to default', () => {
@@ -25,8 +30,29 @@ describe('layoutName', () => {
     warn.mockRestore();
   });
   it('knows every Slidev layout', () => {
-    const names = ['default', 'cover', 'center', 'end', 'fact', 'full', 'image', 'image-left', 'image-right', 'iframe',
-      'iframe-left', 'iframe-right', 'intro', 'none', 'quote', 'section', 'statement', 'two-cols', 'two-cols-header', '404', 'error'];
+    const names = [
+      'default',
+      'cover',
+      'center',
+      'end',
+      'fact',
+      'full',
+      'image',
+      'image-left',
+      'image-right',
+      'iframe',
+      'iframe-left',
+      'iframe-right',
+      'intro',
+      'none',
+      'quote',
+      'section',
+      'statement',
+      'two-cols',
+      'two-cols-header',
+      '404',
+      'error',
+    ];
     expect(Object.keys(LAYOUTS).sort()).toEqual(names.sort());
   });
 });
@@ -40,7 +66,9 @@ describe('slideSource', () => {
     expect(src).toContain('export default class Slide002');
   });
   it('carries the frontmatter class to the layout element', () => {
-    expect(slideSource(slide({ class: 'text-center a"b' }, 'x'), 2)).toContain('<sn-default class=\\"text-center a&quot;b\\">');
+    expect(slideSource(slide({ class: 'text-center a"b' }, 'x'), 2)).toContain(
+      '<sn-default class=\\"text-center a&quot;b\\">',
+    );
   });
   it('splits two-cols content at ::right::', () => {
     const src = slideSource(slide({ layout: 'two-cols' }, 'left\n\n::right::\n\nright'), 2);
@@ -54,7 +82,10 @@ describe('slideSource', () => {
     expect(rich).toContain('imports: [DefaultLayout, VClick, Counter]');
   });
   it('does not import a component that is only mentioned inside code', () => {
-    const src = slideSource(slide({}, '```html\n<app-counter />\n<div v-click>\n```\n\nand `<v-clicks>`'), 2);
+    const src = slideSource(
+      slide({}, '```html\n<app-counter />\n<div v-click>\n```\n\nand `<v-clicks>`'),
+      2,
+    );
     expect(src).toContain('imports: [DefaultLayout, CodeBlockWrapper]'); // the fence itself is a code block
     expect(src).not.toContain('Counter');
   });
@@ -64,7 +95,9 @@ describe('slideSource', () => {
     expect(slideSource(slide({}, '<div v-after>a</div>'), 2)).toContain('VClick');
   });
   it('provides clicksStart when the frontmatter sets it', () => {
-    expect(slideSource(slide({ clicksStart: 2 }, 'x'), 2)).toContain('{ provide: CLICKS_START, useValue: 2 }');
+    expect(slideSource(slide({ clicksStart: 2 }, 'x'), 2)).toContain(
+      '{ provide: CLICKS_START, useValue: 2 }',
+    );
     expect(slideSource(slide({}, 'x'), 2)).not.toContain('useValue');
   });
   it('writes the template as one safe string literal', () => {
@@ -75,16 +108,24 @@ describe('slideSource', () => {
 
 describe('slideSource: layout props and slots', () => {
   it('passes frontmatter keys the layout knows as attributes', () => {
-    const src = slideSource(slide({ layout: 'image-left', image: '/a.png', backgroundSize: 'contain', other: 1 }, 'x'), 2);
+    const src = slideSource(
+      slide({ layout: 'image-left', image: '/a.png', backgroundSize: 'contain', other: 1 }, 'x'),
+      2,
+    );
     expect(src).toContain('<sn-image-left image=\\"/a.png\\" backgroundSize=\\"contain\\">');
     expect(src).not.toContain('other');
   });
   it('sends `class` to the content for layouts with a class prop, to the layout element otherwise', () => {
-    expect(slideSource(slide({ layout: 'two-cols', class: 'c' }, 'x'), 2)).toContain('<sn-two-cols contentClass=');
+    expect(slideSource(slide({ layout: 'two-cols', class: 'c' }, 'x'), 2)).toContain(
+      '<sn-two-cols contentClass=',
+    );
     expect(slideSource(slide({ layout: 'fact', class: 'c' }, 'x'), 2)).toContain('<sn-fact class=');
   });
   it('handles several named slots, in any order', () => {
-    const src = slideSource(slide({ layout: 'two-cols-header' }, 'top\n\n::right::\nR\n\n::left::\nL\n\n::bottom::\nB'), 2);
+    const src = slideSource(
+      slide({ layout: 'two-cols-header' }, 'top\n\n::right::\nR\n\n::left::\nL\n\n::bottom::\nB'),
+      2,
+    );
     expect(src.indexOf('[right]')).toBeLessThan(src.indexOf('[left]'));
     expect(src).toContain('ngProjectAs=\\"[bottom]\\"');
     expect(src).toContain('<p>top</p>');
@@ -98,7 +139,9 @@ describe('slideSource: layout props and slots', () => {
     warn.mockRestore();
   });
   it('does not read ::x:: inside a code fence as a slot', () => {
-    expect(slideSource(slide({ layout: 'two-cols' }, '```\n::right::\n```'), 2)).not.toContain('ngProjectAs');
+    expect(slideSource(slide({ layout: 'two-cols' }, '```\n::right::\n```'), 2)).not.toContain(
+      'ngProjectAs',
+    );
   });
 });
 
@@ -114,15 +157,20 @@ describe('slideSource: styles and clicks', () => {
     expect(src).not.toContain('styles:');
   });
   it('provides a click total from the `clicks` frontmatter', () => {
-    expect(slideSource(slide({ clicks: 4 }, 'x'), 2)).toContain('{ provide: CLICKS_TOTAL, useValue: 4 }');
+    expect(slideSource(slide({ clicks: 4 }, 'x'), 2)).toContain(
+      '{ provide: CLICKS_TOTAL, useValue: 4 }',
+    );
   });
 });
 
 describe('indexSource', () => {
   it('lists every slide with its metadata and keeps unknown frontmatter keys', async () => {
-    const deck = await parseDeck('/d/slides.md', { '/d/slides.md': '---\ntitle: T\n---\n\n# A\n\n---\nlayout: center\nfoo: bar\nroute\u0041lias: intro\nhideInToc: true\ntransition: fade\n---\n\n## B\n\n<!-- n -->\n' });
+    const deck = await parseDeck('/d/slides.md', {
+      '/d/slides.md':
+        '---\ntitle: T\n---\n\n# A\n\n---\nlayout: center\nfoo: bar\nroute\u0041lias: intro\nhideInToc: true\ntransition: fade\n---\n\n## B\n\n<!-- n -->\n',
+    });
     const src = indexSource(deck);
-    expect(src).toContain('import Slide001 from \'./slide-001\';');
+    expect(src).toContain("import Slide001 from './slide-001';");
     expect(src).toContain('"layout":"center"');
     expect(src).toContain('"foo":"bar"');
     expect(src).toContain('"note":"n"');

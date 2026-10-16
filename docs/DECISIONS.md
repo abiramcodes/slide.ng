@@ -94,7 +94,6 @@ Short notes on choices made, and why. Newest at the bottom.
 23. **The readout `#hud` stays** (tests read it) but is hidden from the eye.
 24. **`@types/node`** was added as a dev dependency so the unit tests can use `node:fs` for the `src:` tests.
 
-
 ## Made during phase 2
 
 New dependencies, each with its reason (dev = only used while generating or testing, not in the browser bundle):
@@ -188,7 +187,6 @@ Nothing else was added: footnotes, alerts, the PlantUML encoding and the code ru
 32. **Icon tags are rewritten for every installed `@iconify-json/*` set** (`icons.mjs`; the longest set name wins), so adding a set is `npm i -D @iconify-json/<set>` and nothing else. UnoCSS only makes CSS for class names it can see, so the generator now also scans the generated slide files.
 33. **Alert colours are GitHub's**, set as CSS variables per kind in `markdown.css`, with a dark variant.
 
-
 ## Made during phase 3
 
 New dependencies, each with its reason: `drauu` (drawing; the brief named it; lazy chunk, only loaded when the toolbar is first opened),
@@ -224,7 +222,6 @@ Nothing else: recording uses the browser's MediaRecorder, the wake lock uses the
 17. **`{monaco-write}`** works for `<<< ./file.ts {monaco-write}` (a whole file inside the deck's folder). The generator lists `{ id: path }` in `.slide-ng/monaco-files.json`; the page sends only the id. A region, a plain code block or a file outside the folder gets a warning and a normal editor. The text is saved 600 ms after typing stops.
 18. **The side editor is a plain textarea** (colouring added by owner decision 6), not Monaco: it needs no extra loading and cannot fail on a scaled canvas. It shows the raw slide (frontmatter, content, notes) and saves 600 ms after typing. It does not notice edits made elsewhere while it is open (reopen or change slide). Its open state is kept in the browser because a rebuild can reload the page.
 19. **Test decks:** `tests/e2e/phase3/slides.md` (presenter, sync, drawing, camera, settings, drag), `tests/e2e/phase3/layout/slides.md` (hash routing, canvas size, zoom and the four layers, which live in its own `layers/` folder), `tests/e2e/dev/slides.md` (copied to `work.md` for the dev-server test).
-
 
 ## Made during phase 4
 

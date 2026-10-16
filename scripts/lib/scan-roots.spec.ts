@@ -13,7 +13,10 @@ describe('declarations', () => {
         selector: '[v-glow]',
       })
       export class Glow {}`;
-    expect(declarations(source)).toEqual([{ selector: 'my-box', className: 'MyBox' }, { selector: '[v-glow]', className: 'Glow' }]);
+    expect(declarations(source)).toEqual([
+      { selector: 'my-box', className: 'MyBox' },
+      { selector: '[v-glow]', className: 'Glow' },
+    ]);
   });
   it('ignores classes that are not exported or not decorated', () => {
     expect(declarations("@Component({ selector: 'a-b' }) class Hidden {}")).toEqual([]);
@@ -44,20 +47,40 @@ function root(id: string, files: Record<string, string>, layouts = {}) {
 
 describe('scanRoots', () => {
   it('adds a new layout with props from theme.json', () => {
-    const r = root('theme-x', { 'layouts/hero.ts': "@Component({ selector: 'x-hero', template: '' }) export class HeroLayout {}" }, { hero: { props: ['image'], slots: ['right'], classProp: false } });
+    const r = root(
+      'theme-x',
+      {
+        'layouts/hero.ts':
+          "@Component({ selector: 'x-hero', template: '' }) export class HeroLayout {}",
+      },
+      { hero: { props: ['image'], slots: ['right'], classProp: false } },
+    );
     const { layouts } = scanRoots([r]);
-    expect(layouts['hero']).toMatchObject({ className: 'HeroLayout', tag: 'x-hero', importPath: './roots/theme-x/layouts/hero', props: ['image'], slots: ['right'] });
+    expect(layouts['hero']).toMatchObject({
+      className: 'HeroLayout',
+      tag: 'x-hero',
+      importPath: './roots/theme-x/layouts/hero',
+      props: ['image'],
+      slots: ['right'],
+    });
   });
   it('lets a layout replace a built-in one and keep its inputs', () => {
-    const r = root('theme-x', { 'layouts/two-cols.ts': "@Component({ selector: 'sn-two-cols', template: '' }) export class MyCols {}" });
+    const r = root('theme-x', {
+      'layouts/two-cols.ts':
+        "@Component({ selector: 'sn-two-cols', template: '' }) export class MyCols {}",
+    });
     const { layouts } = scanRoots([r]);
     expect(layouts['two-cols'].className).toBe('MyCols');
     expect(layouts['two-cols'].slots).toEqual(['left', 'right']);
     expect(layouts['default'].className).toBe('DefaultLayout');
   });
   it('lets a later root win', () => {
-    const a = root('theme-a', { 'layouts/center.ts': "@Component({ selector: 'a-center' }) export class ACenter {}" });
-    const b = root('deck', { 'layouts/center.ts': "@Component({ selector: 'b-center' }) export class BCenter {}" });
+    const a = root('theme-a', {
+      'layouts/center.ts': "@Component({ selector: 'a-center' }) export class ACenter {}",
+    });
+    const b = root('deck', {
+      'layouts/center.ts': "@Component({ selector: 'b-center' }) export class BCenter {}",
+    });
     expect(scanRoots([a, b]).layouts['center'].className).toBe('BCenter');
   });
   it('adds components, tests for their use, and reports unusable files', () => {

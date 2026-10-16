@@ -6,7 +6,10 @@ import { SHORTCUTS_SETUP, type Shortcut, type ShortcutActions } from 'slide-ng/l
 const providers: Provider[] = [
   {
     provide: SHORTCUTS_SETUP,
-    useValue: (actions: ShortcutActions, list: Shortcut[]): Shortcut[] => [...list, { name: 'minimal_back', key: 'b', run: actions.prevSlide }],
+    useValue: (actions: ShortcutActions, list: Shortcut[]): Shortcut[] => [
+      ...list,
+      { name: 'minimal_back', key: 'b', run: actions.prevSlide },
+    ],
   },
 ];
 

@@ -2,10 +2,22 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { RootNotFoundError, candidateNames, findRootDir, mergeHeadmatter, packageToInstall, readManifest, resolveRoots } from './roots.mjs';
+import {
+  RootNotFoundError,
+  candidateNames,
+  findRootDir,
+  mergeHeadmatter,
+  packageToInstall,
+  readManifest,
+  resolveRoots,
+} from './roots.mjs';
 
 const folder = () => mkdtempSync(join(tmpdir(), 'slide-ng-roots-'));
-const dirIn = (base: string, ...parts: string[]) => { const d = join(base, ...parts); mkdirSync(d, { recursive: true }); return d; };
+const dirIn = (base: string, ...parts: string[]) => {
+  const d = join(base, ...parts);
+  mkdirSync(d, { recursive: true });
+  return d;
+};
 
 describe('findRootDir', () => {
   it('finds a folder by relative path', () => {
@@ -23,7 +35,9 @@ describe('findRootDir', () => {
     expect(findRootDir('plain-name', 'addon', deck)).toContain('plain-name');
   });
   it('says what to do when nothing is found', () => {
-    expect(() => findRootDir('nope', 'theme', folder())).toThrow('Install it with: npm install -D slide-ng-theme-nope');
+    expect(() => findRootDir('nope', 'theme', folder())).toThrow(
+      'Install it with: npm install -D slide-ng-theme-nope',
+    );
     expect(() => findRootDir('nope', 'addon', folder())).toThrow(RootNotFoundError);
     expect(() => findRootDir('./nope', 'theme', folder())).toThrow('is not a folder');
     expect(() => findRootDir('', 'theme', folder())).toThrow('expected a name');
@@ -32,15 +46,25 @@ describe('findRootDir', () => {
 
 describe('theme and addon names in node_modules (the rule of Slidev)', () => {
   it('tries @slide-ng/theme-<name>, then slide-ng-theme-<name>, then <name>', () => {
-    expect(candidateNames('seriph', 'theme')).toEqual(['@slide-ng/theme-seriph', 'slide-ng-theme-seriph', 'seriph']);
-    expect(candidateNames('charts', 'addon')).toEqual(['@slide-ng/addon-charts', 'slide-ng-addon-charts', 'charts']);
+    expect(candidateNames('seriph', 'theme')).toEqual([
+      '@slide-ng/theme-seriph',
+      'slide-ng-theme-seriph',
+      'seriph',
+    ]);
+    expect(candidateNames('charts', 'addon')).toEqual([
+      '@slide-ng/addon-charts',
+      'slide-ng-addon-charts',
+      'charts',
+    ]);
     expect(candidateNames('@me/theme-x', 'theme')).toEqual(['@me/theme-x']);
   });
   it('finds the official scoped package, in a parent folder too', () => {
     const base = folder();
     dirIn(base, 'node_modules', '@slide-ng', 'theme-seriph');
     const deck = dirIn(base, 'talks', 'one');
-    expect(resolveRoots({ deckRoot: deck, headmatter: { theme: 'seriph' } }).map((r) => r.id)).toEqual(['theme-seriph', 'deck']);
+    expect(
+      resolveRoots({ deckRoot: deck, headmatter: { theme: 'seriph' } }).map((r) => r.id),
+    ).toEqual(['theme-seriph', 'deck']);
   });
   it('prefers the scoped package over the prefixed one, and the prefixed one over the bare name', () => {
     const base = folder();
@@ -57,11 +81,15 @@ describe('theme and addon names in node_modules (the rule of Slidev)', () => {
   });
   it('has no built-in folder: an official name that is not installed fails with its scoped package to install', () => {
     for (const name of ['seriph', 'shibainu', 'bricks', 'apple-basic']) {
-      expect(() => resolveRoots({ deckRoot: folder(), headmatter: { theme: name } })).toThrow(`The theme "${name}" was not found. Install it with: npm install -D @slide-ng/theme-${name}`);
+      expect(() => resolveRoots({ deckRoot: folder(), headmatter: { theme: name } })).toThrow(
+        `The theme "${name}" was not found. Install it with: npm install -D @slide-ng/theme-${name}`,
+      );
     }
   });
   it('keeps default and none as the built-in look, with no root', () => {
-    expect(resolveRoots({ deckRoot: folder(), headmatter: { theme: 'default' } }).map((r) => r.id)).toEqual(['deck']);
+    expect(
+      resolveRoots({ deckRoot: folder(), headmatter: { theme: 'default' } }).map((r) => r.id),
+    ).toEqual(['deck']);
   });
   it('names the install package: official themes are scoped, others and addons are slide-ng-<kind>-<name>', () => {
     expect(packageToInstall('seriph', 'theme')).toBe('@slide-ng/theme-seriph');
@@ -75,10 +103,21 @@ describe('theme and addon names in node_modules (the rule of Slidev)', () => {
 });
 
 describe('readManifest', () => {
-  it('is empty without a theme.json', () => expect(readManifest(folder())).toEqual({ headmatter: {}, layouts: {} }));
+  it('is empty without a theme.json', () =>
+    expect(readManifest(folder())).toEqual({ headmatter: {}, layouts: {} }));
   it('reads name, headmatter and layouts and drops bad entries', () => {
     const dir = folder();
-    writeFileSync(join(dir, 'theme.json'), JSON.stringify({ name: 'x', headmatter: { colorSchema: 'dark' }, layouts: { hero: { props: ['image', 'bad name'], slots: ['right'], classProp: true }, odd: 5 } }));
+    writeFileSync(
+      join(dir, 'theme.json'),
+      JSON.stringify({
+        name: 'x',
+        headmatter: { colorSchema: 'dark' },
+        layouts: {
+          hero: { props: ['image', 'bad name'], slots: ['right'], classProp: true },
+          odd: 5,
+        },
+      }),
+    );
     const m = readManifest(dir);
     expect(m.name).toBe('x');
     expect(m.headmatter).toEqual({ colorSchema: 'dark' });
@@ -96,26 +135,39 @@ describe('resolveRoots', () => {
   it('has only the deck without theme or addons, and treats default and none as no theme', () => {
     const deck = folder();
     expect(resolveRoots({ deckRoot: deck, headmatter: {} }).map((r) => r.id)).toEqual(['deck']);
-    expect(resolveRoots({ deckRoot: deck, headmatter: { theme: 'default' } }).map((r) => r.id)).toEqual(['deck']);
-    expect(resolveRoots({ deckRoot: deck, headmatter: { theme: 'none' } }).map((r) => r.id)).toEqual(['deck']);
+    expect(
+      resolveRoots({ deckRoot: deck, headmatter: { theme: 'default' } }).map((r) => r.id),
+    ).toEqual(['deck']);
+    expect(
+      resolveRoots({ deckRoot: deck, headmatter: { theme: 'none' } }).map((r) => r.id),
+    ).toEqual(['deck']);
   });
   it('orders theme, addons, deck', () => {
     const deck = folder();
     dirIn(deck, 't');
     dirIn(deck, 'a1');
     dirIn(deck, 'a2');
-    const ids = resolveRoots({ deckRoot: deck, headmatter: { theme: './t', addons: ['./a1', './a2'] } }).map((r) => r.id);
+    const ids = resolveRoots({
+      deckRoot: deck,
+      headmatter: { theme: './t', addons: ['./a1', './a2'] },
+    }).map((r) => r.id);
     expect(ids).toEqual(['theme-t', 'addon-1-a1', 'addon-2-a2', 'deck']);
   });
   it('fails for a theme package that is not installed, naming the install command (like Slidev), and for a missing path', () => {
     const deck = folder();
-    expect(() => resolveRoots({ deckRoot: deck, headmatter: { theme: 'ocean' } })).toThrow('The theme "ocean" was not found. Install it with: npm install -D slide-ng-theme-ocean');
-    expect(() => resolveRoots({ deckRoot: deck, headmatter: { theme: './nope' } })).toThrow('is not a folder');
+    expect(() => resolveRoots({ deckRoot: deck, headmatter: { theme: 'ocean' } })).toThrow(
+      'The theme "ocean" was not found. Install it with: npm install -D slide-ng-theme-ocean',
+    );
+    expect(() => resolveRoots({ deckRoot: deck, headmatter: { theme: './nope' } })).toThrow(
+      'is not a folder',
+    );
   });
   it('uses the package manager of the lock file in the install command', () => {
     const deck = folder();
     writeFileSync(join(deck, 'pnpm-lock.yaml'), '');
-    expect(() => resolveRoots({ deckRoot: deck, headmatter: { theme: 'ocean' } })).toThrow('pnpm add -D slide-ng-theme-ocean');
+    expect(() => resolveRoots({ deckRoot: deck, headmatter: { theme: 'ocean' } })).toThrow(
+      'pnpm add -D slide-ng-theme-ocean',
+    );
   });
   it('reads a name with a slash as a path and @/ as relative to the deck, like Slidev', () => {
     const deck = folder();
@@ -131,18 +183,25 @@ describe('resolveRoots', () => {
     const deck = folder();
     dirIn(deck, 'a');
     dirIn(deck, 'b');
-    expect(resolveRoots({ deckRoot: deck, headmatter: { theme: './a' }, themeOverride: './b' })[0].id).toBe('theme-b');
+    expect(
+      resolveRoots({ deckRoot: deck, headmatter: { theme: './a' }, themeOverride: './b' })[0].id,
+    ).toBe('theme-b');
   });
 });
 
 describe('mergeHeadmatter', () => {
   const root = (headmatter: object) => ({ manifest: { headmatter } });
   it('puts the deck over addons over the theme', () => {
-    const merged = mergeHeadmatter([root({ colorSchema: 'dark', transition: 'fade' }), root({ transition: 'slide-left' })], { transition: 'none', title: 'T' });
+    const merged = mergeHeadmatter(
+      [root({ colorSchema: 'dark', transition: 'fade' }), root({ transition: 'slide-left' })],
+      { transition: 'none', title: 'T' },
+    );
     expect(merged).toEqual({ colorSchema: 'dark', transition: 'none', title: 'T' });
   });
   it('merges defaults key by key', () => {
-    const merged = mergeHeadmatter([root({ defaults: { layout: 'center', class: 'a' } })], { defaults: { class: 'b' } });
+    const merged = mergeHeadmatter([root({ defaults: { layout: 'center', class: 'a' } })], {
+      defaults: { class: 'b' },
+    });
     expect(merged.defaults).toEqual({ layout: 'center', class: 'b' });
   });
 });

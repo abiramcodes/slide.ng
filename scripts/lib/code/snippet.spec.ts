@@ -3,7 +3,16 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { SNIPPET_LINE, dedent, findRegion, resolveSnippet } from './snippet.mjs';
 
-const lines = ['a', '// #region one', '  x', '  // #region inner', '    y', '  // #endregion inner', '// #endregion one', 'b'];
+const lines = [
+  'a',
+  '// #region one',
+  '  x',
+  '  // #region inner',
+  '    y',
+  '  // #endregion inner',
+  '// #endregion one',
+  'b',
+];
 
 describe('snippet lines', () => {
   it('splits file, region, language and the rest', () => {
@@ -17,7 +26,12 @@ describe('snippet lines', () => {
 
 describe('regions', () => {
   it('finds the lines between the markers', () => {
-    expect(findRegion(lines, 'one')).toEqual(['  x', '  // #region inner', '    y', '  // #endregion inner']);
+    expect(findRegion(lines, 'one')).toEqual([
+      '  x',
+      '  // #region inner',
+      '    y',
+      '  // #endregion inner',
+    ]);
   });
   it('finds an inner region', () => {
     expect(findRegion(lines, 'inner')).toEqual(['    y']);
@@ -34,12 +48,20 @@ describe('resolveSnippet', () => {
   const root = mkdtempSync(join(tmpdir(), 'snip-'));
   writeFileSync(join(root, 'a.ts'), 'one\n// #region r\n  two\n// #endregion r\n');
   it('reads a file relative to the slide, language from the extension', () => {
-    expect(resolveSnippet('<<< ./a.ts', join(root, 'slides.md'), '/elsewhere')).toMatchObject({ code: 'one\n// #region r\n  two\n// #endregion r', lang: 'ts' });
+    expect(resolveSnippet('<<< ./a.ts', join(root, 'slides.md'), '/elsewhere')).toMatchObject({
+      code: 'one\n// #region r\n  two\n// #endregion r',
+      lang: 'ts',
+    });
   });
   it('reads `@/` from the project root and cuts a region', () => {
-    expect(resolveSnippet('<<< @/a.ts#r js', '/elsewhere/slides.md', root)).toMatchObject({ code: 'two', lang: 'js' });
+    expect(resolveSnippet('<<< @/a.ts#r js', '/elsewhere/slides.md', root)).toMatchObject({
+      code: 'two',
+      lang: 'js',
+    });
   });
   it('throws a readable error for a missing file', () => {
-    expect(() => resolveSnippet('<<< ./missing.ts', join(root, 'slides.md'), root)).toThrow('Code snippet not found');
+    expect(() => resolveSnippet('<<< ./missing.ts', join(root, 'slides.md'), root)).toThrow(
+      'Code snippet not found',
+    );
   });
 });

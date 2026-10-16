@@ -1,4 +1,14 @@
-import { Component, ElementRef, ViewContainerRef, computed, effect, inject, input, untracked, viewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  ViewContainerRef,
+  computed,
+  effect,
+  inject,
+  input,
+  untracked,
+  viewChild,
+} from '@angular/core';
 import { NotFoundLayout } from '../layouts/404';
 import { HEADMATTER } from '../../slides/generated';
 import { CANVAS_HEIGHT, CANVAS_WIDTH, fitScale } from './canvas';
@@ -21,10 +31,19 @@ import { documentTitle } from './page-title';
   host: { id: 'slide-container', class: 'slide-show', '(pointerdown)': 'hostClick($event)' },
   imports: [NotFoundLayout, SlideLayer],
   template: `
-    <div #canvas id="slide-content" class="canvas" [style.width.px]="width" [style.height.px]="height" [style]="canvasStyle()">
+    <div
+      #canvas
+      id="slide-content"
+      class="canvas"
+      [style.width.px]="width"
+      [style.height.px]="height"
+      [style]="canvasStyle()"
+    >
       <app-slide-layer name="global-bottom" />
       <ng-container #host />
-      @if (nav.notFound()) { <sn-404 /> }
+      @if (nav.notFound()) {
+        <sn-404 />
+      }
       <app-slide-layer name="global-top" />
       <ng-content />
     </div>
@@ -44,8 +63,16 @@ export class SlideShow {
   readonly height = CANVAS_HEIGHT;
   private size = hostSize();
   // `--slidev-slide-scale` is what the iframe layouts use to stay sharp (as in Slidev).
-  private scale = computed(() => (this.context() === 'slide' && this.ui.slideScale()) || fitScale(this.size().w, this.size().h));
-  protected canvasStyle = computed(() => ({ transform: `translate(-50%, -50%) scale(${this.scale()})`, '--slidev-slide-scale': this.scale(), filter: filterCss(this.view.filters()) || null }));
+  private scale = computed(
+    () =>
+      (this.context() === 'slide' && this.ui.slideScale()) ||
+      fitScale(this.size().w, this.size().h),
+  );
+  protected canvasStyle = computed(() => ({
+    transform: `translate(-50%, -50%) scale(${this.scale()})`,
+    '--slidev-slide-scale': this.scale(),
+    filter: filterCss(this.view.filters()) || null,
+  }));
 
   private stage?: Stage;
   private shown = 0; // the slide number on screen, to tell which way we moved
@@ -54,7 +81,8 @@ export class SlideShow {
     effect(() => this.ui.canvasScale.set(this.scale()));
     // One slide component per slide number, so each slide gets a fresh ClicksContext.
     effect(() => {
-      const no = this.nav.no(), host = this.host();
+      const no = this.nav.no(),
+        host = this.host();
       this.stage ??= new Stage(host, this.canvas().nativeElement, this.context());
       untracked(() => (this.nav.notFound() ? this.clear() : this.show(no)));
     });
@@ -69,7 +97,9 @@ export class SlideShow {
   private show(no: number) {
     const direction = Math.sign(no - this.shown);
     this.nav.direction.set(direction);
-    const transition = this.shown ? pickTransition(this.nav.slides, this.shown, no, HEADMATTER['transition'] as string) : null;
+    const transition = this.shown
+      ? pickTransition(this.nav.slides, this.shown, no, HEADMATTER['transition'] as string)
+      : null;
     this.shown = no;
     const slide = this.stage!.show(no, transition);
     const wanted = this.nav.clicksParam();

@@ -109,10 +109,7 @@
         "test": {
           "builder": "@angular/build:unit-test",
           "options": {
-            "include": [
-              "src/**/*.spec.ts",
-              "../scripts/**/*.spec.ts"
-            ]
+            "include": ["src/**/*.spec.ts", "../scripts/**/*.spec.ts"]
           }
         }
       }

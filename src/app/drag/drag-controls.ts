@@ -15,20 +15,54 @@ import { DragState } from './drag-state';
   template: `
     @let t = drag.active();
     @if (t && box(); as b) {
-      <div id="drag-frame" data-drag-ui class="absolute border border-dashed border-primary" [style.left.px]="b.x" [style.top.px]="b.y" [style.width.px]="b.w" [style.height.px]="b.h" [style.transform]="b.rot ? 'rotate(' + b.rot + 'deg)' : null">
+      <div
+        id="drag-frame"
+        data-drag-ui
+        class="absolute border border-dashed border-primary"
+        [style.left.px]="b.x"
+        [style.top.px]="b.y"
+        [style.width.px]="b.w"
+        [style.height.px]="b.h"
+        [style.transform]="b.rot ? 'rotate(' + b.rot + 'deg)' : null"
+      >
         @for (c of corners; track c) {
-          <div data-drag-ui class="drag-handle absolute w-3 h-3 bg-white border border-primary pointer-events-auto touch-none" [attr.data-corner]="c"
-            [style]="cornerStyle(c)" (pointerdown)="startResize($event, c)" (pointermove)="onMove($event)" (pointerup)="end($event)" (pointercancel)="end($event)"></div>
+          <div
+            data-drag-ui
+            class="drag-handle absolute w-3 h-3 bg-white border border-primary pointer-events-auto touch-none"
+            [attr.data-corner]="c"
+            [style]="cornerStyle(c)"
+            (pointerdown)="startResize($event, c)"
+            (pointermove)="onMove($event)"
+            (pointerup)="end($event)"
+            (pointercancel)="end($event)"
+          ></div>
         }
-        <div data-drag-ui id="drag-rotate" class="absolute w-3 h-3 rounded-full bg-white border border-primary pointer-events-auto touch-none" style="left: calc(50% - 6px); top: -28px; cursor: grab"
-          (pointerdown)="startRotate($event)" (pointermove)="onMove($event)" (pointerup)="end($event)" (pointercancel)="end($event)"></div>
+        <div
+          data-drag-ui
+          id="drag-rotate"
+          class="absolute w-3 h-3 rounded-full bg-white border border-primary pointer-events-auto touch-none"
+          style="left: calc(50% - 6px); top: -28px; cursor: grab"
+          (pointerdown)="startRotate($event)"
+          (pointermove)="onMove($event)"
+          (pointerup)="end($event)"
+          (pointercancel)="end($event)"
+        ></div>
       </div>
     }
     @if (t && arrow(); as a) {
       @for (n of [1, 2]; track n) {
-        <div data-drag-ui class="drag-end absolute w-3 h-3 rounded-full bg-white border border-primary pointer-events-auto touch-none" [attr.data-end]="n" style="cursor: move; margin: -6px 0 0 -6px"
-          [style.left.px]="n === 1 ? a.x1 : a.x2" [style.top.px]="n === 1 ? a.y1 : a.y2"
-          (pointerdown)="startEnd($event, n === 1 ? 1 : 2)" (pointermove)="onMove($event)" (pointerup)="end($event)" (pointercancel)="end($event)"></div>
+        <div
+          data-drag-ui
+          class="drag-end absolute w-3 h-3 rounded-full bg-white border border-primary pointer-events-auto touch-none"
+          [attr.data-end]="n"
+          style="cursor: move; margin: -6px 0 0 -6px"
+          [style.left.px]="n === 1 ? a.x1 : a.x2"
+          [style.top.px]="n === 1 ? a.y1 : a.y2"
+          (pointerdown)="startEnd($event, n === 1 ? 1 : 2)"
+          (pointermove)="onMove($event)"
+          (pointerup)="end($event)"
+          (pointercancel)="end($event)"
+        ></div>
       }
     }
   `,
@@ -37,7 +71,11 @@ export class DragControls {
   protected drag = inject(DragState);
   private ui = inject(Ui);
   protected corners: Corner[] = ['nw', 'ne', 'sw', 'se'];
-  private hold: { x: number; y: number; apply: (dx: number, dy: number, e: PointerEvent) => void } | null = null;
+  private hold: {
+    x: number;
+    y: number;
+    apply: (dx: number, dy: number, e: PointerEvent) => void;
+  } | null = null;
   private saveTimer: ReturnType<typeof setTimeout> | undefined;
 
   /** The active box with its real height, or null when something else (an arrow) is active. */
@@ -109,13 +147,23 @@ export class DragControls {
   protected key(e: KeyboardEvent) {
     const t = this.drag.active();
     if (!t) return;
-    if (e.key === 'Escape') { this.drag.active.set(null); return; }
+    if (e.key === 'Escape') {
+      this.drag.active.set(null);
+      return;
+    }
     const d = nudgeDelta(e.key, e.shiftKey);
     if (!d || e.ctrlKey || e.metaKey || e.altKey) return;
     e.preventDefault();
     const v = t.value();
-    if (t.kind === 'box') t.value.set({ ...(v as Box), x: (v as Box).x + d.dx, y: (v as Box).y + d.dy });
-    else t.value.set({ x1: (v as Arrow).x1 + d.dx, y1: (v as Arrow).y1 + d.dy, x2: (v as Arrow).x2 + d.dx, y2: (v as Arrow).y2 + d.dy });
+    if (t.kind === 'box')
+      t.value.set({ ...(v as Box), x: (v as Box).x + d.dx, y: (v as Box).y + d.dy });
+    else
+      t.value.set({
+        x1: (v as Arrow).x1 + d.dx,
+        y1: (v as Arrow).y1 + d.dy,
+        x2: (v as Arrow).x2 + d.dx,
+        y2: (v as Arrow).y2 + d.dy,
+      });
     // Holding a key nudges many times: write to the file once, when the keys rest.
     clearTimeout(this.saveTimer);
     this.saveTimer = setTimeout(() => t.commit(), 400);
@@ -125,7 +173,8 @@ export class DragControls {
     const t = this.drag.active();
     if (!t) return;
     const target = e.target as Element;
-    if (target.closest('[data-drag-ui]') || t.el.contains(target) || target.closest('.drag-grab')) return;
+    if (target.closest('[data-drag-ui]') || t.el.contains(target) || target.closest('.drag-grab'))
+      return;
     this.drag.active.set(null);
   }
 }

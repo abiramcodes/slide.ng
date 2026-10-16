@@ -1,7 +1,8 @@
 // Reads what follows the language on a code fence, in Slidev's syntax:
 //   ```ts [title] {2,3|5|all} {lines:true,maxHeight:'100px'}
 // The ranges and the options are two separate braces, as in Slidev.
-const INFO = /^([\w'#+-]+)?(?:[ \t]*|[ \t][ \w\t'-]*)(?:\[([^\]]*)\])?[ \t]*(?:\{([\w,|\-*]+)\})?[ \t]*(\{[^}]*\})?(.*)$/;
+const INFO =
+  /^([\w'#+-]+)?(?:[ \t]*|[ \t][ \w\t'-]*)(?:\[([^\]]*)\])?[ \t]*(?:\{([\w,|\-*]+)\})?[ \t]*(\{[^}]*\})?(.*)$/;
 
 // "{lines:true, maxHeight:'100px'}" -> { lines: true, maxHeight: '100px' }
 // Only simple values: true, false, numbers, quoted text, or a bare word (height:200px).
@@ -17,11 +18,24 @@ export function parseOptions(text = '') {
 }
 
 // "2-3|5|all" -> ["2-3", "5", "all"]; no ranges -> []
-export const splitRanges = (text = '') => (text.trim() ? text.trim().split('|').map((s) => s.trim()) : []);
+export const splitRanges = (text = '') =>
+  text.trim()
+    ? text
+        .trim()
+        .split('|')
+        .map((s) => s.trim())
+    : [];
 
 export function parseInfo(info) {
-  const [, lang = '', title = '', rangeStr = '', optionText = '', rest = ''] = INFO.exec(info.trim()) ?? [];
-  return { lang, title, ranges: splitRanges(rangeStr), options: parseOptions(optionText), rest: rest.trim() };
+  const [, lang = '', title = '', rangeStr = '', optionText = '', rest = ''] =
+    INFO.exec(info.trim()) ?? [];
+  return {
+    lang,
+    title,
+    ranges: splitRanges(rangeStr),
+    options: parseOptions(optionText),
+    rest: rest.trim(),
+  };
 }
 
 // The title bar text: Slidev lets a title carry an icon as ~icon-name~, which we do not draw.

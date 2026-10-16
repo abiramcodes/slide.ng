@@ -9,7 +9,13 @@ import { offlineReady } from '../lib/offline-worker';
   host: { '(window:online)': 'online.set(true)', '(window:offline)': 'online.set(false)' },
   template: `
     @if (enabled && label(); as text) {
-      <div id="offline-badge" role="status" class="absolute bottom-0 right-0 m-2 px-2 py-0.5 rounded text-xs bg-main text-main border border-main opacity-60 pointer-events-none select-none">{{ text }}</div>
+      <div
+        id="offline-badge"
+        role="status"
+        class="absolute bottom-0 right-0 m-2 px-2 py-0.5 rounded text-xs bg-main text-main border border-main opacity-60 pointer-events-none select-none"
+      >
+        {{ text }}
+      </div>
     }
   `,
 })

@@ -20,7 +20,9 @@ describe('{monaco-write}', () => {
   it('writes nothing for a code block that is not a whole file, with a warning', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     expect(renderMonaco(fence({}), ctx)).not.toContain('write-id');
-    expect(renderMonaco(fence({ file: '/project/a.ts', partial: true }), ctx)).not.toContain('write-id');
+    expect(renderMonaco(fence({ file: '/project/a.ts', partial: true }), ctx)).not.toContain(
+      'write-id',
+    );
     expect(warn).toHaveBeenCalledTimes(2);
     expect(monacoWriteTargets()).toEqual({});
     warn.mockRestore();

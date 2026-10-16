@@ -9,7 +9,14 @@ import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import { ICONS } from './pwa-icons.mjs';
 
-const SKIP = [/\.pdf$/i, /^og-image\./, /^\.slide-ng-build$/, /^sw\.js$/, /^manifest\.webmanifest$/, /\.map$/]; // downloads and helper files are not for the cache
+const SKIP = [
+  /\.pdf$/i,
+  /^og-image\./,
+  /^\.slide-ng-build$/,
+  /^sw\.js$/,
+  /^manifest\.webmanifest$/,
+  /\.map$/,
+]; // downloads and helper files are not for the cache
 
 /** Is the headmatter's `pwa` on for a build? (`true` and `build`; `dev` is for the dev server, which has no worker.) */
 export function pwaEnabled(headmatter) {
@@ -20,15 +27,31 @@ export function pwaEnabled(headmatter) {
 function listFiles(dir, from = dir) {
   return readdirSync(dir).flatMap((name) => {
     const path = join(dir, name);
-    return statSync(path).isDirectory() ? listFiles(path, from) : [relative(from, path).split(sep).join('/')];
+    return statSync(path).isDirectory()
+      ? listFiles(path, from)
+      : [relative(from, path).split(sep).join('/')];
   });
 }
 
 /** The web app manifest. `iconFiles` are the names of the icons that exist in the build (see pwa-icons.mjs). */
 export function manifestJson(headmatter, iconFiles = []) {
   const name = String(headmatter.title ?? 'slide.ng');
-  const icons = ICONS.filter((i) => iconFiles.includes(i.file)).map((i) => ({ src: i.file, sizes: `${i.size}x${i.size}`, type: 'image/png', purpose: i.purpose }));
-  return { name, short_name: name.slice(0, 12), start_url: './', scope: './', display: 'fullscreen', theme_color: '#121212', background_color: '#121212', ...(icons.length ? { icons } : {}) };
+  const icons = ICONS.filter((i) => iconFiles.includes(i.file)).map((i) => ({
+    src: i.file,
+    sizes: `${i.size}x${i.size}`,
+    type: 'image/png',
+    purpose: i.purpose,
+  }));
+  return {
+    name,
+    short_name: name.slice(0, 12),
+    start_url: './',
+    scope: './',
+    display: 'fullscreen',
+    theme_color: '#121212',
+    background_color: '#121212',
+    ...(icons.length ? { icons } : {}),
+  };
 }
 
 /** The text of the service worker. `files` are relative to the folder the worker sits in; `version` names the cache. */
@@ -70,10 +93,16 @@ self.addEventListener('fetch', (event) => {
 export function writePwa(distDir, headmatter) {
   const files = listFiles(distDir).filter((f) => !SKIP.some((re) => re.test(f)));
   const manifest = 'manifest.webmanifest';
-  writeFileSync(join(distDir, manifest), JSON.stringify(manifestJson(headmatter, files), null, 2) + '\n');
+  writeFileSync(
+    join(distDir, manifest),
+    JSON.stringify(manifestJson(headmatter, files), null, 2) + '\n',
+  );
   files.push(manifest);
   // The version changes whenever a file changes, so a visitor with an old copy gets the new one.
-  const version = createHash('sha256').update(files.map((f) => f + readFileSync(join(distDir, f)).length).join('|')).digest('hex').slice(0, 12);
+  const version = createHash('sha256')
+    .update(files.map((f) => f + readFileSync(join(distDir, f)).length).join('|'))
+    .digest('hex')
+    .slice(0, 12);
   writeFileSync(join(distDir, 'sw.js'), serviceWorkerSource(files, version));
   return files.length;
 }

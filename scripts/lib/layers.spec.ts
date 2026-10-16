@@ -7,7 +7,8 @@ describe('findLayers', () => {
   it('finds only the files that exist, in a fixed order', () => {
     const dir = mkdtempSync(join(tmpdir(), 'slide-ng-layers-'));
     mkdirSync(dir, { recursive: true });
-    for (const n of ['slide-top', 'global-bottom', 'other']) writeFileSync(join(dir, `${n}.ts`), '');
+    for (const n of ['slide-top', 'global-bottom', 'other'])
+      writeFileSync(join(dir, `${n}.ts`), '');
     expect(findLayers(dir)).toEqual(['global-bottom', 'slide-top']);
   });
   it('finds nothing in a missing folder', () => {
@@ -33,7 +34,12 @@ describe('findLayerFiles', () => {
     const b = mkdtempSync(join(tmpdir(), 'slide-ng-layers-'));
     for (const n of ['global-top', 'slide-top']) writeFileSync(join(a, `${n}.ts`), '');
     writeFileSync(join(b, 'slide-top.ts'), '');
-    expect(findLayerFiles([{ dir: a, importDir: './roots/theme/layers' }, { dir: b, importDir: './roots/deck/layers' }])).toEqual({
+    expect(
+      findLayerFiles([
+        { dir: a, importDir: './roots/theme/layers' },
+        { dir: b, importDir: './roots/deck/layers' },
+      ]),
+    ).toEqual({
       'global-top': './roots/theme/layers/global-top',
       'slide-top': './roots/deck/layers/slide-top',
     });

@@ -6,7 +6,13 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { extname, join, resolve, sep } from 'node:path';
 
 const BACKGROUND = '#121212';
-const TYPES = { '.png': 'image/png', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp' };
+const TYPES = {
+  '.png': 'image/png',
+  '.svg': 'image/svg+xml',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.webp': 'image/webp',
+};
 
 /** The files written into the build and listed in the manifest. `pad` is the empty border of a maskable icon. */
 export const ICONS = [
@@ -20,23 +26,35 @@ export function iconSource(headmatter, deckRoot) {
   const publicDir = resolve(deckRoot, 'public');
   const found = (name) => {
     const path = resolve(publicDir, name);
-    return path.startsWith(publicDir + sep) && extname(path).toLowerCase() in TYPES && existsSync(path) ? { kind: 'file', path } : null;
+    return path.startsWith(publicDir + sep) &&
+      extname(path).toLowerCase() in TYPES &&
+      existsSync(path)
+      ? { kind: 'file', path }
+      : null;
   };
-  const favicon = typeof headmatter.favicon === 'string' && !/^[a-z][a-z0-9+.-]*:|^\/\//i.test(headmatter.favicon) ? headmatter.favicon.replace(/^\/+/, '') : null;
-  return found('icon.png') ?? found('icon.svg') ?? (favicon && found(favicon)) ?? { kind: 'generated' };
+  const favicon =
+    typeof headmatter.favicon === 'string' && !/^[a-z][a-z0-9+.-]*:|^\/\//i.test(headmatter.favicon)
+      ? headmatter.favicon.replace(/^\/+/, '')
+      : null;
+  return (
+    found('icon.png') ?? found('icon.svg') ?? (favicon && found(favicon)) ?? { kind: 'generated' }
+  );
 }
 
 /** The generated picture: the first letter of the title, white on the dark background. */
 export function generatedIconSvg(title) {
   const letter = (Array.from(String(title ?? '').trim())[0] ?? 'S').toUpperCase();
   const safe = letter.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" fill="${BACKGROUND}"/>` +
-    `<text x="256" y="256" fill="#fff" font-family="sans-serif" font-weight="700" font-size="300" text-anchor="middle" dominant-baseline="central">${safe}</text></svg>`;
+  return (
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" fill="${BACKGROUND}"/>` +
+    `<text x="256" y="256" fill="#fff" font-family="sans-serif" font-weight="700" font-size="300" text-anchor="middle" dominant-baseline="central">${safe}</text></svg>`
+  );
 }
 
 // The source as a data address an <img> can show.
 function pictureAddress(source, headmatter) {
-  if (source.kind === 'generated') return `data:image/svg+xml;base64,${Buffer.from(generatedIconSvg(headmatter.title)).toString('base64')}`;
+  if (source.kind === 'generated')
+    return `data:image/svg+xml;base64,${Buffer.from(generatedIconSvg(headmatter.title)).toString('base64')}`;
   return `data:${TYPES[extname(source.path).toLowerCase()]};base64,${readFileSync(source.path).toString('base64')}`;
 }
 
@@ -55,10 +73,13 @@ export async function writeIcons(distDir, headmatter, deckRoot, browser) {
       await page.setViewportSize({ width: size, height: size });
       await page.setContent(
         `<body style="margin:0;display:grid;place-items:center;width:${size}px;height:${size}px;background:${border ? BACKGROUND : 'transparent'}">` +
-        `<img src="${address}" style="width:${inner}px;height:${inner}px;object-fit:contain"></body>`,
+          `<img src="${address}" style="width:${inner}px;height:${inner}px;object-fit:contain"></body>`,
       );
       await page.waitForFunction(() => document.images[0].complete);
-      writeFileSync(join(distDir, file), await page.screenshot({ type: 'png', omitBackground: true }));
+      writeFileSync(
+        join(distDir, file),
+        await page.screenshot({ type: 'png', omitBackground: true }),
+      );
     }
   } finally {
     await page.close();

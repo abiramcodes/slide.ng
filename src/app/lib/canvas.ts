@@ -15,7 +15,10 @@ function readRatio(value: unknown): number {
 }
 
 /** The canvas size from the headmatter's `canvasWidth` (default 980, like Slidev) and `aspectRatio` (default 16/9). */
-export function readCanvasSize(headmatter: Record<string, unknown>): { width: number; height: number } {
+export function readCanvasSize(headmatter: Record<string, unknown>): {
+  width: number;
+  height: number;
+} {
   const w = Number(headmatter['canvasWidth']);
   const width = Number.isFinite(w) && w >= 100 && w <= 10_000 ? Math.round(w) : DEFAULT_WIDTH;
   // Height rounds up, as in Slidev, so a printed page never gets a blank extra page.
@@ -23,7 +26,10 @@ export function readCanvasSize(headmatter: Record<string, unknown>): { width: nu
 }
 
 /** The `zoom` of a slide: its own frontmatter first, then the headmatter. 1 when missing or unusable. */
-export function readZoom(frontmatter: Record<string, unknown>, headmatter: Record<string, unknown>): number {
+export function readZoom(
+  frontmatter: Record<string, unknown>,
+  headmatter: Record<string, unknown>,
+): number {
   const z = Number(frontmatter['zoom'] ?? headmatter['zoom'] ?? 1);
   return Number.isFinite(z) && z >= 0.1 && z <= 5 ? z : 1;
 }

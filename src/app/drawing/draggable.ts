@@ -31,7 +31,9 @@ export class Draggable {
     try {
       const p = JSON.parse(localStorage.getItem(this.storageKey()) ?? 'null');
       return p && Number.isFinite(p.x) && Number.isFinite(p.y) ? p : null;
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   }
 
   protected down(e: PointerEvent) {
@@ -52,6 +54,10 @@ export class Draggable {
   protected up() {
     if (!this.grab) return;
     this.grab = null;
-    try { localStorage.setItem(this.storageKey(), JSON.stringify(this.pos())); } catch { /* not remembered */ }
+    try {
+      localStorage.setItem(this.storageKey(), JSON.stringify(this.pos()));
+    } catch {
+      /* not remembered */
+    }
   }
 }

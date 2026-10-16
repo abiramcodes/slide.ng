@@ -7,12 +7,16 @@ export class Fullscreen {
   readonly isFullscreen = signal(!!document.fullscreenElement);
 
   constructor() {
-    document.addEventListener('fullscreenchange', () => this.isFullscreen.set(!!document.fullscreenElement));
+    document.addEventListener('fullscreenchange', () =>
+      this.isFullscreen.set(!!document.fullscreenElement),
+    );
   }
 
   toggle() {
     // The browser may refuse (no user gesture, iframe); nothing useful to do then.
-    const done = document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+    const done = document.fullscreenElement
+      ? document.exitFullscreen()
+      : document.documentElement.requestFullscreen();
     done.catch(() => {});
   }
 }

@@ -19,7 +19,9 @@ import { PrintSlide } from './print-slide';
   providers: [Nav, Ui],
   template: `
     <div id="print-content" [attr.data-slide-ng-print]="ready() ? 'ready' : 'loading'">
-      @for (no of pages; track no) { <app-print-slide [no]="no" [withClicks]="withClicks" /> }
+      @for (no of pages; track no) {
+        <app-print-slide [no]="no" [withClicks]="withClicks" />
+      }
     </div>
   `,
 })
@@ -28,7 +30,9 @@ export class PrintPage {
   readonly withClicks = this.query.get('print') === 'clicks';
   readonly pages = parseRange(SLIDES.length, this.query.get('range'));
   private slides = viewChildren(PrintSlide);
-  protected ready = computed(() => this.slides().length === this.pages.length && this.slides().every((s) => s.ready()));
+  protected ready = computed(
+    () => this.slides().length === this.pages.length && this.slides().every((s) => s.ready()),
+  );
 
   constructor() {
     inject(Dark); // applies the light or dark class to <html>

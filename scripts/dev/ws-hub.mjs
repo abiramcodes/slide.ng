@@ -10,7 +10,9 @@ export function isMessage(text) {
   try {
     const m = JSON.parse(text);
     return !!m && typeof m === 'object' && CHANNELS.has(m.channel) && 'data' in m;
-  } catch { return false; }
+  } catch {
+    return false;
+  }
 }
 
 export function createHub() {
@@ -21,7 +23,8 @@ export function createHub() {
     socket.on('message', (raw, isBinary) => {
       const text = raw.toString();
       if (isBinary || !isMessage(text)) return;
-      for (const other of wss.clients) if (other !== socket && other.readyState === other.OPEN) other.send(text);
+      for (const other of wss.clients)
+        if (other !== socket && other.readyState === other.OPEN) other.send(text);
     });
   });
   return wss;

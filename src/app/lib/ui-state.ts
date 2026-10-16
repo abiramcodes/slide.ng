@@ -18,12 +18,18 @@ export class Ui {
   readonly overviewPage = signal(1);
   readonly overviewColumns = signal(1);
 
-  toggleOverview() { this.overview.update((v) => !v); }
-  toggleGoto() { this.goto.update((v) => !v); }
+  toggleOverview() {
+    this.overview.update((v) => !v);
+  }
+  toggleGoto() {
+    this.goto.update((v) => !v);
+  }
 
   /** Moves the overview highlight. Left/right by one card, up/down by one row. */
   moveOverview(by: 'left' | 'right' | 'up' | 'down', total: number) {
-    const step = { left: -1, right: 1, up: -this.overviewColumns(), down: this.overviewColumns() }[by];
+    const step = { left: -1, right: 1, up: -this.overviewColumns(), down: this.overviewColumns() }[
+      by
+    ];
     this.overviewPage.update((p) => Math.min(Math.max(p + step, 1), total));
   }
 

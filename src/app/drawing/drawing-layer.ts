@@ -1,4 +1,12 @@
-import { Component, ElementRef, OnDestroy, afterNextRender, effect, inject, viewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  afterNextRender,
+  effect,
+  inject,
+  viewChild,
+} from '@angular/core';
 import { Ui } from '../lib/ui-state';
 import { Drawings } from './drawings';
 
@@ -9,7 +17,13 @@ import { Drawings } from './drawings';
   // The host must let clicks through to the slide; only the <svg> catches them, and only while drawing is on.
   host: { class: 'block pointer-events-none' },
   template: `@if (drawings.available) {
-    <svg #svg id="drawing-layer" class="w-full h-full absolute top-0" [class.pointer-events-auto]="drawings.enabled()" [class.touch-none]="drawings.enabled()"></svg>
+    <svg
+      #svg
+      id="drawing-layer"
+      class="w-full h-full absolute top-0"
+      [class.pointer-events-auto]="drawings.enabled()"
+      [class.touch-none]="drawings.enabled()"
+    ></svg>
   }`,
 })
 export class DrawingLayer implements OnDestroy {
@@ -20,9 +34,13 @@ export class DrawingLayer implements OnDestroy {
 
   constructor() {
     if (!this.drawings.available) return;
-    afterNextRender(() => this.drawings.attach(this.svg()!.nativeElement, this.host.parentElement!));
+    afterNextRender(() =>
+      this.drawings.attach(this.svg()!.nativeElement, this.host.parentElement!),
+    );
     effect(() => this.drawings.setScale(this.ui.canvasScale()));
   }
 
-  ngOnDestroy() { this.drawings.detach(); }
+  ngOnDestroy() {
+    this.drawings.detach();
+  }
 }

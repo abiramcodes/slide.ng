@@ -1,4 +1,15 @@
-import { Component, ElementRef, afterNextRender, computed, effect, inject, input, output, untracked, viewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  afterNextRender,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+  untracked,
+  viewChild,
+} from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { MARK, prepareNote } from './note-marks';
 
@@ -8,9 +19,18 @@ import { MARK, prepareNote } from './note-marks';
   selector: 'app-note-display',
   template: `
     @if (html()) {
-      <div #note class="slidev-note prose dark:prose-invert overflow-auto outline-none" [class.slidev-note-with-clicks]="withClicks()" [innerHTML]="trusted()"></div>
+      <div
+        #note
+        class="slidev-note prose dark:prose-invert overflow-auto outline-none"
+        [class.slidev-note-with-clicks]="withClicks()"
+        [innerHTML]="trusted()"
+      ></div>
     } @else {
-      <div class="slidev-note prose dark:prose-invert overflow-auto outline-none opacity-50 italic select-none"><p>{{ placeholder() }}</p></div>
+      <div
+        class="slidev-note prose dark:prose-invert overflow-auto outline-none opacity-50 italic select-none"
+      >
+        <p>{{ placeholder() }}</p>
+      </div>
     }
   `,
 })
@@ -35,18 +55,29 @@ export class NoteDisplay {
     effect(() => {
       const el = this.note()?.nativeElement;
       this.html();
-      untracked(() => { this.apply = null; });
+      untracked(() => {
+        this.apply = null;
+      });
       if (!el) return;
       // Wait until Angular has put the new HTML in the element.
-      queueMicrotask(() => { this.apply = prepareNote(el, (c) => this.markerDblclick.emit(c)); this.highlight(); });
+      queueMicrotask(() => {
+        this.apply = prepareNote(el, (c) => this.markerDblclick.emit(c));
+        this.highlight();
+      });
     });
-    effect(() => { this.clicks(); this.highlight(); });
+    effect(() => {
+      this.clicks();
+      this.highlight();
+    });
   }
 
   private highlight() {
     const current = this.clicks();
     if (current == null || !this.apply) return;
     this.apply(current);
-    if (this.autoScroll()) this.note()?.nativeElement.querySelector(`.${MARK}-active`)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    if (this.autoScroll())
+      this.note()
+        ?.nativeElement.querySelector(`.${MARK}-active`)
+        ?.scrollIntoView({ block: 'center', behavior: 'smooth' });
   }
 }

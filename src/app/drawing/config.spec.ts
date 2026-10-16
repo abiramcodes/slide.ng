@@ -2,11 +2,19 @@ import { readDrawingsConfig } from './config';
 
 describe('readDrawingsConfig', () => {
   it('has Slidev defaults: on, not persisted, everyone may draw, everything syncs', () => {
-    expect(readDrawingsConfig({}, true)).toEqual({ enabled: true, persist: false, presenterOnly: false, syncAll: true });
+    expect(readDrawingsConfig({}, true)).toEqual({
+      enabled: true,
+      persist: false,
+      presenterOnly: false,
+      syncAll: true,
+    });
   });
 
   it('reads every key', () => {
-    const c = readDrawingsConfig({ drawings: { enabled: false, persist: true, presenterOnly: true, syncAll: false } }, true);
+    const c = readDrawingsConfig(
+      { drawings: { enabled: false, persist: true, presenterOnly: true, syncAll: false } },
+      true,
+    );
     expect(c).toEqual({ enabled: false, persist: true, presenterOnly: true, syncAll: false });
   });
 

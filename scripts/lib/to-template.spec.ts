@@ -8,7 +8,9 @@ const text = (html: string) => html.replace(/<[^>]+>/g, '');
 
 describe('toTemplate: Angular syntax is protected', () => {
   it('keeps {{ interpolation }} as written', () => {
-    expect(toTemplate('Count is {{ count() + 1 }}.')).toContain('<p>Count is {{ count() + 1 }}.</p>');
+    expect(toTemplate('Count is {{ count() + 1 }}.')).toContain(
+      '<p>Count is {{ count() + 1 }}.</p>',
+    );
   });
   it('keeps @if blocks as written', () => {
     const html = toTemplate('@if (a > 1) {\nbig\n} @else {\nsmall\n}');
@@ -49,7 +51,9 @@ describe('toTemplate: code is literal', () => {
   it('escapes braces, @, {{ and < in a code fence', () => {
     const html = toTemplate(fence);
     expect(html).toContain('<pre ngNonBindable');
-    expect(text(html)).toContain('const o = &#123; a: 1 &#125;; // &#64;Component &#123;&#123; x &#125;&#125; &#x3C;b>');
+    expect(text(html)).toContain(
+      'const o = &#123; a: 1 &#125;; // &#64;Component &#123;&#123; x &#125;&#125; &#x3C;b>',
+    );
     expect(html).not.toContain('{');
     expect(html).not.toContain('@');
   });
@@ -70,14 +74,20 @@ describe('toTemplate: code is literal', () => {
 
 describe('toTemplate: highlighted code', () => {
   it('wraps the highlighted block in a code-block-wrapper with its ranges and options', () => {
-    const html = toTemplate("```ts [a.ts] {1|2} {lines:true,startLine:3,maxHeight:'80px'}\nlet a;\nlet b;\n```");
-    expect(html).toContain('<code-block-wrapper ranges="1|2" title="a.ts" lines="true" startLine="3" maxHeight="80px">');
+    const html = toTemplate(
+      "```ts [a.ts] {1|2} {lines:true,startLine:3,maxHeight:'80px'}\nlet a;\nlet b;\n```",
+    );
+    expect(html).toContain(
+      '<code-block-wrapper ranges="1|2" title="a.ts" lines="true" startLine="3" maxHeight="80px">',
+    );
     expect(html).toContain('class="shiki shiki-themes vitesse-light vitesse-dark slidev-code"');
     expect(html).toContain('--shiki-light:');
     expect(html).toContain('--shiki-dark:');
   });
   it('uses the deck-wide lineNumbers and codeCopy settings', () => {
-    const html = toTemplate('```ts\nlet a;\n```', { headmatter: { lineNumbers: true, codeCopy: false } });
+    const html = toTemplate('```ts\nlet a;\n```', {
+      headmatter: { lineNumbers: true, codeCopy: false },
+    });
     expect(html).toContain('lines="true"');
     expect(html).toContain('noCopy="true"');
   });
@@ -89,7 +99,9 @@ describe('toTemplate: highlighted code', () => {
     warn.mockRestore();
   });
   it('wraps a ::code-group in <code-group>', () => {
-    const html = toTemplate('::code-group\n\n```ts [a]\nlet a;\n```\n\n```ts [b]\nlet b;\n```\n\n::');
+    const html = toTemplate(
+      '::code-group\n\n```ts [a]\nlet a;\n```\n\n```ts [b]\nlet b;\n```\n\n::',
+    );
     expect(html.startsWith('<code-group><code-block-wrapper')).toBe(true);
     expect(html.match(/<code-block-wrapper/g)).toHaveLength(2);
   });
@@ -98,11 +110,14 @@ describe('toTemplate: highlighted code', () => {
 describe('toTemplate: twoslash', () => {
   it('adds type popups only to a block marked twoslash, and the result is safe for Angular', async () => {
     await initHighlighter({ langs: ['ts'], twoslash: true });
-    const html = toTemplate('```ts twoslash\nconst n = Math.max(1, 2)\n//    ^?\n```\n\n```ts\nconst m = 1\n```');
+    const html = toTemplate(
+      '```ts twoslash\nconst n = Math.max(1, 2)\n//    ^?\n```\n\n```ts\nconst m = 1\n```',
+    );
     expect(html.match(/twoslash-hover/g)!.length).toBeGreaterThan(1);
     expect(html.match(/<pre /g)).toHaveLength(2);
     expect(html.split('<code-block-wrapper')[2]).not.toContain('twoslash-hover');
     expect(html).not.toMatch(/[{}@]/);
     await initHighlighter({ langs: ['ts', 'html', 'md'] }); // back to the plain setup for the other tests
-  });
+    // The first twoslash run loads the TypeScript libraries, which is slow on a busy machine.
+  }, 30_000);
 });

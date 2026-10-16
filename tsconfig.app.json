@@ -7,7 +7,5 @@
   },
   // Only main.ts is listed: everything the deck reaches by imports is compiled, and nothing else.
   // That way Monaco's workers are built only for decks that use an editor.
-  "files": [
-    "src/main.ts"
-  ]
+  "files": ["src/main.ts"]
 }

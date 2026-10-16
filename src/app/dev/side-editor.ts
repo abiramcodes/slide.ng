@@ -18,24 +18,56 @@ const WATCH_EVERY = 2000;
   selector: 'app-side-editor',
   template: `
     @if (state.open() && state.available()) {
-      <aside id="side-editor" class="fixed right-0 top-0 bottom-0 z-nav flex flex-col bg-main text-main border-l border-main" [style.width.px]="state.width">
+      <aside
+        id="side-editor"
+        class="fixed right-0 top-0 bottom-0 z-nav flex flex-col bg-main text-main border-l border-main"
+        [style.width.px]="state.width"
+      >
         <div class="flex items-center gap-2 px-3 py-1 border-b border-main text-sm">
           <span class="font-bold">Slide {{ nav.no() }}</span>
-          <span id="editor-status" class="op60 ml-auto" [class.color-red-500]="status() === 'error'">{{ label() }}</span>
-          <button type="button" id="editor-close" class="px-1" title="Close editor" (click)="state.toggle()"><div class="i-carbon:close"></div></button>
+          <span
+            id="editor-status"
+            class="op60 ml-auto"
+            [class.color-red-500]="status() === 'error'"
+            >{{ label() }}</span
+          >
+          <button
+            type="button"
+            id="editor-close"
+            class="px-1"
+            title="Close editor"
+            (click)="state.toggle()"
+          >
+            <div class="i-carbon:close"></div>
+          </button>
         </div>
-        <div class="relative flex-auto overflow-auto" style="background-color: var(--slidev-code-background)">
+        <div
+          class="relative flex-auto overflow-auto"
+          style="background-color: var(--slidev-code-background)"
+        >
           <div class="relative min-h-full">
             <!-- This copy gives the box its height; the textarea has the same size and wraps the same way. -->
             @if (html(); as coloured) {
-              <div id="editor-highlight" class="editor-text" aria-hidden="true" [innerHTML]="coloured"></div>
+              <div
+                id="editor-highlight"
+                class="editor-text"
+                aria-hidden="true"
+                [innerHTML]="coloured"
+              ></div>
             } @else {
-              <div id="editor-sizer" class="editor-text invisible" aria-hidden="true">{{ text() }} </div>
+              <div id="editor-sizer" class="editor-text invisible" aria-hidden="true">
+                {{ text() }}
+              </div>
             }
             <textarea
-              id="editor-text" spellcheck="false" class="editor-text absolute inset-0 w-full h-full bg-transparent outline-none resize-none overflow-hidden"
-              [class.highlighted]="!!html()" [value]="text()" [disabled]="status() === 'loading'"
-              (input)="edit($any($event.target).value)" (keydown)="keydown($event)"
+              id="editor-text"
+              spellcheck="false"
+              class="editor-text absolute inset-0 w-full h-full bg-transparent outline-none resize-none overflow-hidden"
+              [class.highlighted]="!!html()"
+              [value]="text()"
+              [disabled]="status() === 'loading'"
+              (input)="edit($any($event.target).value)"
+              (keydown)="keydown($event)"
             ></textarea>
           </div>
         </div>
@@ -59,35 +91,63 @@ export class SideEditor {
   private timer?: ReturnType<typeof setTimeout>;
   private loadedNo = 0;
 
-  protected label = () => ({ loading: 'Loading...', saved: 'Saved', saving: 'Saving...', error: 'Could not save' })[this.status()];
+  protected label = () =>
+    ({ loading: 'Loading...', saved: 'Saved', saving: 'Saving...', error: 'Could not save' })[
+      this.status()
+    ];
 
   constructor() {
     // Show the text of whichever slide is on screen. A change not saved yet goes out first.
     effect(() => {
-      const no = this.nav.no(), open = this.state.open() && this.state.available();
+      const no = this.nav.no(),
+        open = this.state.open() && this.state.available();
       if (open && no !== this.loadedNo) untracked(() => void this.load(no));
     });
     // Shiki is fetched when the editor is first opened; until it arrives the text is plain. A production build has no editor and no chunk.
-    effect(() => { if (this.state.open() && this.state.available() && !untracked(this.highlight)) untracked(() => void this.loadColours()); });
+    effect(() => {
+      if (this.state.open() && this.state.available() && !untracked(this.highlight))
+        untracked(() => void this.loadColours());
+    });
     const watch = setInterval(() => void this.refresh(), WATCH_EVERY);
     inject(DestroyRef).onDestroy(() => clearInterval(watch));
   }
 
   private async loadColours() {
-    try { this.highlight.set(await loadHighlighter()); } catch { /* plain text still works */ }
+    try {
+      this.highlight.set(await loadHighlighter());
+    } catch {
+      /* plain text still works */
+    }
   }
 
   protected keydown(event: KeyboardEvent) {
-    if ((event.ctrlKey || event.metaKey) && event.code === 'KeyS') { event.preventDefault(); void this.flush(); }
+    if ((event.ctrlKey || event.metaKey) && event.code === 'KeyS') {
+      event.preventDefault();
+      void this.flush();
+    }
   }
 
   // Takes over a change made outside, but only when nothing typed here is waiting to be saved.
   private async refresh() {
-    if (!this.state.open() || !this.loadedNo || this.timer !== undefined || this.status() !== 'saved') return;
-    const no = this.loadedNo, shown = this.text();
+    if (
+      !this.state.open() ||
+      !this.loadedNo ||
+      this.timer !== undefined ||
+      this.status() !== 'saved'
+    )
+      return;
+    const no = this.loadedNo,
+      shown = this.text();
     const got = await this.api.get<{ raw: string }>(`/slides/${no}/source`);
     // The user may have typed, or moved to another slide, while we asked.
-    if (!got || this.timer !== undefined || this.status() !== 'saved' || this.loadedNo !== no || this.text() !== shown) return;
+    if (
+      !got ||
+      this.timer !== undefined ||
+      this.status() !== 'saved' ||
+      this.loadedNo !== no ||
+      this.text() !== shown
+    )
+      return;
     if (got.raw !== shown) this.text.set(got.raw);
   }
 

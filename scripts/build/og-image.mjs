@@ -21,7 +21,8 @@ export function ogImagePlan(headmatter, deckRoot) {
  */
 export function ogImageAddress(headmatter, base) {
   const site = headmatter.seoMeta?.ogUrl;
-  if (typeof site === 'string' && /^https?:\/\//.test(site)) return new URL(FILE, site.endsWith('/') ? site : `${site}/`).href;
+  if (typeof site === 'string' && /^https?:\/\//.test(site))
+    return new URL(FILE, site.endsWith('/') ? site : `${site}/`).href;
   return `${base}${FILE}`;
 }
 

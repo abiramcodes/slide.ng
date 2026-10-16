@@ -7,7 +7,10 @@ import { makeContext } from './helpers.mjs';
 const ng = 'node node_modules/@angular/cli/bin/ng.js build --output-path dist/showcase';
 if (!process.env.SKIP_BUILD) {
   try {
-    execSync(`node scripts/generate.mjs && ${ng}`, { stdio: 'inherit', env: { ...process.env, SLIDES_FILE: 'tests/e2e/showcase/slides.md' } });
+    execSync(`node scripts/generate.mjs && ${ng}`, {
+      stdio: 'inherit',
+      env: { ...process.env, SLIDES_FILE: 'tests/e2e/showcase/slides.md' },
+    });
   } finally {
     execSync('node scripts/generate.mjs', { stdio: 'ignore' }); // put the generated files of the normal deck back
   }

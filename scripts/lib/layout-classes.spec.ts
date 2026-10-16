@@ -28,8 +28,13 @@ const SLIDEV: Record<string, { root: string; inner?: string }> = {
   'two-cols': { root: 'slidev-layout two-columns w-full h-full grid grid-cols-2' },
 };
 
-const tokens = (text: string) => text.split(/\s+/).filter((t) => t && t !== 'block').sort();
-const source = (name: string) => readFileSync(join(process.cwd(), 'src/app/layouts', `${name}.ts`), 'utf8');
+const tokens = (text: string) =>
+  text
+    .split(/\s+/)
+    .filter((t) => t && t !== 'block')
+    .sort();
+const source = (name: string) =>
+  readFileSync(join(process.cwd(), 'src/app/layouts', `${name}.ts`), 'utf8');
 
 describe('layouts against Slidev', () => {
   it('lists all 21 layouts', () => expect(Object.keys(SLIDEV)).toHaveLength(21));
@@ -48,7 +53,8 @@ describe('layouts against Slidev', () => {
   }
 
   it('the content boxes of the image and iframe layouts are the default layout', () => {
-    for (const name of ['image-left', 'image-right', 'iframe-left', 'iframe-right']) expect(source(name)).toContain('class="slidev-layout default"');
+    for (const name of ['image-left', 'image-right', 'iframe-left', 'iframe-right'])
+      expect(source(name)).toContain('class="slidev-layout default"');
   });
 });
 
@@ -58,7 +64,11 @@ describe('layout styles against Slidev', () => {
     expect(css).not.toMatch(/\.slidev-layout\.full\s*\{[^}]*padding/);
   });
   it('the base layout has Slidev padding and size', () => {
-    expect(css).toMatch(/\.slidev-layout \{[^}]*padding: 2\.5rem 3\.5rem; font-size: 1\.1rem; height: 100%/);
+    // Line breaks do not matter, so the check survives a reformat.
+    const oneLine = css.replace(/\s+/g, ' ');
+    expect(oneLine).toMatch(
+      /\.slidev-layout \{[^}]*padding: 2\.5rem 3\.5rem; font-size: 1\.1rem; height: 100%/,
+    );
   });
   it('h1 has no bold weight of its own (the reset gives it the normal weight)', () => {
     expect(/\.slidev-layout h1 \{[^}]*\}/.exec(css)?.[0]).not.toContain('font-weight');

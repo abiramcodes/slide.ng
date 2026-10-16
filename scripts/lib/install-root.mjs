@@ -15,7 +15,11 @@ const MANAGERS = [
 
 /** `{ command: 'npm install -D @slide-ng/theme-x', file, args }` for a package, run in the deck's folder. */
 export function installCommand(deckRoot, pkg) {
-  const [, file, verb] = MANAGERS.find(([lock]) => existsSync(join(deckRoot, lock))) ?? ['', 'npm', 'install -D'];
+  const [, file, verb] = MANAGERS.find(([lock]) => existsSync(join(deckRoot, lock))) ?? [
+    '',
+    'npm',
+    'install -D',
+  ];
   const args = [...verb.split(' '), pkg];
   return { command: `${file} ${args.join(' ')}`, file, args };
 }
@@ -31,14 +35,23 @@ async function askYesNo(question) {
  * Offers to install the package named by a `RootNotFoundError`. True when it was installed (try again),
  * false when nothing was installed (the caller rethrows the error). `isTTY`, `ask` and `run` can be replaced in tests.
  */
-export async function offerInstall(error, deckRoot, {
-  isTTY = Boolean(process.stdin.isTTY) && !process.env.CI,
-  ask = askYesNo,
-  run = (file, args) => spawnSync(file, args, { cwd: deckRoot, stdio: 'inherit' }).status === 0,
-} = {}) {
+export async function offerInstall(
+  error,
+  deckRoot,
+  {
+    isTTY = Boolean(process.stdin.isTTY) && !process.env.CI,
+    ask = askYesNo,
+    run = (file, args) => spawnSync(file, args, { cwd: deckRoot, stdio: 'inherit' }).status === 0,
+  } = {},
+) {
   if (!isTTY) return false;
   const where = 'in your project';
-  if (!(await ask(`The ${error.kind} "${error.spec}" was not found ${where}, do you want to install it now?`))) return false;
+  if (
+    !(await ask(
+      `The ${error.kind} "${error.spec}" was not found ${where}, do you want to install it now?`,
+    ))
+  )
+    return false;
   const { file, args } = installCommand(deckRoot, error.pkg);
   return run(file, args);
 }

@@ -27,7 +27,13 @@ export class Nav {
   private param = toSignal(this.route.paramMap.pipe(map((p) => p.get('no') ?? '1')), {
     initialValue: this.route.snapshot.paramMap.get('no') ?? '1',
   });
-  private found = computed(() => findSlide(this.param(), this.total, SLIDES.map((s) => s.routeAlias)));
+  private found = computed(() =>
+    findSlide(
+      this.param(),
+      this.total,
+      SLIDES.map((s) => s.routeAlias),
+    ),
+  );
   /** The presenter route (`/presenter/:no`) has the same navigation as the play route (`/:no`), under another base address. */
   readonly isPresenter = this.route.snapshot.data['mode'] === 'presenter';
   private base = this.isPresenter ? '/presenter' : '/';
@@ -57,7 +63,16 @@ export class Nav {
   readonly hasPrev = computed(() => this.no() > 1 || this.clicks() > 0);
 
   readonly tocTree = computed(() =>
-    buildTocTree(SLIDES.map((s, i) => ({ no: i + 1, title: s.title, level: s.level, routeAlias: s.routeAlias, hideInToc: s.hideInToc })), this.no()),
+    buildTocTree(
+      SLIDES.map((s, i) => ({
+        no: i + 1,
+        title: s.title,
+        level: s.level,
+        routeAlias: s.routeAlias,
+        hideInToc: s.hideInToc,
+      })),
+      this.no(),
+    ),
   );
 
   /** Next click, or the next slide when the clicks are used up. */
@@ -74,21 +89,34 @@ export class Nav {
     else this.prevSlide(true);
   }
 
-  nextSlide() { if (this.no() < this.total) this.go(this.no() + 1, 0); }
-  prevSlide(lastClicks = false) { if (this.no() > 1) this.go(this.no() - 1, lastClicks ? CLICKS_MAX : 0); }
+  nextSlide() {
+    if (this.no() < this.total) this.go(this.no() + 1, 0);
+  }
+  prevSlide(lastClicks = false) {
+    if (this.no() > 1) this.go(this.no() - 1, lastClicks ? CLICKS_MAX : 0);
+  }
 
   /** Go to slide `no` at click `clicks` (the slide clamps it to its own range). */
   go(no: number, clicks = 0, replace = false) {
     const slide = SLIDES[no - 1];
-    return this.router.navigate([this.base, slide?.routeAlias ?? no], { queryParams: { clicks }, replaceUrl: replace });
+    return this.router.navigate([this.base, slide?.routeAlias ?? no], {
+      queryParams: { clicks },
+      replaceUrl: replace,
+    });
   }
 
   /** Open the presenter page / the play page at this slide and click. */
-  enterPresenter() { return this.switchTo('/presenter'); }
-  exitPresenter() { return this.switchTo('/'); }
+  enterPresenter() {
+    return this.switchTo('/presenter');
+  }
+  exitPresenter() {
+    return this.switchTo('/');
+  }
   private switchTo(base: string) {
     const slide = SLIDES[this.no() - 1];
-    return this.router.navigate([base, slide?.routeAlias ?? this.no()], { queryParams: { clicks: this.clicks() } });
+    return this.router.navigate([base, slide?.routeAlias ?? this.no()], {
+      queryParams: { clicks: this.clicks() },
+    });
   }
 
   /**

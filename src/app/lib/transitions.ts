@@ -35,7 +35,12 @@ export function pickTransition(
   return resolveTransition(earlier, to < from);
 }
 
-interface Pair { enter: Keyframe[]; leave: Keyframe[]; enterOptions?: KeyframeAnimationOptions; leaveOptions?: KeyframeAnimationOptions }
+interface Pair {
+  enter: Keyframe[];
+  leave: Keyframe[];
+  enterOptions?: KeyframeAnimationOptions;
+  leaveOptions?: KeyframeAnimationOptions;
+}
 
 // What each transition does, written from Slidev's transitions.css. `ms` is the duration.
 export function animationsFor(name: string, ms: number): Pair | null {
@@ -44,11 +49,16 @@ export function animationsFor(name: string, ms: number): Pair | null {
     leave: [{ translate: '0 0' }, { translate: to }],
   });
   switch (name) {
-    case 'slide-left': return slide('100% 0', '-100% 0');
-    case 'slide-right': return slide('-100% 0', '100% 0');
-    case 'slide-up': return slide('0 100%', '0 -100%');
-    case 'slide-down': return slide('0 -100%', '0 100%');
-    case 'fade': return { enter: [{ opacity: 0 }, { opacity: 1 }], leave: [{ opacity: 1 }, { opacity: 0 }] };
+    case 'slide-left':
+      return slide('100% 0', '-100% 0');
+    case 'slide-right':
+      return slide('-100% 0', '100% 0');
+    case 'slide-up':
+      return slide('0 100%', '0 -100%');
+    case 'slide-down':
+      return slide('0 -100%', '0 100%');
+    case 'fade':
+      return { enter: [{ opacity: 0 }, { opacity: 1 }], leave: [{ opacity: 1 }, { opacity: 0 }] };
     case 'fade-out': // the old slide fades out first, then the new one fades in
       return {
         enter: [{ opacity: 0 }, { opacity: 1 }],
@@ -56,13 +66,16 @@ export function animationsFor(name: string, ms: number): Pair | null {
         enterOptions: { duration: ms * 0.8, delay: ms * 0.6, easing: 'ease-in' },
         leaveOptions: { duration: ms * 0.6, easing: 'ease-out' },
       };
-    default: return null;
+    default:
+      return null;
   }
 }
 
 /** The duration from the CSS variable `--slidev-transition-duration` (like `0.5s`), in milliseconds. */
 export function transitionDuration(): number {
-  const raw = getComputedStyle(document.documentElement).getPropertyValue('--slidev-transition-duration').trim();
+  const raw = getComputedStyle(document.documentElement)
+    .getPropertyValue('--slidev-transition-duration')
+    .trim();
   const n = parseFloat(raw);
   return Number.isNaN(n) ? 500 : raw.endsWith('ms') ? n : n * 1000;
 }

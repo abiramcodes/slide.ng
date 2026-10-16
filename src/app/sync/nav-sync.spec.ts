@@ -2,7 +2,8 @@ import { isLocalPage } from './nav-sync';
 
 describe('isLocalPage', () => {
   it('knows the local host names', () => {
-    for (const hostname of ['localhost', '127.0.0.1', '[::1]']) expect(isLocalPage({ protocol: 'http:', hostname })).toBe(true);
+    for (const hostname of ['localhost', '127.0.0.1', '[::1]'])
+      expect(isLocalPage({ protocol: 'http:', hostname })).toBe(true);
   });
 
   it('counts a folder opened from disk as local', () => {

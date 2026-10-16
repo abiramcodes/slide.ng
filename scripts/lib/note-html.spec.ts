@@ -25,6 +25,8 @@ describe('noteToHtml', () => {
 
   it('markers inside list items stay in the list', () => {
     const html = noteToHtml('- [click] first\n- [click] second')!;
-    expect(html).toMatch(/<li><span class="slidev-note-click-mark" data-clicks="1"><\/span> first<\/li>/);
+    expect(html).toMatch(
+      /<li><span class="slidev-note-click-mark" data-clicks="1"><\/span> first<\/li>/,
+    );
   });
 });

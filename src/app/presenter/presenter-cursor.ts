@@ -8,14 +8,33 @@ import { PresenterPrefs } from './prefs';
 // Positions are percents of the slide, so every window size agrees.
 @Component({
   selector: 'app-presenter-cursor',
-  host: { class: 'pointer-events-none text-xl', '(window:focus)': 'focused.set(true)', '(window:blur)': 'focused.set(false)', '(document:pointermove)': 'move($event)', '(document:pointerleave)': 'mouse.set(null)' },
+  host: {
+    class: 'pointer-events-none text-xl',
+    '(window:focus)': 'focused.set(true)',
+    '(window:blur)': 'focused.set(false)',
+    '(document:pointermove)': 'move($event)',
+    '(document:pointerleave)': 'mouse.set(null)',
+  },
   template: `
     @if (point(); as p) {
       @if (p.style === 'laser') {
-        <div id="laser-pointer" class="laser-pointer" [style.left.%]="p.x" [style.top.%]="p.y"></div>
+        <div
+          id="laser-pointer"
+          class="laser-pointer"
+          [style.left.%]="p.x"
+          [style.top.%]="p.y"
+        ></div>
       } @else {
-        <div id="presenter-cursor" class="absolute text-black dark:text-white" [style.left.%]="p.x" [style.top.%]="p.y">
-          <div class="i-ph-cursor-fill stroke-white dark:stroke-black" style="stroke-width: 16"></div>
+        <div
+          id="presenter-cursor"
+          class="absolute text-black dark:text-white"
+          [style.left.%]="p.x"
+          [style.top.%]="p.y"
+        >
+          <div
+            class="i-ph-cursor-fill stroke-white dark:stroke-black"
+            style="stroke-width: 16"
+          ></div>
         </div>
       }
     }
@@ -36,7 +55,9 @@ export class PresenterCursor {
   protected point = computed(() => {
     if (this.nav.isPresenter) {
       const m = this.mouse();
-      return m && this.prefs.showCursor() && this.prefs.cursorStyle() === 'laser' ? { ...m, style: 'laser' as const } : null;
+      return m && this.prefs.showCursor() && this.prefs.cursorStyle() === 'laser'
+        ? { ...m, style: 'laser' as const }
+        : null;
     }
     return this.sync.shared().cursor;
   });
@@ -46,14 +67,29 @@ export class PresenterCursor {
     let sharing = false;
     effect(() => {
       if (!this.nav.isPresenter) return;
-      const m = this.mouse(), show = this.prefs.showCursor() && this.focused(), style = this.prefs.cursorStyle();
+      const m = this.mouse(),
+        show = this.prefs.showCursor() && this.focused(),
+        style = this.prefs.cursorStyle();
       untracked(() => {
-        if (m && show) { sharing = true; this.sync.patchShared({ cursor: { ...m, style } }); }
-        else if (sharing) { sharing = false; this.sync.patchShared({ cursor: null }); }
+        if (m && show) {
+          sharing = true;
+          this.sync.patchShared({ cursor: { ...m, style } });
+        } else if (sharing) {
+          sharing = false;
+          this.sync.patchShared({ cursor: null });
+        }
       });
     });
     // The laser hides the real cursor on the slide.
-    effect(() => document.body.classList.toggle('slidev-self-laser-active', this.nav.isPresenter && this.prefs.cursorStyle() === 'laser' && this.prefs.showCursor() && !!this.mouse()));
+    effect(() =>
+      document.body.classList.toggle(
+        'slidev-self-laser-active',
+        this.nav.isPresenter &&
+          this.prefs.cursorStyle() === 'laser' &&
+          this.prefs.showCursor() &&
+          !!this.mouse(),
+      ),
+    );
   }
 
   // Once per frame is enough, and it keeps the message rate low. The frame uses the newest position.
@@ -64,7 +100,8 @@ export class PresenterCursor {
     this.frame = requestAnimationFrame(() => {
       this.frame = 0;
       const rect = this.el.parentElement!.getBoundingClientRect(); // the canvas
-      const x = ((this.last.x - rect.left) / rect.width) * 100, y = ((this.last.y - rect.top) / rect.height) * 100;
+      const x = ((this.last.x - rect.left) / rect.width) * 100,
+        y = ((this.last.y - rect.top) / rect.height) * 100;
       this.mouse.set(x < 0 || x > 100 || y < 0 || y > 100 ? null : { x, y });
     });
   }

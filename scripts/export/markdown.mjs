@@ -4,11 +4,16 @@ import { writeFile } from 'node:fs/promises';
 /** `folder` is the name of the pictures' folder, relative to the markdown file. */
 export function markdownText({ slides, pictures, folder }) {
   const slideNos = [...new Set(pictures.map((p) => p.no))];
-  return slideNos.map((no) => {
-    const slide = slides[no - 1];
-    const images = pictures.filter((p) => p.no === no).map((p) => `![${slide.title || no}](./${folder}/${p.name})\n\n`).join('');
-    return images + (slide.note ? `${slide.note.trim()}\n\n` : '');
-  }).join('---\n\n');
+  return slideNos
+    .map((no) => {
+      const slide = slides[no - 1];
+      const images = pictures
+        .filter((p) => p.no === no)
+        .map((p) => `![${slide.title || no}](./${folder}/${p.name})\n\n`)
+        .join('');
+      return images + (slide.note ? `${slide.note.trim()}\n\n` : '');
+    })
+    .join('---\n\n');
 }
 
 export function writeMarkdown(file, options) {

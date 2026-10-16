@@ -10,7 +10,12 @@ import { resolvePos } from './resolve-pos';
 // slide pixels. The generator adds `drag-site="N"`, which says which v-drag of the slide this is.
 @Directive({
   selector: '[v-drag]',
-  host: { '(pointerdown)': 'down($event)', '(pointermove)': 'move($event)', '(pointerup)': 'up($event)', '(pointercancel)': 'up($event)' },
+  host: {
+    '(pointerdown)': 'down($event)',
+    '(pointermove)': 'move($event)',
+    '(pointerup)': 'up($event)',
+    '(pointercancel)': 'up($event)',
+  },
 })
 export class VDrag implements Extract<DragTarget, { kind: 'box' }> {
   readonly text = input('', { alias: 'v-drag' });
@@ -29,7 +34,8 @@ export class VDrag implements Extract<DragTarget, { kind: 'box' }> {
   constructor() {
     // The place written in the slide (or chosen in this session) -> the box.
     effect(() => {
-      const text = this.state.savedPos(this.slideNo, this.site()) ?? resolvePos(this.slideNo, this.text());
+      const text =
+        this.state.savedPos(this.slideNo, this.site()) ?? resolvePos(this.slideNo, this.text());
       const box = parseBox(text);
       if (box) this.value.set(box);
       this.placed = !!box;
@@ -38,12 +44,13 @@ export class VDrag implements Extract<DragTarget, { kind: 'box' }> {
     if (this.editable) this.el.style.cursor = 'move';
   }
 
-
   private apply(b: Box) {
     if (!this.placed) return;
     const s = this.el.style;
     s.position = 'absolute';
-    s.left = `${b.x}px`; s.top = `${b.y}px`; s.width = `${b.w}px`;
+    s.left = `${b.x}px`;
+    s.top = `${b.y}px`;
+    s.width = `${b.w}px`;
     s.height = Number.isNaN(b.h) ? 'auto' : `${b.h}px`;
     s.margin = '0';
     s.transform = b.rot ? `rotate(${b.rot}deg)` : '';
@@ -54,13 +61,22 @@ export class VDrag implements Extract<DragTarget, { kind: 'box' }> {
     const canvas = this.el.closest('.canvas')!.getBoundingClientRect();
     const r = this.el.getBoundingClientRect();
     const k = this.ui!.canvasScale();
-    return { x: (r.left - canvas.left) / k, y: (r.top - canvas.top) / k, w: r.width / k, h: NaN, rot: 0 };
+    return {
+      x: (r.left - canvas.left) / k,
+      y: (r.top - canvas.top) / k,
+      w: r.width / k,
+      h: NaN,
+      rot: 0,
+    };
   }
 
   protected down(e: PointerEvent) {
     if (!this.editable || e.button !== 0) return;
     e.preventDefault();
-    if (!this.placed) { this.value.set(this.natural()); this.placed = true; }
+    if (!this.placed) {
+      this.value.set(this.natural());
+      this.placed = true;
+    }
     this.el.setPointerCapture(e.pointerId);
     this.grab = { x: e.clientX, y: e.clientY, start: this.value() };
     this.state.active.set(this);
@@ -69,7 +85,9 @@ export class VDrag implements Extract<DragTarget, { kind: 'box' }> {
   protected move(e: PointerEvent) {
     if (!this.grab) return;
     const k = this.ui!.canvasScale();
-    this.value.set(moveBox(this.grab.start, (e.clientX - this.grab.x) / k, (e.clientY - this.grab.y) / k));
+    this.value.set(
+      moveBox(this.grab.start, (e.clientX - this.grab.x) / k, (e.clientY - this.grab.y) / k),
+    );
   }
 
   protected up(e: PointerEvent) {

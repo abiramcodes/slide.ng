@@ -12,21 +12,44 @@ export interface MarkOptions {
 }
 
 const TYPES: Record<string, string> = {
-  'box': 'box', 'circle': 'circle', 'underline': 'underline', 'highlight': 'highlight', 'bracket': 'bracket',
-  'strike-through': 'strike-through', 'crossed-off': 'crossed-off',
-  'strike': 'strike-through', 'cross': 'crossed-off', 'crossed': 'crossed-off', 'linethrough': 'strike-through', 'line-through': 'strike-through',
+  box: 'box',
+  circle: 'circle',
+  underline: 'underline',
+  highlight: 'highlight',
+  bracket: 'bracket',
+  'strike-through': 'strike-through',
+  'crossed-off': 'crossed-off',
+  strike: 'strike-through',
+  cross: 'crossed-off',
+  crossed: 'crossed-off',
+  linethrough: 'strike-through',
+  'line-through': 'strike-through',
 };
 
 // Slidev maps these to UnoCSS `text-<name>` classes; we set the colour directly (Tailwind 500 shades).
 const COLORS: Record<string, string> = {
-  black: '#000000', white: '#ffffff', gray: '#6b7280', red: '#ef4444', orange: '#f97316', yellow: '#eab308',
-  lime: '#84cc16', green: '#22c55e', teal: '#14b8a6', cyan: '#06b6d4', blue: '#3b82f6', indigo: '#6366f1',
-  purple: '#a855f7', pink: '#ec4899',
+  black: '#000000',
+  white: '#ffffff',
+  gray: '#6b7280',
+  red: '#ef4444',
+  orange: '#f97316',
+  yellow: '#eab308',
+  lime: '#84cc16',
+  green: '#22c55e',
+  teal: '#14b8a6',
+  cyan: '#06b6d4',
+  blue: '#3b82f6',
+  indigo: '#6366f1',
+  purple: '#a855f7',
+  pink: '#ec4899',
 };
 
 /** @param value the `v-mark` value @param mods the dotted modifiers, like "red.circle.delay300" */
 export function markOptions(value: unknown, mods: string): MarkOptions {
-  const fromValue = value && typeof value === 'object' && !Array.isArray(value) ? { ...(value as object) } as Partial<MarkOptions> : { at: value };
+  const fromValue =
+    value && typeof value === 'object' && !Array.isArray(value)
+      ? ({ ...(value as object) } as Partial<MarkOptions>)
+      : { at: value };
   const fromMods: Partial<MarkOptions> = {};
   const unknown: string[] = [];
   for (const mod of mods.split('.').filter(Boolean)) {

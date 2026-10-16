@@ -26,14 +26,27 @@ const resolveAlias = (lang) => aliases[lang] ?? lang;
  * `setup` is the merged `setup/shiki.ts` of the roots (lib/setup/node-setups.mjs): Shiki options, extra language names and grammars.
  * @param {{ langs?: Iterable<string>, headmatter?: any, twoslash?: boolean, setup?: { options?: Record<string, any>, langNames?: string[], grammars?: { name: string, input: any }[] } }} [options]
  */
-export async function initHighlighter({ langs = [], headmatter = {}, twoslash: useTwoslash = false, setup = {} } = {}) {
-  const { theme, themes: setupThemes, defaultColor: _ignored, transformers: _t, ...rest } = setup.options ?? {};
+export async function initHighlighter({
+  langs = [],
+  headmatter = {},
+  twoslash: useTwoslash = false,
+  setup = {},
+} = {}) {
+  const {
+    theme,
+    themes: setupThemes,
+    defaultColor: _ignored,
+    transformers: _t,
+    ...rest
+  } = setup.options ?? {};
   singleTheme = theme ?? null;
   themes = setupThemes ?? headmatter.shiki?.themes ?? DEFAULT_THEMES;
   setupOptions = { ...rest, transformers: setup.options?.transformers ?? [] };
   aliases = { ...BUILTIN_ALIASES, ...headmatter.codeAliases };
   const grammars = setup.grammars ?? [];
-  const names = [...new Set([...langs, ...(setup.langNames ?? []), 'ts', 'js', 'html', 'css'].map(resolveAlias))];
+  const names = [
+    ...new Set([...langs, ...(setup.langNames ?? []), 'ts', 'js', 'html', 'css'].map(resolveAlias)),
+  ];
   highlighter = await createHighlighter({
     themes: singleTheme ? [singleTheme] : Object.values(themes),
     langs: [...names.filter((n) => n in bundledLanguages), ...grammars.map((g) => g.input)],
@@ -45,7 +58,10 @@ export async function initHighlighter({ langs = [], headmatter = {}, twoslash: u
     // Only blocks with `twoslash` after the language are processed (explicitTrigger), as in Slidev.
     twoslash = transformerTwoslash({
       explicitTrigger: true,
-      twoslashOptions: { compilerOptions: { ignoreDeprecations: '6.0' }, handbookOptions: { noErrorValidation: true } },
+      twoslashOptions: {
+        compilerOptions: { ignoreDeprecations: '6.0' },
+        handbookOptions: { noErrorValidation: true },
+      },
     });
   }
 }
@@ -55,18 +71,30 @@ export const twoslashTransformer = () => twoslash;
 // The language to draw with, or 'text' (and a warning) when it is not loaded.
 function usableLang(lang) {
   const name = resolveAlias(lang || 'text');
-  if (PLAIN.includes(name) || grammarNames.has(name) || highlighter.getLoadedLanguages().includes(name)) return name;
+  if (
+    PLAIN.includes(name) ||
+    grammarNames.has(name) ||
+    highlighter.getLoadedLanguages().includes(name)
+  )
+    return name;
   console.warn(`[slides] code language "${lang}" is not loaded, showing it as plain text`);
   return 'text';
 }
 
-export const themeOptions = () => (singleTheme ? { theme: singleTheme } : { themes, defaultColor: false });
+export const themeOptions = () =>
+  singleTheme ? { theme: singleTheme } : { themes, defaultColor: false };
 
 // A finished <pre class="shiki ..."> for the code. The transformers of setup/shiki.ts run first, then the ones given here.
 export function codeToHtml(code, lang, extra = {}) {
   const { transformers: own = [], ...more } = extra;
   const { transformers: fromSetup, ...options } = setupOptions;
-  return highlighter.codeToHtml(code, { lang: usableLang(lang), ...options, ...themeOptions(), ...more, transformers: [...fromSetup, ...own] });
+  return highlighter.codeToHtml(code, {
+    lang: usableLang(lang),
+    ...options,
+    ...themeOptions(),
+    ...more,
+    transformers: [...fromSetup, ...own],
+  });
 }
 
 // Tokens, for Shiki Magic Move.

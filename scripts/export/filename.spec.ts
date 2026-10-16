@@ -30,13 +30,19 @@ describe('outputBase', () => {
     expect(outputBase({ output: '/tmp/x', dir })).toBe('/tmp/x');
   });
   it('turns the headmatter name into a plain name in the folder', () => {
-    expect(outputBase({ exportFilename: '../../evil', entry: 'slides.md', dir })).toBe(resolve(dir, 'evil'));
-    expect(outputBase({ exportFilename: 'talk.pdf', entry: 'slides.md', dir })).toBe(resolve(dir, 'talk'));
+    expect(outputBase({ exportFilename: '../../evil', entry: 'slides.md', dir })).toBe(
+      resolve(dir, 'evil'),
+    );
+    expect(outputBase({ exportFilename: 'talk.pdf', entry: 'slides.md', dir })).toBe(
+      resolve(dir, 'talk'),
+    );
     const base = outputBase({ exportFilename: '../../../../root/.ssh/x', entry: 'slides.md', dir });
     expect(isInside(dir, base)).toBe(true);
   });
   it('adds a suffix to derived names only', () => {
-    expect(outputBase({ exportFilename: 'talk', entry: 'slides.md', dir, suffix: '-notes' })).toBe(resolve(dir, 'talk-notes'));
+    expect(outputBase({ exportFilename: 'talk', entry: 'slides.md', dir, suffix: '-notes' })).toBe(
+      resolve(dir, 'talk-notes'),
+    );
     expect(outputBase({ entry: 'my.md', dir, suffix: '-notes' })).toBe(resolve(dir, 'my-notes'));
     expect(outputBase({ output: 'x', dir, suffix: '-notes' })).toBe(resolve(dir, 'x'));
   });
@@ -55,12 +61,18 @@ describe('isInside', () => {
 
 describe('downloadTarget', () => {
   it('turns true into the exported pdf name', () => {
-    expect(downloadTarget({ download: true, exportFilename: 'talk' }, 'slides.md')).toBe('talk.pdf');
+    expect(downloadTarget({ download: true, exportFilename: 'talk' }, 'slides.md')).toBe(
+      'talk.pdf',
+    );
     expect(downloadTarget({ download: true }, '/a/slides.md')).toBe('slides-export.pdf');
-    expect(downloadTarget({ download: true, exportFilename: '../../x' }, 'slides.md')).toBe('x.pdf');
+    expect(downloadTarget({ download: true, exportFilename: '../../x' }, 'slides.md')).toBe(
+      'x.pdf',
+    );
   });
   it('keeps a web address or a pdf file name', () => {
-    expect(downloadTarget({ download: 'https://example.com/a.pdf' }, 's.md')).toBe('https://example.com/a.pdf');
+    expect(downloadTarget({ download: 'https://example.com/a.pdf' }, 's.md')).toBe(
+      'https://example.com/a.pdf',
+    );
     expect(downloadTarget({ download: 'my.pdf' }, 's.md')).toBe('my.pdf');
   });
   it('ignores everything else, including script addresses', () => {

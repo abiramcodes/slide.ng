@@ -23,11 +23,21 @@ describe('manifestJson', () => {
     expect(m).not.toHaveProperty('icons');
   });
   it('lists the icons that exist, with size, type and purpose', () => {
-    const m = manifestJson({ title: 'T' }, ['pwa-icon-192.png', 'pwa-icon-512.png', 'pwa-icon-maskable-512.png', 'other.png']);
+    const m = manifestJson({ title: 'T' }, [
+      'pwa-icon-192.png',
+      'pwa-icon-512.png',
+      'pwa-icon-maskable-512.png',
+      'other.png',
+    ]);
     expect(m.icons).toEqual([
       { src: 'pwa-icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
       { src: 'pwa-icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-      { src: 'pwa-icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+      {
+        src: 'pwa-icon-maskable-512.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'maskable',
+      },
     ]);
     expect(manifestJson({}, ['pwa-icon-192.png']).icons).toHaveLength(1);
   });
@@ -46,20 +56,33 @@ describe('writePwa', () => {
   it('writes the manifest and a worker that stores every file but downloads and itself', () => {
     const dir = mkdtempSync(join(tmpdir(), 'slide-ng-pwa-'));
     mkdirSync(join(dir, 'remote-assets'));
-    for (const f of ['index.html', 'main.js', 'talk.pdf', 'og-image.png', '.slide-ng-build', 'remote-assets/a.png']) writeFileSync(join(dir, f), 'x');
+    for (const f of [
+      'index.html',
+      'main.js',
+      'talk.pdf',
+      'og-image.png',
+      '.slide-ng-build',
+      'remote-assets/a.png',
+    ])
+      writeFileSync(join(dir, f), 'x');
     const count = writePwa(dir, { title: 'T' });
     const sw = readFileSync(join(dir, 'sw.js'), 'utf8');
     expect(count).toBe(4);
-    for (const f of ['index.html', 'main.js', 'remote-assets/a.png', 'manifest.webmanifest']) expect(sw).toContain(`"${f}"`);
+    for (const f of ['index.html', 'main.js', 'remote-assets/a.png', 'manifest.webmanifest'])
+      expect(sw).toContain(`"${f}"`);
     for (const f of ['talk.pdf', 'og-image.png', 'slide-ng-build']) expect(sw).not.toContain(f);
     expect(JSON.parse(readFileSync(join(dir, 'manifest.webmanifest'), 'utf8')).name).toBe('T');
   });
   it('lists icons found in the build in the manifest and the cache', () => {
     const dir = mkdtempSync(join(tmpdir(), 'slide-ng-pwa-'));
-    for (const f of ['index.html', 'pwa-icon-192.png', 'pwa-icon-512.png']) writeFileSync(join(dir, f), 'x');
+    for (const f of ['index.html', 'pwa-icon-192.png', 'pwa-icon-512.png'])
+      writeFileSync(join(dir, f), 'x');
     writePwa(dir, { title: 'T' });
     const manifest = JSON.parse(readFileSync(join(dir, 'manifest.webmanifest'), 'utf8'));
-    expect(manifest.icons.map((i: { src: string }) => i.src)).toEqual(['pwa-icon-192.png', 'pwa-icon-512.png']);
+    expect(manifest.icons.map((i: { src: string }) => i.src)).toEqual([
+      'pwa-icon-192.png',
+      'pwa-icon-512.png',
+    ]);
     const sw = readFileSync(join(dir, 'sw.js'), 'utf8');
     expect(sw).toContain('"pwa-icon-192.png"');
     expect(sw).toContain('"pwa-icon-512.png"');

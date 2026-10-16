@@ -23,6 +23,11 @@ describe('recordingName', () => {
 
 describe('clock', () => {
   it('writes minutes and seconds', () => {
-    expect([clock(0), clock(75.9), clock(3600), clock(-3)]).toEqual(['00:00', '01:15', '60:00', '00:00']);
+    expect([clock(0), clock(75.9), clock(3600), clock(-3)]).toEqual([
+      '00:00',
+      '01:15',
+      '60:00',
+      '00:00',
+    ]);
   });
 });

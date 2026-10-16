@@ -24,7 +24,12 @@ describe('resolveTransition', () => {
 });
 
 describe('pickTransition', () => {
-  const slides = [{ transition: null }, { transition: 'slide-left' }, { transition: 'fade' }, { transition: null }];
+  const slides = [
+    { transition: null },
+    { transition: 'slide-left' },
+    { transition: 'fade' },
+    { transition: null },
+  ];
   it('uses the setting of the earlier slide, in both directions', () => {
     expect(pickTransition(slides, 2, 3, null)).toBe('slide-left');
     expect(pickTransition(slides, 3, 2, null)).toBe('slide-right');

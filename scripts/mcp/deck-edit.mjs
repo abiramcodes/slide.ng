@@ -10,7 +10,10 @@ function blocksOf(lines, slides) {
   const starts = slides.map((s, i) => {
     if (i === 0) return 0;
     const from = s.contentStart > s.start ? s.start : s.start - 1;
-    if (!isSeparator(lines[from])) throw new Error(`slide ${i + 1} does not start with a --- line where the parser says it does; edit the file by hand`);
+    if (!isSeparator(lines[from]))
+      throw new Error(
+        `slide ${i + 1} does not start with a --- line where the parser says it does; edit the file by hand`,
+      );
     return from;
   });
   let last = lines.length;
@@ -33,10 +36,12 @@ function edit(text, change) {
 }
 
 function checkNumber(no, count, what) {
-  if (!Number.isInteger(no) || no < 1 || no > count) throw new Error(`${what} must be a slide number from 1 to ${count}, got ${no}`);
+  if (!Number.isInteger(no) || no < 1 || no > count)
+    throw new Error(`${what} must be a slide number from 1 to ${count}, got ${no}`);
 }
 
-const FIRST = 'slide 1 carries the deck\'s headmatter, so it cannot be removed or moved, and nothing can be put before it';
+const FIRST =
+  "slide 1 carries the deck's headmatter, so it cannot be removed or moved, and nothing can be put before it";
 
 /** The text without slide `no`. */
 export function removeSlide(text, slides, no) {

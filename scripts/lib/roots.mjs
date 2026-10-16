@@ -56,18 +56,23 @@ export function packageToInstall(spec, kind) {
  * the install command. The official themes are packages like any other.
  */
 export function findRootDir(spec, kind, deckRoot) {
-  if (typeof spec !== 'string' || !spec.trim()) throw new Error(`${kind}: expected a name or a path, got ${JSON.stringify(spec)}`);
+  if (typeof spec !== 'string' || !spec.trim())
+    throw new Error(`${kind}: expected a name or a path, got ${JSON.stringify(spec)}`);
   if (spec.startsWith('@/')) spec = `./${spec.slice(2)}`;
-  else if (!spec.startsWith('@') && spec.includes('/') && !isAbsolute(spec)) spec = `./${spec.replace(/^\.\//, '')}`;
+  else if (!spec.startsWith('@') && spec.includes('/') && !isAbsolute(spec))
+    spec = `./${spec.replace(/^\.\//, '')}`;
   if (isPath(spec)) {
     const dir = resolve(deckRoot, spec);
     if (!isDir(dir)) throw new Error(`${kind} "${spec}" is not a folder (looked for ${dir})`);
     return realpathSync(dir);
   }
-  if (!(spec.startsWith('@') ? SAFE_SCOPED : SAFE_NAME).test(spec)) throw new Error(`Invalid ${kind} name "${spec}". Only valid npm package names are allowed.`);
+  if (!(spec.startsWith('@') ? SAFE_SCOPED : SAFE_NAME).test(spec))
+    throw new Error(`Invalid ${kind} name "${spec}". Only valid npm package names are allowed.`);
   const names = candidateNames(spec, kind);
   for (let dir = resolve(deckRoot); ; dir = dirname(dir)) {
-    for (const name of names) if (isDir(join(dir, 'node_modules', name))) return realpathSync(join(dir, 'node_modules', name));
+    for (const name of names)
+      if (isDir(join(dir, 'node_modules', name)))
+        return realpathSync(join(dir, 'node_modules', name));
     if (dirname(dir) === dir) break;
   }
   const pkg = packageToInstall(spec, kind);
@@ -82,17 +87,34 @@ export function readManifest(dir) {
   const file = join(dir, 'theme.json');
   if (!existsSync(file)) return { headmatter: {}, layouts: {} };
   let data;
-  try { data = JSON.parse(readFileSync(file, 'utf8')); } catch (e) { throw new Error(`${file} is not valid JSON (${e.message})`); }
+  try {
+    data = JSON.parse(readFileSync(file, 'utf8'));
+  } catch (e) {
+    throw new Error(`${file} is not valid JSON (${e.message})`);
+  }
   const object = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
-  const layouts = Object.fromEntries(Object.entries(object(data.layouts)).map(([name, l]) => [name, {
-    props: Array.isArray(l?.props) ? l.props.filter((p) => /^[A-Za-z][\w-]*$/.test(p)) : [],
-    slots: Array.isArray(l?.slots) ? l.slots.filter((s) => /^[A-Za-z][\w-]*$/.test(s)) : [],
-    classProp: Boolean(l?.classProp),
-  }]));
-  return { name: typeof data.name === 'string' ? data.name : undefined, headmatter: object(data.headmatter), layouts };
+  const layouts = Object.fromEntries(
+    Object.entries(object(data.layouts)).map(([name, l]) => [
+      name,
+      {
+        props: Array.isArray(l?.props) ? l.props.filter((p) => /^[A-Za-z][\w-]*$/.test(p)) : [],
+        slots: Array.isArray(l?.slots) ? l.slots.filter((s) => /^[A-Za-z][\w-]*$/.test(s)) : [],
+        classProp: Boolean(l?.classProp),
+      },
+    ]),
+  );
+  return {
+    name: typeof data.name === 'string' ? data.name : undefined,
+    headmatter: object(data.headmatter),
+    layouts,
+  };
 }
 
-const safeId = (text) => String(text).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'root';
+const safeId = (text) =>
+  String(text)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '') || 'root';
 
 /**
  * The roots of a deck, in order: theme, addons, deck. Built-in theme is not listed (it is the base everything sits on).
@@ -105,14 +127,32 @@ export function resolveRoots({ deckRoot, headmatter, themeOverride }) {
   const theme = themeOverride ?? headmatter.theme;
   if (theme && theme !== 'default' && theme !== 'none') {
     const dir = findRootDir(theme, 'theme', deckRoot);
-    roots.push({ id: `theme-${safeId(theme)}`, kind: 'theme', spec: theme, dir, manifest: readManifest(dir) });
+    roots.push({
+      id: `theme-${safeId(theme)}`,
+      kind: 'theme',
+      spec: theme,
+      dir,
+      manifest: readManifest(dir),
+    });
   }
   const addons = Array.isArray(headmatter.addons) ? headmatter.addons : [];
   addons.forEach((spec, i) => {
     const dir = findRootDir(spec, 'addon', deckRoot);
-    roots.push({ id: `addon-${i + 1}-${safeId(spec)}`, kind: 'addon', spec, dir, manifest: readManifest(dir) });
+    roots.push({
+      id: `addon-${i + 1}-${safeId(spec)}`,
+      kind: 'addon',
+      spec,
+      dir,
+      manifest: readManifest(dir),
+    });
   });
-  roots.push({ id: 'deck', kind: 'deck', spec: '.', dir: resolve(deckRoot), manifest: { headmatter: {}, layouts: {} } });
+  roots.push({
+    id: 'deck',
+    kind: 'deck',
+    spec: '.',
+    dir: resolve(deckRoot),
+    manifest: { headmatter: {}, layouts: {} },
+  });
   return roots;
 }
 
@@ -126,7 +166,8 @@ export function mergeHeadmatter(roots, headmatter) {
   let defaults = {};
   for (const source of [...roots.map((r) => r.manifest.headmatter), headmatter]) {
     const { defaults: d, ...rest } = source;
-    for (const key of MERGED_OBJECTS) if (plain(rest[key]) && plain(merged[key])) rest[key] = { ...merged[key], ...rest[key] };
+    for (const key of MERGED_OBJECTS)
+      if (plain(rest[key]) && plain(merged[key])) rest[key] = { ...merged[key], ...rest[key] };
     Object.assign(merged, rest);
     defaults = { ...defaults, ...(d && typeof d === 'object' ? d : {}) };
   }

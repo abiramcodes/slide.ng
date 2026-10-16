@@ -10,7 +10,13 @@ export interface Filters {
   hue: number;
 }
 
-export const defaultFilters: Filters = { brightness: 100, contrast: 100, saturate: 100, grayscale: 0, hue: 0 };
+export const defaultFilters: Filters = {
+  brightness: 100,
+  contrast: 100,
+  saturate: 100,
+  grayscale: 0,
+  hue: 0,
+};
 
 /** The CSS `filter` value, or '' when nothing is changed (so the browser does no extra work). */
 export function filterCss(f: Filters): string {

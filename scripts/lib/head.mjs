@@ -2,20 +2,41 @@
 // `htmlAttrs`, `seoMeta` (Open Graph and Twitter tags) and the PWA manifest link.
 // The headmatter can come from someone else's deck, so every value is escaped and attribute names are checked.
 
-const escapeHtml = (text) => String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+const escapeHtml = (text) =>
+  String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 
 // seoMeta key -> [attribute that names the tag, tag name]
 const SEO_KEYS = {
-  ogTitle: ['property', 'og:title'], ogDescription: ['property', 'og:description'], ogImage: ['property', 'og:image'],
-  ogImageAlt: ['property', 'og:image:alt'], ogImageWidth: ['property', 'og:image:width'], ogImageHeight: ['property', 'og:image:height'],
-  ogImageType: ['property', 'og:image:type'], ogUrl: ['property', 'og:url'], ogType: ['property', 'og:type'],
-  ogSiteName: ['property', 'og:site_name'], ogLocale: ['property', 'og:locale'],
-  twitterCard: ['name', 'twitter:card'], twitterTitle: ['name', 'twitter:title'], twitterDescription: ['name', 'twitter:description'],
-  twitterImage: ['name', 'twitter:image'], twitterImageAlt: ['name', 'twitter:image:alt'], twitterSite: ['name', 'twitter:site'],
-  twitterCreator: ['name', 'twitter:creator'], twitterUrl: ['name', 'twitter:url'],
+  ogTitle: ['property', 'og:title'],
+  ogDescription: ['property', 'og:description'],
+  ogImage: ['property', 'og:image'],
+  ogImageAlt: ['property', 'og:image:alt'],
+  ogImageWidth: ['property', 'og:image:width'],
+  ogImageHeight: ['property', 'og:image:height'],
+  ogImageType: ['property', 'og:image:type'],
+  ogUrl: ['property', 'og:url'],
+  ogType: ['property', 'og:type'],
+  ogSiteName: ['property', 'og:site_name'],
+  ogLocale: ['property', 'og:locale'],
+  twitterCard: ['name', 'twitter:card'],
+  twitterTitle: ['name', 'twitter:title'],
+  twitterDescription: ['name', 'twitter:description'],
+  twitterImage: ['name', 'twitter:image'],
+  twitterImageAlt: ['name', 'twitter:image:alt'],
+  twitterSite: ['name', 'twitter:site'],
+  twitterCreator: ['name', 'twitter:creator'],
+  twitterUrl: ['name', 'twitter:url'],
 };
 
-const meta = (attr, name, content) => (content == null || content === '' ? null : `<meta ${attr}="${escapeHtml(name)}" content="${escapeHtml(content)}">`);
+const meta = (attr, name, content) =>
+  content == null || content === ''
+    ? null
+    : `<meta ${attr}="${escapeHtml(name)}" content="${escapeHtml(content)}">`;
 
 /** `%s - My talk` with the title put in. Without `%s` the template is used as it is. */
 export function applyTitleTemplate(template, title) {
@@ -35,11 +56,21 @@ export function faviconHref(favicon) {
   return value.replace(/^\/+/, '');
 }
 
-const FAVICON_TYPES = { '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.jpg': 'image/jpeg', '.gif': 'image/gif' };
+const FAVICON_TYPES = {
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.ico': 'image/x-icon',
+  '.jpg': 'image/jpeg',
+  '.gif': 'image/gif',
+};
 
 // A short plain description from the markdown of `info`.
 function describe(info) {
-  return String(info).replace(/[#*_`>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 300);
+  return String(info)
+    .replace(/[#*_`>]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 300);
 }
 
 /**
@@ -49,10 +80,13 @@ function describe(info) {
  * @param {{ ogImage?: string | null, pwa?: boolean, warn?: (message: string) => void }} [options]
  */
 export function headParts(headmatter, { ogImage = null, pwa = false, warn = () => {} } = {}) {
-  const seo = headmatter.seoMeta && typeof headmatter.seoMeta === 'object' ? headmatter.seoMeta : {};
+  const seo =
+    headmatter.seoMeta && typeof headmatter.seoMeta === 'object' ? headmatter.seoMeta : {};
   const title = pageTitle(headmatter);
   const description = headmatter.info ? describe(headmatter.info) : null;
-  const keywords = Array.isArray(headmatter.keywords) ? headmatter.keywords.join(', ') : headmatter.keywords;
+  const keywords = Array.isArray(headmatter.keywords)
+    ? headmatter.keywords.join(', ')
+    : headmatter.keywords;
 
   const tags = [
     meta('name', 'description', description),
@@ -64,25 +98,43 @@ export function headParts(headmatter, { ogImage = null, pwa = false, warn = () =
   ];
   for (const [key, value] of Object.entries(seo)) {
     if (['ogTitle', 'ogDescription', 'ogImage'].includes(key)) continue;
-    if (!SEO_KEYS[key]) { warn(`seoMeta.${key} is not a known key, ignored`); continue; }
+    if (!SEO_KEYS[key]) {
+      warn(`seoMeta.${key} is not a known key, ignored`);
+      continue;
+    }
     tags.push(meta(...SEO_KEYS[key], value));
   }
-  if (pwa) tags.push('<link rel="manifest" href="manifest.webmanifest">', '<meta name="theme-color" content="#121212">');
+  if (pwa)
+    tags.push(
+      '<link rel="manifest" href="manifest.webmanifest">',
+      '<meta name="theme-color" content="#121212">',
+    );
   if (headmatter.favicon) {
     const href = faviconHref(headmatter.favicon);
     if (!href) warn('favicon must be a web address or a file of the public folder, ignored');
     else {
       const ext = (/\.\w+$/.exec(href.split('?')[0]) ?? [''])[0].toLowerCase();
-      tags.push(`<link rel="icon" href="${escapeHtml(href)}"${FAVICON_TYPES[ext] ? ` type="${FAVICON_TYPES[ext]}"` : ''}>`);
+      tags.push(
+        `<link rel="icon" href="${escapeHtml(href)}"${FAVICON_TYPES[ext] ? ` type="${FAVICON_TYPES[ext]}"` : ''}>`,
+      );
     }
   }
-  return { title, lang: headmatter.lang ? String(headmatter.lang) : null, htmlAttrs: headmatter.htmlAttrs ?? {}, tags: /** @type {string[]} */ (tags.filter(Boolean)), hasFavicon: Boolean(headmatter.favicon && faviconHref(headmatter.favicon)) };
+  return {
+    title,
+    lang: headmatter.lang ? String(headmatter.lang) : null,
+    htmlAttrs: headmatter.htmlAttrs ?? {},
+    tags: /** @type {string[]} */ (tags.filter(Boolean)),
+    hasFavicon: Boolean(headmatter.favicon && faviconHref(headmatter.favicon)),
+  };
 }
 
 // Attribute names are limited to plain names, and event handlers (`onload`) are not allowed.
 function attributeText(attrs, warn) {
   return Object.entries(attrs).flatMap(([name, value]) => {
-    if (!/^[a-z][\w:-]*$/i.test(name) || /^on/i.test(name)) { warn(`htmlAttrs.${name} is not allowed, ignored`); return []; }
+    if (!/^[a-z][\w:-]*$/i.test(name) || /^on/i.test(name)) {
+      warn(`htmlAttrs.${name} is not allowed, ignored`);
+      return [];
+    }
     if (value === false || value == null) return [];
     return [value === true ? name : `${name}="${escapeHtml(value)}"`];
   });

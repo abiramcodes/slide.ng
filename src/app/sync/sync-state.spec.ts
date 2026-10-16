@@ -6,13 +6,19 @@ import { SYNC_TRANSPORTS, SyncTransport } from './transport';
 class FakeTransport implements SyncTransport {
   sent: [string, unknown][] = [];
   deliver: (channel: string, data: unknown) => void = () => {};
-  send(channel: string, data: unknown) { this.sent.push([channel, data]); }
-  listen(handler: (channel: string, data: unknown) => void) { this.deliver = handler; }
+  send(channel: string, data: unknown) {
+    this.sent.push([channel, data]);
+  }
+  listen(handler: (channel: string, data: unknown) => void) {
+    this.deliver = handler;
+  }
 }
 
 function setup() {
   const transport = new FakeTransport();
-  TestBed.configureTestingModule({ providers: [{ provide: SYNC_TRANSPORTS, multi: true, useValue: transport }] });
+  TestBed.configureTestingModule({
+    providers: [{ provide: SYNC_TRANSPORTS, multi: true, useValue: transport }],
+  });
   return { transport, sync: TestBed.inject(SyncState) };
 }
 
@@ -62,11 +68,14 @@ describe('SyncState', () => {
   });
 
   it('sends through every transport that is provided', () => {
-    const a = new FakeTransport(), b = new FakeTransport();
-    TestBed.configureTestingModule({ providers: [
-      { provide: SYNC_TRANSPORTS, multi: true, useValue: a },
-      { provide: SYNC_TRANSPORTS, multi: true, useValue: b },
-    ] });
+    const a = new FakeTransport(),
+      b = new FakeTransport();
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: SYNC_TRANSPORTS, multi: true, useValue: a },
+        { provide: SYNC_TRANSPORTS, multi: true, useValue: b },
+      ],
+    });
     TestBed.inject(SyncState).patchShared({ clicks: 1 });
     expect(a.sent.length + b.sent.length).toBe(2);
   });

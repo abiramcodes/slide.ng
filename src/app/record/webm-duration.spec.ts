@@ -12,13 +12,19 @@ const unknownSegment = [0x18, 0x53, 0x80, 0x67, 0x01, 0xff, 0xff, 0xff, 0xff, 0x
 /** Finds the Duration in the result and gives its value. */
 function durationOf(file: Uint8Array): number | null {
   for (let i = 0; i < file.length - 10; i++) {
-    if (file[i] === 0x44 && file[i + 1] === 0x89 && file[i + 2] === 0x88) return new DataView(file.buffer, file.byteOffset + i + 3, 8).getFloat64(0);
+    if (file[i] === 0x44 && file[i + 1] === 0x89 && file[i + 2] === 0x88)
+      return new DataView(file.buffer, file.byteOffset + i + 3, 8).getFloat64(0);
   }
   return null;
 }
 
 describe('setWebmDuration', () => {
-  const plain = bytes(ebmlHeader, unknownSegment, infoWith([...timecodeScale, ...muxingApp]), cluster);
+  const plain = bytes(
+    ebmlHeader,
+    unknownSegment,
+    infoWith([...timecodeScale, ...muxingApp]),
+    cluster,
+  );
 
   it('adds a Duration in milliseconds (the default timecode scale)', () => {
     const fixed = setWebmDuration(plain, 12_500)!;
@@ -41,7 +47,12 @@ describe('setWebmDuration', () => {
     expect(twice.length).toBe(once.length);
   });
   it('reads the unit from the timecode scale', () => {
-    const micro = bytes(ebmlHeader, unknownSegment, infoWith([0x2a, 0xd7, 0xb1, 0x82, 0x03, 0xe8, ...muxingApp]), cluster); // 1000 ns per tick
+    const micro = bytes(
+      ebmlHeader,
+      unknownSegment,
+      infoWith([0x2a, 0xd7, 0xb1, 0x82, 0x03, 0xe8, ...muxingApp]),
+      cluster,
+    ); // 1000 ns per tick
     expect(durationOf(setWebmDuration(micro, 2)!)).toBe(2000);
   });
   it('grows a Segment that has a known size', () => {

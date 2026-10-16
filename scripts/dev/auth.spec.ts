@@ -2,11 +2,25 @@ import { mkdirSync, mkdtempSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Readable } from 'node:stream';
-import { check, confine, hostAllowed, originAllowed, parseCookies, readBody, safeEqual, safeNext } from './auth.mjs';
+import {
+  check,
+  confine,
+  hostAllowed,
+  originAllowed,
+  parseCookies,
+  readBody,
+  safeEqual,
+  safeNext,
+} from './auth.mjs';
 
 const ctx = { token: 'tok123', password: '', auth: 'cookie456', remote: false, hostnames: [] };
-const req = (headers: Record<string, string>, url = '/__slide-ng/slide/1') => ({ headers, url }) as any;
-const good = { host: 'localhost:4230', origin: 'http://localhost:4230', 'x-slide-ng-token': 'tok123' };
+const req = (headers: Record<string, string>, url = '/__slide-ng/slide/1') =>
+  ({ headers, url }) as any;
+const good = {
+  host: 'localhost:4230',
+  origin: 'http://localhost:4230',
+  'x-slide-ng-token': 'tok123',
+};
 
 describe('safeEqual', () => {
   it('compares texts of any length', () => {
@@ -19,7 +33,8 @@ describe('safeEqual', () => {
 
 describe('hostAllowed', () => {
   it('lets localhost in, with or without a port', () => {
-    for (const h of ['localhost', 'localhost:4230', '127.0.0.1:4230', '[::1]:4230']) expect(hostAllowed(h, ctx)).toBe(true);
+    for (const h of ['localhost', 'localhost:4230', '127.0.0.1:4230', '[::1]:4230'])
+      expect(hostAllowed(h, ctx)).toBe(true);
   });
   it('refuses other names (DNS rebinding) and other addresses unless --remote', () => {
     expect(hostAllowed('evil.example.com', ctx)).toBe(false);
@@ -32,7 +47,8 @@ describe('hostAllowed', () => {
     expect(hostAllowed('my-laptop:4230', { ...ctx, hostnames: ['my-laptop'] })).toBe(true);
   });
   it('refuses missing or odd values', () => {
-    for (const h of [undefined, '', 'a b', 'host/path', 'localhost:99999999']) expect(hostAllowed(h as string, ctx)).toBe(false);
+    for (const h of [undefined, '', 'a b', 'host/path', 'localhost:99999999'])
+      expect(hostAllowed(h as string, ctx)).toBe(false);
   });
 });
 
@@ -57,11 +73,17 @@ describe('check', () => {
     expect(check(req({ host: good.host, origin: good.origin }), ctx)?.error).toBe('bad token');
   });
   it('reads the token from the address for WebSockets', () => {
-    expect(check(req({ host: good.host, origin: good.origin }, '/__slide-ng/ws?token=tok123'), ctx)).toBeNull();
-    expect(check(req({ host: good.host, origin: good.origin }, '/__slide-ng/ws?token=bad'), ctx)?.status).toBe(403);
+    expect(
+      check(req({ host: good.host, origin: good.origin }, '/__slide-ng/ws?token=tok123'), ctx),
+    ).toBeNull();
+    expect(
+      check(req({ host: good.host, origin: good.origin }, '/__slide-ng/ws?token=bad'), ctx)?.status,
+    ).toBe(403);
   });
   it('rejects a wrong Origin even with the right token', () => {
-    expect(check(req({ ...good, origin: 'http://evil.com' }), ctx)?.error).toBe('origin not allowed');
+    expect(check(req({ ...good, origin: 'http://evil.com' }), ctx)?.error).toBe(
+      'origin not allowed',
+    );
   });
   it('rejects a wrong Host', () => {
     expect(check(req({ ...good, host: 'evil.com' }), ctx)?.error).toBe('host not allowed');
@@ -74,8 +96,15 @@ describe('check', () => {
   });
   it('the login address works without the cookie, and still checks Host and Origin', () => {
     const withPw = { ...ctx, password: 'secret' };
-    expect(check(req({ host: good.host }), withPw, { needToken: false, needLogin: false })).toBeNull();
-    expect(check(req({ host: good.host, origin: 'http://evil.com' }), withPw, { needToken: false, needLogin: false })?.status).toBe(403);
+    expect(
+      check(req({ host: good.host }), withPw, { needToken: false, needLogin: false }),
+    ).toBeNull();
+    expect(
+      check(req({ host: good.host, origin: 'http://evil.com' }), withPw, {
+        needToken: false,
+        needLogin: false,
+      })?.status,
+    ).toBe(403);
   });
   it('the session address does not need a token', () => {
     expect(check(req({ host: good.host }), ctx, { needToken: false })).toBeNull();
@@ -109,7 +138,8 @@ describe('confine', () => {
     expect(confine(root, join(root, 'sub/a.ts'))).toBeNull();
   });
   it('rejects the root itself, empty names, null bytes and non-text', () => {
-    for (const p of ['', '.', 'sub/..', 'a\0b', 5, null]) expect(confine(root, p as string)).toBeNull();
+    for (const p of ['', '.', 'sub/..', 'a\0b', 5, null])
+      expect(confine(root, p as string)).toBeNull();
   });
   it('rejects a symlink that leads out of the project', () => {
     expect(confine(root, 'link/secret.txt')).toBeNull();
@@ -129,6 +159,14 @@ describe('readBody', () => {
 describe('safeNext', () => {
   it('keeps paths of this server and drops everything else', () => {
     expect(safeNext('/presenter/2?x=1')).toBe('/presenter/2?x=1');
-    for (const n of ['//evil.com', 'https://evil.com', '/\\evil.com', 'javascript:1', undefined, '/a\r\nSet-Cookie: x=1']) expect(safeNext(n as string)).toBe('/');
+    for (const n of [
+      '//evil.com',
+      'https://evil.com',
+      '/\\evil.com',
+      'javascript:1',
+      undefined,
+      '/a\r\nSet-Cookie: x=1',
+    ])
+      expect(safeNext(n as string)).toBe('/');
   });
 });

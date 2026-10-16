@@ -1,14 +1,42 @@
 /* The side editor: coloured markdown (Shiki) with a transparent textarea on top, as in Slidev's ShikiEditor.
    The coloured text and the textarea must wrap the same way, so they share every font and wrapping rule. */
-.editor-text, .editor-text pre, .editor-text code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-  font-size: 0.875rem; line-height: 1.25rem; font-feature-settings: normal; font-variation-settings: normal;
-  white-space: pre-wrap; word-break: normal; overflow-wrap: break-word; tab-size: 4;
-  margin: 0; padding: 0; border: 0; letter-spacing: normal;
+.editor-text,
+.editor-text pre,
+.editor-text code {
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+    monospace;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-feature-settings: normal;
+  font-variation-settings: normal;
+  white-space: pre-wrap;
+  word-break: normal;
+  overflow-wrap: break-word;
+  tab-size: 4;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  letter-spacing: normal;
 }
-.editor-text pre.shiki { background: transparent !important; }
-.editor-text code { display: block; }
-#editor-text { padding: 0.75rem; }
-#editor-highlight, #editor-sizer { padding: 0.75rem; pointer-events: none; }
-#editor-text.highlighted { color: transparent; caret-color: #181818; }
-html.dark #editor-text.highlighted { caret-color: #ddd; }
+.editor-text pre.shiki {
+  background: transparent !important;
+}
+.editor-text code {
+  display: block;
+}
+#editor-text {
+  padding: 0.75rem;
+}
+#editor-highlight,
+#editor-sizer {
+  padding: 0.75rem;
+  pointer-events: none;
+}
+#editor-text.highlighted {
+  color: transparent;
+  caret-color: #181818;
+}
+html.dark #editor-text.highlighted {
+  caret-color: #ddd;
+}

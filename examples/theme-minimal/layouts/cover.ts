@@ -5,7 +5,8 @@ import { Component, computed, input } from '@angular/core';
 @Component({
   selector: 'minimal-cover',
   host: { class: 'slidev-layout minimal-cover', '[style]': 'style()' },
-  template: '<div class="minimal-cover-body"><ng-content /></div><div class="minimal-cover-line"></div>',
+  template:
+    '<div class="minimal-cover-body"><ng-content /></div><div class="minimal-cover-line"></div>',
 })
 export class MinimalCover {
   background = input('');

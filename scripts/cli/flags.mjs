@@ -8,17 +8,28 @@ import { resolve } from 'node:path';
 export function parseFlags(argv, spec) {
   const flags = {};
   const positionals = [];
-  const byAlias = Object.fromEntries(Object.entries(spec).flatMap(([name, s]) => (s.alias ? [[s.alias, name]] : [])));
+  const byAlias = Object.fromEntries(
+    Object.entries(spec).flatMap(([name, s]) => (s.alias ? [[s.alias, name]] : [])),
+  );
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
-    if (arg === '--') { positionals.push(...argv.slice(i + 1)); break; }
-    if (!arg.startsWith('-') || arg === '-') { positionals.push(arg); continue; }
+    if (arg === '--') {
+      positionals.push(...argv.slice(i + 1));
+      break;
+    }
+    if (!arg.startsWith('-') || arg === '-') {
+      positionals.push(arg);
+      continue;
+    }
 
     let name, inline;
     if (arg.startsWith('--')) {
       [name, inline] = splitOnce(arg.slice(2), '=');
-      if (name.startsWith('no-') && spec[name.slice(3)]?.type === 'boolean') { flags[name.slice(3)] = false; continue; }
+      if (name.startsWith('no-') && spec[name.slice(3)]?.type === 'boolean') {
+        flags[name.slice(3)] = false;
+        continue;
+      }
     } else {
       name = byAlias[arg.slice(1)];
       if (!name) throw new Error(`Unknown flag ${arg}`);
@@ -30,7 +41,10 @@ export function parseFlags(argv, spec) {
       flags[name] = inline === undefined ? true : !['false', '0', 'no'].includes(inline);
       continue;
     }
-    if (s.type === 'optional') { flags[name] = inline === undefined ? true : inline; continue; }
+    if (s.type === 'optional') {
+      flags[name] = inline === undefined ? true : inline;
+      continue;
+    }
     // A value flag takes `=value` or the next argument.
     const value = inline ?? argv[++i];
     if (value === undefined) throw new Error(`--${name} needs a value`);
@@ -42,7 +56,8 @@ export function parseFlags(argv, spec) {
 /** `--theme name|path` overrides the headmatter's theme for this run. The generator (a child process) reads the same variable. */
 export function applyThemeFlag(flags) {
   // A path given on the command line is relative to where the command runs, not to the deck.
-  if (flags.theme) process.env.SLIDE_NG_THEME = flags.theme.startsWith('.') ? resolve(flags.theme) : flags.theme;
+  if (flags.theme)
+    process.env.SLIDE_NG_THEME = flags.theme.startsWith('.') ? resolve(flags.theme) : flags.theme;
 }
 
 function splitOnce(text, sep) {
@@ -52,6 +67,7 @@ function splitOnce(text, sep) {
 
 function toNumber(name, value) {
   const n = Number(value);
-  if (value === '' || !Number.isFinite(n)) throw new Error(`--${name} must be a number, got "${value}"`);
+  if (value === '' || !Number.isFinite(n))
+    throw new Error(`--${name} must be a number, got "${value}"`);
   return n;
 }

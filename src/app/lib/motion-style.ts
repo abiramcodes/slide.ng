@@ -14,7 +14,8 @@ function clickVariants(variants: Variants, current: number | 'all'): Variant[] {
   for (const [key, variant] of Object.entries(variants)) {
     const m = CLICK_KEY.exec(key);
     if (!m || !variant) continue;
-    const from = +m[1], to = m[2] ? +m[2] : Infinity;
+    const from = +m[1],
+      to = m[2] ? +m[2] : Infinity;
     if (current === 'all' || (from <= current && current < to)) found.push({ from, variant });
   }
   return found.sort((a, b) => a.from - b.from).map((f) => f.variant);
@@ -24,14 +25,20 @@ function clickVariants(variants: Variants, current: number | 'all'): Variant[] {
 export function mixVariants(variants: Variants, phase: Phase, current: number | 'all'): Variant {
   if (phase === 'initial') return { ...variants['initial'] };
   const all = phase === 'leave' ? 'all' : current;
-  const mixed = Object.assign({}, variants['initial'], variants['enter'], ...clickVariants(variants, all));
+  const mixed = Object.assign(
+    {},
+    variants['initial'],
+    variants['enter'],
+    ...clickVariants(variants, all),
+  );
   return phase === 'leave' ? Object.assign(mixed, variants['leave']) : mixed;
 }
 
 /** Every property any variant touches, so a property that is not in `mixed` can be put back to normal. */
 export function touchedKeys(variants: Variants): string[] {
   const keys = new Set<string>();
-  for (const variant of Object.values(variants)) for (const k of Object.keys(variant ?? {})) keys.add(k);
+  for (const variant of Object.values(variants))
+    for (const k of Object.keys(variant ?? {})) keys.add(k);
   keys.delete('transition');
   return [...keys];
 }
@@ -42,7 +49,8 @@ export function toStyle(variant: Variant, keys: string[]): Record<string, string
   const num = (k: string, fallback: number) => Number(variant[k] ?? fallback);
   if (keys.some((k) => TRANSFORM_KEYS.includes(k))) {
     const scale = num('scale', 1);
-    css['transform'] = `translate(${num('x', 0)}px, ${num('y', 0)}px) rotate(${num('rotate', 0)}deg) scale(${num('scaleX', scale)}, ${num('scaleY', scale)})`;
+    css['transform'] =
+      `translate(${num('x', 0)}px, ${num('y', 0)}px) rotate(${num('rotate', 0)}deg) scale(${num('scaleX', scale)}, ${num('scaleY', scale)})`;
   }
   for (const k of keys.filter((k) => !TRANSFORM_KEYS.includes(k))) {
     const v = variant[k];

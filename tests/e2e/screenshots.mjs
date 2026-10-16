@@ -5,18 +5,47 @@ import { mkdirSync } from 'node:fs';
 import { launch, serve } from './browser.mjs';
 
 const OUT = 'docs/screenshots';
-const LAYOUTS = ['cover', 'intro', 'default', 'center', 'fact', 'full', 'image', 'image-left', 'image-right', 'iframe', 'iframe-left', 'iframe-right', 'none', 'quote', 'section', 'statement', 'two-cols', 'two-cols-header', 'end'];
+const LAYOUTS = [
+  'cover',
+  'intro',
+  'default',
+  'center',
+  'fact',
+  'full',
+  'image',
+  'image-left',
+  'image-right',
+  'iframe',
+  'iframe-left',
+  'iframe-right',
+  'none',
+  'quote',
+  'section',
+  'statement',
+  'two-cols',
+  'two-cols-header',
+  'end',
+];
 
-if (!process.env.SKIP_BUILD) execSync('SLIDES_FILE=tests/e2e/showcase/slides.md node scripts/generate.mjs && node node_modules/@angular/cli/bin/ng.js build --output-path dist/showcase && node scripts/generate.mjs', { stdio: 'inherit', env: { ...process.env, SLIDES_FILE: 'tests/e2e/showcase/slides.md' } });
+if (!process.env.SKIP_BUILD)
+  execSync(
+    'SLIDES_FILE=tests/e2e/showcase/slides.md node scripts/generate.mjs && node node_modules/@angular/cli/bin/ng.js build --output-path dist/showcase && node scripts/generate.mjs',
+    { stdio: 'inherit', env: { ...process.env, SLIDES_FILE: 'tests/e2e/showcase/slides.md' } },
+  );
 mkdirSync(OUT, { recursive: true });
 const { server, port } = await serve('dist/showcase/browser');
 const browser = await launch();
 
 for (const scheme of ['light', 'dark']) {
-  const page = await browser.newPage({ viewport: { width: 980, height: 552 }, colorScheme: scheme });
+  const page = await browser.newPage({
+    viewport: { width: 980, height: 552 },
+    colorScheme: scheme,
+  });
   const open = async (path) => {
     await page.goto(`http://localhost:${port}${path}`);
-    await page.waitForFunction(() => /clicks \d+\/\d+/.test(document.querySelector('#hud')?.innerText ?? ''));
+    await page.waitForFunction(() =>
+      /clicks \d+\/\d+/.test(document.querySelector('#hud')?.innerText ?? ''),
+    );
     await page.mouse.move(480, 200); // away from the bar, which only shows at the bottom left
     await page.waitForTimeout(400);
   };

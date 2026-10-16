@@ -7,7 +7,10 @@ export const MARK = 'slidev-note-click-mark';
 export const FADE = 'slidev-note-fade';
 
 /** Prepare `root` once; call the result with the current click whenever it changes. Null when the notes have no markers. */
-export function prepareNote(root: HTMLElement, onMarkerDblclick: (clicks: number) => void): ((current: number) => void) | null {
+export function prepareNote(
+  root: HTMLElement,
+  onMarkerDblclick: (clicks: number) => void,
+): ((current: number) => void) | null {
   const markers = Array.from(root.querySelectorAll<HTMLElement>(`.${MARK}`));
   if (!markers.length) return null;
 
@@ -36,10 +39,14 @@ export function prepareNote(root: HTMLElement, onMarkerDblclick: (clicks: number
     let at = 0;
     for (const child of Array.from(parent.childNodes)) {
       let isDivider = false;
-      while (child === dividers[at + 1]?.[0]) { isDivider = true; at++; }
+      while (child === dividers[at + 1]?.[0]) {
+        isDivider = true;
+        at++;
+      }
       if (isDivider) continue;
       let el = child as HTMLElement;
-      if (child.nodeType === Node.TEXT_NODE) { // loose text gets its own element so it can be dimmed
+      if (child.nodeType === Node.TEXT_NODE) {
+        // loose text gets its own element so it can be dimmed
         if (!child.textContent?.trim()) continue;
         el = document.createElement('span');
         el.textContent = child.textContent;
@@ -55,7 +62,8 @@ export function prepareNote(root: HTMLElement, onMarkerDblclick: (clicks: number
   for (const [marker, clicks] of markersMap) marker.ondblclick = () => onMarkerDblclick(clicks);
 
   return (current: number) => {
-    for (const [parent, list] of parentsMap) parent.classList.toggle(FADE, !list.some(([, c]) => c === current));
+    for (const [parent, list] of parentsMap)
+      parent.classList.toggle(FADE, !list.some(([, c]) => c === current));
     for (const [el, clicks] of siblingsMap) el.classList.toggle(FADE, clicks !== current);
     for (const [marker, clicks] of markersMap) {
       marker.classList.remove(FADE);

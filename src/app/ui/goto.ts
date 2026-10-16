@@ -1,4 +1,13 @@
-import { Component, ElementRef, computed, effect, inject, signal, untracked, viewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+  viewChild,
+} from '@angular/core';
 import { Nav } from '../lib/nav';
 import { Ui } from '../lib/ui-state';
 
@@ -7,19 +16,39 @@ import { Ui } from '../lib/ui-state';
 @Component({
   selector: 'app-goto',
   template: `
-    <div id="slidev-goto-dialog" class="fixed right-5 transition-all w-90 max-w-90 min-w-90 z-modal text-main"
-      [class]="ui.goto() ? 'top-5' : '-top-20 op0 pointer-events-none'">
+    <div
+      id="slidev-goto-dialog"
+      class="fixed right-5 transition-all w-90 max-w-90 min-w-90 z-modal text-main"
+      [class]="ui.goto() ? 'top-5' : '-top-20 op0 pointer-events-none'"
+    >
       <div class="bg-main shadow px-4 py-2 rounded border border-transparent dark:border-gray/20">
         <input
-          #input id="slidev-goto-input" type="text" class="outline-none bg-transparent w-full" placeholder="Goto..."
-          [class.text-red-400]="text() && !results().length" [disabled]="!ui.goto()" [value]="text()"
-          (input)="type($event)" (keydown.enter)="go()" (keydown.escape)="close()" (keydown.arrowdown)="move($event, 1)" (keydown.arrowup)="move($event, -1)"
+          #input
+          id="slidev-goto-input"
+          type="text"
+          class="outline-none bg-transparent w-full"
+          placeholder="Goto..."
+          [class.text-red-400]="text() && !results().length"
+          [disabled]="!ui.goto()"
+          [value]="text()"
+          (input)="type($event)"
+          (keydown.enter)="go()"
+          (keydown.escape)="close()"
+          (keydown.arrowdown)="move($event, 1)"
+          (keydown.arrowup)="move($event, -1)"
         />
       </div>
       @if (ui.goto() && results().length) {
-        <ul id="goto-results" class="bg-main shadow mt-1 rounded border border-transparent dark:border-gray/20 overflow-auto max-h-80">
+        <ul
+          id="goto-results"
+          class="bg-main shadow mt-1 rounded border border-transparent dark:border-gray/20 overflow-auto max-h-80"
+        >
           @for (r of results(); track r.no; let i = $index) {
-            <li class="flex gap-3 px-4 py-2 cursor-pointer hover:op100" [class]="i === selected() ? 'bg-active op100' : 'op80'" (click)="open(r.no)">
+            <li
+              class="flex gap-3 px-4 py-2 cursor-pointer hover:op100"
+              [class]="i === selected() ? 'bg-active op100' : 'op80'"
+              (click)="open(r.no)"
+            >
               <span class="opacity-50 text-sm w-6 text-right">{{ r.no }}</span>
               <span>{{ r.title }}</span>
             </li>
@@ -48,7 +77,10 @@ export class Goto {
   constructor() {
     effect(() => {
       if (this.ui.goto()) {
-        untracked(() => { this.text.set(''); this.selected.set(0); });
+        untracked(() => {
+          this.text.set('');
+          this.selected.set(0);
+        });
         // Wait a moment so the `g` that opened the box is not typed into it.
         setTimeout(() => this.input().nativeElement.focus());
       } else {
@@ -79,5 +111,7 @@ export class Goto {
     this.close();
   }
 
-  close() { this.ui.goto.set(false); }
+  close() {
+    this.ui.goto.set(false);
+  }
 }

@@ -6,7 +6,11 @@ import { makeContext } from './helpers.mjs';
 
 const ng = (out) => `node node_modules/@angular/cli/bin/ng.js build --output-path dist/${out}`;
 // The generated files are rebuilt for each deck and put back for the normal deck at the end.
-const build = (out, slides) => execSync(`node scripts/generate.mjs && ${ng(out)}`, { stdio: 'inherit', env: { ...process.env, SLIDES_FILE: slides } });
+const build = (out, slides) =>
+  execSync(`node scripts/generate.mjs && ${ng(out)}`, {
+    stdio: 'inherit',
+    env: { ...process.env, SLIDES_FILE: slides },
+  });
 if (!process.env.SKIP_BUILD) {
   try {
     build('phase3', 'tests/e2e/phase3/slides.md');
@@ -20,23 +24,43 @@ const { server, port } = await serve('dist/phase3/browser');
 const layoutServer = await serve('dist/phase3-layout/browser');
 // Fake camera, microphone and screen so the recording tests can run without devices.
 const browser = await launch([
-  '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream',
-  '--auto-select-desktop-capture-source=Entire screen', '--enable-usermedia-screen-capturing',
+  '--use-fake-device-for-media-stream',
+  '--use-fake-ui-for-media-stream',
+  '--auto-select-desktop-capture-source=Entire screen',
+  '--enable-usermedia-screen-capturing',
 ]);
 const t = reporter();
 const ctx = makeContext(`http://localhost:${port}`, browser, t);
 const layoutCtx = makeContext(`http://localhost:${layoutServer.port}`, browser, t);
 
 const only = process.argv[2];
-for (const topic of ['sync', 'presenter', 'laser', 'drawing', 'camera', 'settings', 'drag', 'layout']) {
+for (const topic of [
+  'sync',
+  'presenter',
+  'laser',
+  'drawing',
+  'camera',
+  'settings',
+  'drag',
+  'layout',
+]) {
   if (only && only !== topic) continue;
   let run;
-  try { run = (await import(`./phase3/${topic}.mjs`)).run; } catch (e) { if (e.code === 'ERR_MODULE_NOT_FOUND') continue; throw e; }
+  try {
+    run = (await import(`./phase3/${topic}.mjs`)).run;
+  } catch (e) {
+    if (e.code === 'ERR_MODULE_NOT_FOUND') continue;
+    throw e;
+  }
   console.log(`\n== ${topic}`);
   await run(topic === 'layout' ? layoutCtx : ctx);
 }
 
-t.ok('no console errors or warnings', ctx.problems.length + layoutCtx.problems.length === 0, JSON.stringify([...ctx.problems, ...layoutCtx.problems]));
+t.ok(
+  'no console errors or warnings',
+  ctx.problems.length + layoutCtx.problems.length === 0,
+  JSON.stringify([...ctx.problems, ...layoutCtx.problems]),
+);
 await browser.close();
 server.close();
 layoutServer.server.close();

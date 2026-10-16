@@ -14,14 +14,42 @@ import { resolvePos } from './resolve-pos';
     @if (arrow(); as a) {
       <svg class="absolute inset-0 w-full h-full overflow-visible" [style.color]="color()">
         <defs>
-          <marker [id]="markerId" markerWidth="10" markerHeight="8" refX="8" refY="4" orient="auto" markerUnits="strokeWidth">
+          <marker
+            [id]="markerId"
+            markerWidth="10"
+            markerHeight="8"
+            refX="8"
+            refY="4"
+            orient="auto"
+            markerUnits="strokeWidth"
+          >
             <path d="M0,0 L10,4 L0,8 z" fill="currentColor" />
           </marker>
         </defs>
-        <line [attr.x1]="a.x1" [attr.y1]="a.y1" [attr.x2]="a.x2" [attr.y2]="a.y2" stroke="currentColor" [attr.stroke-width]="width()" [attr.marker-end]="'url(#' + markerId + ')'" />
+        <line
+          [attr.x1]="a.x1"
+          [attr.y1]="a.y1"
+          [attr.x2]="a.x2"
+          [attr.y2]="a.y2"
+          stroke="currentColor"
+          [attr.stroke-width]="width()"
+          [attr.marker-end]="'url(#' + markerId + ')'"
+        />
         @if (editable) {
-          <line class="drag-grab" [attr.x1]="a.x1" [attr.y1]="a.y1" [attr.x2]="a.x2" [attr.y2]="a.y2" stroke="transparent" stroke-width="16" style="pointer-events: stroke; cursor: move"
-            (pointerdown)="down($event)" (pointermove)="move($event)" (pointerup)="up($event)" (pointercancel)="up($event)" />
+          <line
+            class="drag-grab"
+            [attr.x1]="a.x1"
+            [attr.y1]="a.y1"
+            [attr.x2]="a.x2"
+            [attr.y2]="a.y2"
+            stroke="transparent"
+            stroke-width="16"
+            style="pointer-events: stroke; cursor: move"
+            (pointerdown)="down($event)"
+            (pointermove)="move($event)"
+            (pointerup)="up($event)"
+            (pointercancel)="up($event)"
+          />
         }
       </svg>
     }
@@ -47,13 +75,13 @@ export class VDragArrow implements Extract<DragTarget, { kind: 'arrow' }> {
 
   constructor() {
     effect(() => {
-      const text = this.state.savedPos(this.slideNo, this.site()) ?? resolvePos(this.slideNo, this.pos());
+      const text =
+        this.state.savedPos(this.slideNo, this.site()) ?? resolvePos(this.slideNo, this.pos());
       const a = parseArrow(text);
       if (a) this.value.set(a);
       this.known.set(!!a);
     });
   }
-
 
   protected down(e: PointerEvent) {
     if (e.button !== 0) return;
@@ -66,13 +94,17 @@ export class VDragArrow implements Extract<DragTarget, { kind: 'arrow' }> {
   protected move(e: PointerEvent) {
     if (!this.grab) return;
     const k = this.ui!.canvasScale();
-    this.value.set(moveArrow(this.grab.start, (e.clientX - this.grab.x) / k, (e.clientY - this.grab.y) / k));
+    this.value.set(
+      moveArrow(this.grab.start, (e.clientX - this.grab.x) / k, (e.clientY - this.grab.y) / k),
+    );
   }
 
   protected up(e: PointerEvent) {
     if (!this.grab) return;
     (e.target as Element).releasePointerCapture?.(e.pointerId);
-    const moved = this.grab.start !== this.value() && formatArrow(this.grab.start) !== formatArrow(this.value());
+    const moved =
+      this.grab.start !== this.value() &&
+      formatArrow(this.grab.start) !== formatArrow(this.value());
     this.grab = null;
     if (moved) this.commit();
   }

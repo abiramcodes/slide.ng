@@ -11,15 +11,19 @@ export function createMcpServer(entry) {
   const ctx = { entry, root: dirname(entry) };
   const server = new McpServer({ name: 'slide-ng', version: '0.0.0' });
   for (const tool of TOOLS) {
-    server.registerTool(tool.name, { description: tool.description, inputSchema: tool.schema }, async (args) => {
-      try {
-        const result = await tool.run(ctx, args);
-        return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
-      } catch (error) {
-        // A failed tool is reported to the client, not thrown: the server keeps running.
-        return { isError: true, content: [{ type: 'text', text: error.message }] };
-      }
-    });
+    server.registerTool(
+      tool.name,
+      { description: tool.description, inputSchema: tool.schema },
+      async (args) => {
+        try {
+          const result = await tool.run(ctx, args);
+          return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+        } catch (error) {
+          // A failed tool is reported to the client, not thrown: the server keeps running.
+          return { isError: true, content: [{ type: 'text', text: error.message }] };
+        }
+      },
+    );
   }
   return server;
 }

@@ -4,11 +4,18 @@ import { Component, computed, input, output } from '@angular/core';
 @Component({
   selector: 'app-clicks-slider',
   template: `
-    <div class="flex gap-1 items-center select-none" [title]="'Clicks in this slide: ' + cells().length" [class.op50]="cells().length < 2">
+    <div
+      class="flex gap-1 items-center select-none"
+      [title]="'Clicks in this slide: ' + cells().length"
+      [class.op50]="cells().length < 2"
+    >
       <div class="flex items-center font-mono gap-0.2 min-w-16 mr-1">
         <div class="i-carbon:cursor-1 text-sm op50"></div>
         <div class="flex-auto"></div>
-        <span><span class="text-primary">{{ current() }}</span><span class="op25 text-sm">/</span><span class="op50 text-sm">{{ total() }}</span></span>
+        <span
+          ><span class="text-primary">{{ current() }}</span
+          ><span class="op25 text-sm">/</span><span class="op50 text-sm">{{ total() }}</span></span
+        >
       </div>
       <div class="relative flex-auto font-mono flex h-5">
         @for (i of cells(); track i) {
@@ -21,7 +28,9 @@ import { Component, computed, input, output } from '@angular/core';
             (click)="pick(i)"
           >
             <div class="absolute inset-0" [class]="i <= current() ? 'bg-primary op15' : ''"></div>
-            <div class="z-1" [class]="i === current() ? 'text-primary font-bold' : 'op30'">{{ i }}</div>
+            <div class="z-1" [class]="i === current() ? 'text-primary font-bold' : 'op30'">
+              {{ i }}
+            </div>
           </div>
         }
       </div>
@@ -34,7 +43,14 @@ export class ClicksSlider {
   start = input(0);
   readonly = input(false);
   change = output<number>();
-  protected cells = computed(() => Array.from({ length: Math.max(this.total() - this.start() + 1, 0) }, (_, i) => this.start() + i));
+  protected cells = computed(() =>
+    Array.from(
+      { length: Math.max(this.total() - this.start() + 1, 0) },
+      (_, i) => this.start() + i,
+    ),
+  );
 
-  protected pick(i: number) { if (!this.readonly()) this.change.emit(i); }
+  protected pick(i: number) {
+    if (!this.readonly()) this.change.emit(i);
+  }
 }

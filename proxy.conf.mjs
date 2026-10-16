@@ -4,5 +4,12 @@
 const port = process.env.SLIDE_NG_DEV_PORT;
 
 export default port
-  ? { '/__slide-ng': { target: `http://127.0.0.1:${port}`, ws: true, changeOrigin: false, secure: false } }
+  ? {
+      '/__slide-ng': {
+        target: `http://127.0.0.1:${port}`,
+        ws: true,
+        changeOrigin: false,
+        secure: false,
+      },
+    }
   : {};

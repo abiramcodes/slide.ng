@@ -9,11 +9,25 @@ import { SlideLink } from './slide-link';
   imports: [SlideLink],
   template: `
     @if (list().length) {
-      <ol [class]="classes()" [attr.start]="level() === 1 ? start() : null" [style.list-style]="style()">
+      <ol
+        [class]="classes()"
+        [attr.start]="level() === 1 ? start() : null"
+        [style.list-style]="style()"
+      >
         @for (item of list(); track item.no) {
-          <li class="slidev-toc-item" [class.slidev-toc-item-active]="item.active" [class.slidev-toc-item-parent-active]="item.activeParent">
+          <li
+            class="slidev-toc-item"
+            [class.slidev-toc-item-active]="item.active"
+            [class.slidev-toc-item-parent-active]="item.activeParent"
+          >
             <slide-link [to]="item.path">{{ item.title }}</slide-link>
-            <app-toc-list [list]="item.children" [level]="level() + 1" [start]="start()" [listClass]="listClass()" [listStyle]="listStyle()" />
+            <app-toc-list
+              [list]="item.children"
+              [level]="level() + 1"
+              [start]="start()"
+              [listClass]="listClass()"
+              [listStyle]="listStyle()"
+            />
           </li>
         }
       </ol>
@@ -27,7 +41,13 @@ export class TocList {
   listClass = input<string | string[]>('');
   listStyle = input<string | string[]>('');
 
-  protected classes = computed(() => [[this.listClass()].flat().join(' '), 'slidev-toc-list', `slidev-toc-list-level-${this.level()}`].join(' '));
+  protected classes = computed(() =>
+    [
+      [this.listClass()].flat().join(' '),
+      'slidev-toc-list',
+      `slidev-toc-list-level-${this.level()}`,
+    ].join(' '),
+  );
   // `listStyle` can give one list-style per level, like Slidev.
   protected style = computed(() => [this.listStyle()].flat()[this.level() - 1] || null);
 }
@@ -38,7 +58,12 @@ export class TocList {
   selector: 'slide-toc',
   imports: [TocList],
   host: { class: 'slidev-toc block', '[style.column-count]': 'columns()' },
-  template: `<app-toc-list [list]="items()" [start]="start()" [listClass]="listClass()" [listStyle]="listStyle()" />`,
+  template: `<app-toc-list
+    [list]="items()"
+    [start]="start()"
+    [listClass]="listClass()"
+    [listStyle]="listStyle()"
+  />`,
 })
 export class SlideToc {
   columns = input(1, { transform: numberAttribute });
@@ -51,6 +76,10 @@ export class SlideToc {
 
   private nav = inject(Nav);
   protected items = computed(() =>
-    filterToc(this.nav.tocTree(), { minDepth: this.minDepth(), maxDepth: this.maxDepth(), mode: this.mode() }),
+    filterToc(this.nav.tocTree(), {
+      minDepth: this.minDepth(),
+      maxDepth: this.maxDepth(),
+      mode: this.mode(),
+    }),
   );
 }

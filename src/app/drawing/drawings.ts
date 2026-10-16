@@ -11,7 +11,15 @@ import { drawingsConfig } from './config';
 import { startPersistence } from './persistence';
 
 export type ToolMode = DrawingMode | 'arrow';
-export const BRUSH_COLORS = ['#ff595e', '#ffca3a', '#8ac926', '#1982c4', '#6a4c93', '#ffffff', '#000000'];
+export const BRUSH_COLORS = [
+  '#ff595e',
+  '#ffca3a',
+  '#8ac926',
+  '#1982c4',
+  '#6a4c93',
+  '#ffffff',
+  '#000000',
+];
 
 @Injectable()
 export class Drawings {
@@ -23,7 +31,11 @@ export class Drawings {
   readonly enabled = storedSignal('slidev-drawing-enabled', false);
   /** The toolbar stays on screen (faded) while drawing is off. */
   readonly pinned = storedSignal('slidev-drawing-pinned', false);
-  readonly brush = storedSignal<Brush>('slidev-drawing-brush', { color: BRUSH_COLORS[0], size: 4, mode: 'stylus' });
+  readonly brush = storedSignal<Brush>('slidev-drawing-brush', {
+    color: BRUSH_COLORS[0],
+    size: 4,
+    mode: 'stylus',
+  });
   readonly mode = signal<ToolMode>('stylus');
   readonly isDrawing = signal(false);
   readonly canUndo = signal(false);
@@ -43,12 +55,25 @@ export class Drawings {
     if (!this.available) return;
     startPersistence(this.config.persist);
     // A drawing from another window of the current slide: show it.
-    this.sync.onRemoteDrawings((patch) => { if (patch[this.nav.no()] != null) this.show(this.nav.no()); });
+    this.sync.onRemoteDrawings((patch) => {
+      if (patch[this.nav.no()] != null) this.show(this.nav.no());
+    });
     // Another slide: show its drawing.
-    effect(() => { const no = this.nav.no(); untracked(() => this.show(no)); });
+    effect(() => {
+      const no = this.nav.no();
+      untracked(() => this.show(no));
+    });
     // Drawing is on: fingers and mouse draw; off: only a stylus does (so a pen works without the toolbar).
-    effect(() => { const on = this.enabled(); untracked(() => this.setInputTypes(on)); });
-    effect(() => { const b = this.brush(); untracked(() => { if (this.drauu) this.drauu.brush = { ...b }; }); });
+    effect(() => {
+      const on = this.enabled();
+      untracked(() => this.setInputTypes(on));
+    });
+    effect(() => {
+      const b = this.brush();
+      untracked(() => {
+        if (this.drauu) this.drauu.brush = { ...b };
+      });
+    });
     window.addEventListener('keydown', (e) => this.key(e));
   }
 
@@ -66,10 +91,15 @@ export class Drawings {
     this.show(this.nav.no());
   }
 
-  detach() { this.drauu?.unmount(); this.drauu = null; }
+  detach() {
+    this.drauu?.unmount();
+    this.drauu = null;
+  }
 
   /** The slide is drawn at this scale; drauu needs it to turn mouse positions into slide positions. */
-  setScale(scale: number) { if (this.drauu) this.drauu.options.coordinateScale = 1 / scale; }
+  setScale(scale: number) {
+    if (this.drauu) this.drauu.options.coordinateScale = 1 / scale;
+  }
 
   setMode(mode: ToolMode) {
     this.mode.set(mode);
@@ -92,10 +122,19 @@ export class Drawings {
     this.setMode(this.lastMode);
   }
 
-  setSize(size: number) { this.brush.update((b) => ({ ...b, size })); this.setMode(this.lastMode); }
-  toggle() { this.enabled.update((v) => !v); }
-  undo() { this.drauu?.undo(); }
-  redo() { this.drauu?.redo(); }
+  setSize(size: number) {
+    this.brush.update((b) => ({ ...b, size }));
+    this.setMode(this.lastMode);
+  }
+  toggle() {
+    this.enabled.update((v) => !v);
+  }
+  undo() {
+    this.drauu?.undo();
+  }
+  redo() {
+    this.drauu?.redo();
+  }
 
   clear() {
     this.drauu?.clear();
@@ -107,7 +146,8 @@ export class Drawings {
     if (!this.drauu) return;
     this.loading = true;
     const markup = this.sync.drawings()[no];
-    if (markup) this.drauu.load(cleanSvg(markup)); else this.drauu.clear();
+    if (markup) this.drauu.load(cleanSvg(markup));
+    else this.drauu.clear();
     this.loading = false;
     this.updateButtons();
   }
@@ -115,7 +155,8 @@ export class Drawings {
   private changed() {
     this.updateButtons();
     if (this.loading || !this.drauu) return;
-    const no = this.nav.no(), dump = this.drauu.dump();
+    const no = this.nav.no(),
+      dump = this.drauu.dump();
     if ((this.sync.drawings()[no] ?? '') === dump) return;
     // Viewers without syncAll keep their drawing on their own screen only.
     if (this.syncUp) this.sync.patchDrawing(no, dump);
@@ -137,16 +178,33 @@ export class Drawings {
 
   // Slidev's drawing keys, active only while drawing is on and no text field has the focus.
   private key(e: KeyboardEvent) {
-    if (!this.enabled() || /^(INPUT|TEXTAREA|SELECT)$/.test((e.target as HTMLElement)?.tagName)) return;
+    if (!this.enabled() || /^(INPUT|TEXTAREA|SELECT)$/.test((e.target as HTMLElement)?.tagName))
+      return;
     const plain = !e.ctrlKey && !e.altKey && !e.shiftKey && !e.metaKey;
-    const tools: Record<string, ToolMode> = { KeyL: 'line', KeyA: 'arrow', KeyS: 'stylus', KeyR: 'rectangle', KeyE: 'ellipse' };
+    const tools: Record<string, ToolMode> = {
+      KeyL: 'line',
+      KeyA: 'arrow',
+      KeyS: 'stylus',
+      KeyR: 'rectangle',
+      KeyE: 'ellipse',
+    };
     let handled = true;
-    if (e.code === 'KeyZ' && (e.ctrlKey || e.metaKey)) { e.shiftKey ? this.redo() : this.undo(); }
-    else if (e.code === 'Escape') this.enabled.set(false);
+    if (e.code === 'KeyZ' && (e.ctrlKey || e.metaKey)) {
+      e.shiftKey ? this.redo() : this.undo();
+    } else if (e.code === 'Escape') this.enabled.set(false);
     else if (plain && tools[e.code]) this.pickTool(tools[e.code]);
     else if (plain && e.code === 'KeyC') this.clear();
-    else if (plain && e.code.startsWith('Digit') && +e.code[5] >= 1 && +e.code[5] <= BRUSH_COLORS.length) this.brush.update((b) => ({ ...b, color: BRUSH_COLORS[+e.code[5] - 1] }));
+    else if (
+      plain &&
+      e.code.startsWith('Digit') &&
+      +e.code[5] >= 1 &&
+      +e.code[5] <= BRUSH_COLORS.length
+    )
+      this.brush.update((b) => ({ ...b, color: BRUSH_COLORS[+e.code[5] - 1] }));
     else handled = false;
-    if (handled) { e.preventDefault(); e.stopPropagation(); }
+    if (handled) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
   }
 }
