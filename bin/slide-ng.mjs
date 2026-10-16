@@ -17,6 +17,7 @@ Commands:
   theme eject     copy the theme into the deck's folder to edit it
   mcp             start the MCP server on stdio (read and edit slides with a tool client)
   create <dir>    start a new deck in <dir>
+  skills install  copy the agent skill into .agents/skills/slide-ng      --dir --force
 
 Every flag is described in README.md.
 `;
@@ -31,6 +32,7 @@ const COMMANDS = {
   theme: async (args) => (await import('../scripts/cli/theme.mjs')).themeCommand(args),
   mcp: async (args) => (await import('../scripts/mcp/index.mjs')).mcpCommand(args),
   create: async (args) => (await import('../scripts/cli/create.mjs')).createCommand(args),
+  skills: async (args) => (await import('../scripts/cli/skills.mjs')).skillsCommand(args),
 };
 
 const [command, args] = pickCommand(process.argv.slice(2));
