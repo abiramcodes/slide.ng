@@ -1,0 +1,10 @@
+/* TypeScript settings for the Web Workers that Angular bundles (Monaco's workers). */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/worker",
+    "lib": ["es2022", "webworker"],
+    "types": []
+  },
+  "include": ["src/**/*.worker.ts"]
+}

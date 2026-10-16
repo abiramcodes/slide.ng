@@ -23,5 +23,6 @@ export const COMPONENTS = [
   { className: 'KatexBlockWrapper', file: 'code/katex-block', test: /<katex-block-wrapper/ },
   { className: 'Mermaid', file: 'code/mermaid', test: /<mermaid[\s>]/ },
   { className: 'PlantUml', file: 'code/plant-uml', test: /<plant-uml[\s>]/ },
+  { className: 'MonacoEditor', file: 'code/monaco-editor', test: /<monaco[\s>]/ },
   { className: 'Counter', file: 'lib/counter', test: /<app-counter/ },
 ];

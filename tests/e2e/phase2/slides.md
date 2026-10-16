@@ -145,3 +145,39 @@ C -->|Two| E{{Result 2}}
 Alice -> Bob : Hello!
 @enduml
 ```
+
+---
+
+# Monaco
+
+```ts {monaco}
+const message: string = 'edit me'
+console.log(message)
+```
+
+```ts {monaco-diff}
+console.log('Original text')
+~~~
+console.log('Modified text')
+```
+
+---
+
+# Monaco run
+
+```ts {monaco-run}
+function distance(x: number, y: number) {
+  return Math.sqrt(x ** 2 + y ** 2)
+}
+console.log(distance(3, 4), [1, 2], { a: 1 }, new Map([[1, 2]]))
+```
+
+```ts {monaco-run} {autorun:false,showOutputAt:'+1'}
+console.log('shown after one click')
+throw new Error('boom')
+```
+
+```js {monaco-run}
+try { console.log(parent.document.title) } catch (e) { console.log(e.name) }
+console.log(typeof localStorage === 'undefined' ? 'no storage' : (() => { try { localStorage.length; return 'has storage' } catch (e) { return e.name } })())
+```

@@ -146,3 +146,22 @@ Nothing else was added: footnotes, alerts, the PlantUML encoding and the code ru
     slide is ready for export. (Export itself is a later phase.)
 16. **PlantUML is an `<img>`** from `plantUmlServer` (default `https://www.plantuml.com/plantuml`). The generator encodes the text (deflate plus
     PlantUML's base64 alphabet, 15 lines instead of the `plantuml-encoder` package). The deck needs the network for the picture, as in Slidev.
+17. **Monaco is bundled by the Angular builder itself, and works offline.** `src/app/code/monaco/setup.ts` is loaded with `import()`;
+    it starts Monaco's two workers with `new Worker(new URL(...))` (editor worker and TypeScript worker, small files in `src/app/code/monaco/`),
+    which Angular's esbuild builder compiles into separate `worker-*.js` files (`webWorkerTsConfig` in `angular.json`). No AMD loader, no CDN.
+    JSON, CSS and HTML get colours but no language server (no workers for them, to keep the output smaller). Setup needed in `angular.json`:
+    `"loader": { ".ttf": "file" }` (the icon font) and `webWorkerTsConfig`.
+18. **`tsconfig.app.json` lists only `src/main.ts`** (no `include`), so only files the deck imports are compiled. Without this the builder
+    found the `new Worker(...)` calls in every file and put 7 MB of workers into every build, also decks without an editor.
+19. **Monaco's CSS goes through `features.css` (by path, with its icon font inside) when the deck has an editor.** The CSS that Monaco's JavaScript
+    imports is written next to the output as unused `.css` files (about 190 kB each, not linked). Mapping `.css` to `empty` in `angular.json`
+    removed them but broke the unit tests, so they stay. Editors use Monaco's own `vs` / `vs-dark` themes following the colour mode, not the Shiki
+    themes (that would need `@shikijs/monaco`, one more dependency).
+20. **`{monaco-run}` runs code in a sandboxed `<iframe srcdoc sandbox="allow-scripts">`** (no `allow-same-origin`): it cannot reach the slides,
+    their storage or cookies; it posts back what `console.log` printed. A run is cut off after 5 seconds. TypeScript is turned into JavaScript by
+    Monaco's own TypeScript worker, so the 9 MB `typescript` package is not added a second time. Not supported: `import` in the code (Slidev maps a few
+    modules), highlighting of the output (Slidev uses Shiki in the browser), custom runners for other languages.
+21. **Keys typed inside a Monaco editor are not shortcuts.** The editor's input is a plain `div`, so the check for text fields in `deck.ts` also looks
+    for `.monaco-editor`.
+22. **Options after `{monaco}` are flat** (`{autorun:false,showOutputAt:'+1',height:'auto',lines:true,readonly:true}`); `editorOptions` (a nested object) is not read.
+    `{monaco-write}` shows an editor without saving and prints a warning; saving needs the dev server (phase 3).

@@ -18,7 +18,9 @@ import { Overview } from './ui/overview';
 import { HEADMATTER } from '../slides/generated';
 
 // Is the user typing somewhere? Then letters are text, not shortcuts.
-const isTyping = (t: EventTarget | null) => t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
+// Keys typed into a text field or a Monaco editor (its input is a plain div) are not shortcuts.
+const isTyping = (t: EventTarget | null) =>
+  t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.closest('.monaco-editor') !== null);
 
 // The route /:no. Shows one slide on a scaled canvas and hosts the controls around it.
 @Component({

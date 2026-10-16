@@ -4,7 +4,6 @@
 @import './styles/vars.css';
 @import './styles/layouts.css';
 @import './styles/code.css';
-@import '@shikijs/magic-move/style.css';
 @import './styles/controls.css';
 
 html, body { height: 100%; margin: 0; overflow: hidden; background: var(--slidev-slide-container-background); font-family: ui-sans-serif, system-ui, sans-serif; }

@@ -1,5 +1,6 @@
 // `npm run test:e2e`: builds the app, serves dist/ and checks it in a real browser.
 import { execSync } from 'node:child_process';
+import { readFileSync, readdirSync } from 'node:fs';
 import { launch, reporter, serve } from './browser.mjs';
 
 if (!process.env.SKIP_BUILD) execSync('npm run build', { stdio: 'inherit' });
@@ -117,6 +118,14 @@ await page.close();
 page = await open('/99');
 t.ok('/99 clamps to the last slide', (await hud(page)).startsWith('slide 10/10'), await hud(page));
 await page.close();
+
+// ---- the starter deck uses no heavy feature, so none of them is in the output ---------------
+const dist = 'dist/slide-ng/browser';
+const text = readdirSync(dist).filter((f) => /\.(js|css)$/.test(f)).map((f) => readFileSync(`${dist}/${f}`, 'utf8')).join('\n');
+for (const [name, marker] of [['Monaco', 'MonacoEnvironment'], ['Mermaid', 'mermaidAPI'], ['KaTeX', '.katex{'], ['Magic Move', 'shiki-magic-move-container{'], ['rough-notation', 'rough-annotation']]) {
+  t.ok(`the starter build does not contain ${name}`, !text.includes(marker));
+}
+t.ok('no worker files in the starter build', !readdirSync(dist).some((f) => f.startsWith('worker-')));
 
 t.ok('no console errors or warnings', problems.length === 0, JSON.stringify(problems));
 await browser.close();

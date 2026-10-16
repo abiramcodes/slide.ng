@@ -1,0 +1,116 @@
+// A code block that is a real editor:  ```ts {monaco}   ```ts {monaco-diff}   ```ts {monaco-run}
+// Port of Slidev's Monaco.vue. Monaco itself is loaded lazily the first time one of these is on screen.
+import { Component, ElementRef, afterNextRender, booleanAttribute, computed, effect, inject, input, signal, viewChild } from '@angular/core';
+import { Dark } from '../lib/dark';
+import { CodeRunner } from './code-runner';
+import { runJs } from './monaco/run-js';
+import { unpack } from './unpack';
+import type * as Monaco from 'monaco-editor';
+
+const LANGUAGES: Record<string, string> = { ts: 'typescript', js: 'javascript' };
+const EXTENSIONS: Record<string, string> = { typescript: 'mts', javascript: 'mjs' };
+let modelCounter = 0;
+
+// `autorun` is true, false or the text "once".
+const toAutorun = (v: unknown): boolean | 'once' => (v === 'once' ? 'once' : !(v === false || v === 'false'));
+
+@Component({
+  selector: 'monaco',
+  imports: [CodeRunner],
+  host: { class: 'relative slidev-monaco-container block' },
+  template: `
+    <div class="relative slidev-monaco-container-inner" [style.height]="height()">
+      <div #box class="absolute inset-0.5"></div>
+    </div>
+    @if (runnable()) {
+      <code-runner [code]="code()" [execute]="execute" [autorun]="autorun()" [showOutputAt]="showOutputAt()" />
+    }
+  `,
+})
+export class MonacoEditor {
+  lang = input('typescript');
+  code0 = input('', { alias: 'code' }); // plain text, for direct use
+  packed = input(''); // the generator packs the text here
+  diff = input(''); // packed text of the modified side of `{monaco-diff}`
+  readonly = input(false, { transform: booleanAttribute });
+  lines = input(false, { transform: booleanAttribute });
+  /** 'initial' = as tall as the first text, 'auto' = grows with the text, or any CSS size */
+  heightOption = input('initial', { alias: 'height' });
+  runnable = input(false, { transform: booleanAttribute });
+  autorun = input<boolean | 'once', unknown>(true, { transform: toAutorun });
+  showOutputAt = input<string>();
+
+  /** The current text of the editor; the runner watches it. */
+  protected code = signal('');
+  private box = viewChild.required<ElementRef<HTMLElement>>('box');
+  private dark = inject(Dark);
+  private contentHeight = signal(0);
+  private firstHeight = signal(0);
+  private monaco?: typeof Monaco;
+  private model?: Monaco.editor.ITextModel;
+  private ready: Promise<void>;
+  private markReady!: () => void;
+
+  protected height = computed(() => {
+    const h = this.heightOption();
+    if (h === 'auto') return `${this.contentHeight()}px`;
+    if (h === 'initial') return `${this.firstHeight()}px`;
+    return h;
+  });
+
+  constructor() {
+    this.ready = new Promise((resolve) => (this.markReady = resolve));
+    afterNextRender(() => void this.start());
+    effect(() => this.monaco?.editor.setTheme(this.dark.isDark() ? 'vs-dark' : 'vs'));
+  }
+
+  private async start() {
+    const text = (this.packed() ? await unpack<string>(this.packed()) : this.code0()).trimEnd();
+    const modified = this.diff() ? (await unpack<string>(this.diff())).trimEnd() : null;
+    const { monaco } = await import('./monaco/setup');
+    this.monaco = monaco;
+    const lang = LANGUAGES[this.lang()] ?? this.lang();
+    const ext = EXTENSIONS[lang] ?? lang;
+    const newModel = (value: string) => monaco.editor.createModel(value, lang, monaco.Uri.parse(`file:///model-${++modelCounter}.${ext}`));
+
+    const model = (this.model = newModel(text));
+    this.code.set(text);
+    const options = {
+      automaticLayout: true, readOnly: this.readonly(), lineNumbers: this.lines() ? 'on' : 'off',
+      minimap: { enabled: false }, overviewRulerBorder: false, overviewRulerLanes: 0, padding: { top: 10, bottom: 10 },
+      lineNumbersMinChars: 3, bracketPairColorization: { enabled: false }, tabSize: 2, fontSize: 11.5,
+      fontFamily: 'var(--slidev-code-font-family)', scrollBeyondLastLine: false, useInlineViewWhenSpaceIsLimited: false,
+      theme: this.dark.isDark() ? 'vs-dark' : 'vs',
+    } as const;
+
+    const grow = (height: number) => { this.firstHeight.update((h) => h || height); this.contentHeight.set(height); };
+    if (modified != null) {
+      const editor = monaco.editor.createDiffEditor(this.box().nativeElement, { renderOverviewRuler: false, ...options });
+      const changed = newModel(modified);
+      editor.setModel({ original: model, modified: changed });
+      const [a, b] = [editor.getOriginalEditor(), editor.getModifiedEditor()];
+      const resize = () => grow(Math.max(a.getContentHeight(), b.getContentHeight()) + 4);
+      a.onDidContentSizeChange(resize);
+      b.onDidContentSizeChange(resize);
+      changed.onDidChangeContent(() => this.code.set(changed.getValue()));
+    } else {
+      const editor = monaco.editor.create(this.box().nativeElement, { model, lineDecorationsWidth: 0, ...options });
+      editor.onDidContentSizeChange((e) => grow(e.contentHeight + 4));
+    }
+    model.onDidChangeContent(() => { if (modified == null) this.code.set(model.getValue()); });
+    this.markReady();
+  }
+
+  // Runs the editor's text: TypeScript is turned into JavaScript by Monaco's own TypeScript worker.
+  protected execute = async (code: string) => {
+    await this.ready;
+    let js = code;
+    if (this.model && this.model.getLanguageId() === 'typescript') {
+      const worker = await this.monaco!.typescript.getTypeScriptWorker();
+      const client = await worker(this.model.uri);
+      const out = await client.getEmitOutput(this.model.uri.toString());
+      js = out.outputFiles.find((f) => f.name.endsWith('.js') || f.name.endsWith('.mjs'))?.text ?? code;
+    }
+    return runJs(js.replace('export {};', ''));
+  };
+}
