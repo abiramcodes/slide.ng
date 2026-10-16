@@ -11,6 +11,11 @@ import { initHighlighter } from './lib/code/highlighter.mjs';
 import { readDrawings } from './lib/drawings.mjs';
 import { findLayers, layersSource } from './lib/layers.mjs';
 import { monacoWriteTargets, resetMonacoWriteTargets } from './lib/code/monaco.mjs';
+import { buildOptions, wantsRemoteAssets } from './lib/build-options.mjs';
+import { headParts, renderIndexHtml } from './lib/head.mjs';
+import { bundleRemoteAssets, emptyFolder } from './lib/remote-assets.mjs';
+import { ogImageAddress, ogImagePlan } from './build/og-image.mjs';
+import { pwaEnabled } from './build/pwa.mjs';
 
 // SLIDES_FILE lets tests build another deck.
 const INPUT = process.env.SLIDES_FILE ?? 'slides.md';
@@ -42,17 +47,36 @@ function writeMonacoTargets(root) {
   write(file, JSON.stringify(targets, null, 2) + '\n');
 }
 
+// The page itself (src/index.html is the template): title, description, social tags, favicon, manifest link.
+function writeIndexHtml(deck, base) {
+  const warn = (m) => console.warn(`[slides] ${m}`);
+  const plan = ogImagePlan(deck.headmatter, deck.root);
+  const ogImage = plan.kind === 'file' || plan.kind === 'auto' ? ogImageAddress(deck.headmatter, base) : null;
+  const parts = headParts(deck.headmatter, { ogImage, pwa: pwaEnabled(deck.headmatter), warn });
+  write(`${OUT}index.html`, renderIndexHtml(readFileSync('src/index.html', 'utf8'), parts, warn));
+}
+
 async function generate() {
   const deck = await parseDeck(INPUT);
+  const build = buildOptions();
   deck.problems.forEach((p) => console.warn(`[slides] ${p}`));
+  // Options of `slide-ng build` (see lib/build-options.mjs).
+  if (build.download && deck.headmatter.download == null) deck.headmatter.download = true;
+  if (build.withoutNotes) deck.slides.forEach((s) => { s.note = null; });
+  mkdirSync(OUT, { recursive: true });
+  // Remote pictures are fetched into the build only for a production build with `remoteAssets: true`.
+  if (wantsRemoteAssets(deck.headmatter, build.building)) {
+    const n = await bundleRemoteAssets(deck.slides, `${OUT}remote-assets`, (m) => console.warn(`[slides] ${m}`));
+    console.log(`[slides] bundled ${n} remote images`);
+  } else emptyFolder(`${OUT}remote-assets`);
+  writeIndexHtml(deck, build.base);
   deck.drawings = readDrawings(deck.root, deck.headmatter);
   deck.layers = findLayers();
   // Decide each layout once, so that an unknown name is reported once.
   deck.slides.forEach((s, i) => (s.layout = layoutName(s.frontmatter, i)));
   const features = detectFeatures(deck.slides);
   await initHighlighter({ langs: features.langs, headmatter: deck.headmatter, twoslash: features.twoslash });
-  mkdirSync(OUT, { recursive: true });
-  const wanted = new Set(deck.slides.map((_, i) => `${slideName(i + 1)}.ts`).concat('index.ts', 'layers.ts', 'uno.css', 'features.css'));
+  const wanted = new Set(deck.slides.map((_, i) => `${slideName(i + 1)}.ts`).concat('index.ts', 'index.html', 'layers.ts', 'uno.css', 'features.css', 'remote-assets'));
   for (const f of readdirSync(OUT)) if (!wanted.has(f)) rmSync(OUT + f);
   resetMonacoWriteTargets();
   deck.slides.forEach((s, i) => write(`${OUT}${slideName(i + 1)}.ts`, slideSource(s, i + 1, deck)));

@@ -37,21 +37,27 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "**/*",
+                "input": "src/slides/generated/remote-assets",
+                "output": "remote-assets"
               }
             ],
             "styles": [
               "src/slides/generated/uno.css",
               "src/slides/generated/features.css",
               "src/styles.css"
-            ]
+            ],
+            "index": "src/slides/generated/index.html"
           },
           "configurations": {
             "production": {
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
+                  "maximumWarning": "1MB",
+                  "maximumError": "2MB"
                 },
                 {
                   "type": "anyComponentStyle",

@@ -16,19 +16,20 @@ function run(args, { cwd, env, quiet }) {
 }
 
 /** Writes the generated slides for `entry` (an absolute path to the deck's markdown file). */
-export function generateSlides(entry, { quiet = false } = {}) {
-  run([join(packageRoot, 'scripts/generate.mjs')], { cwd: packageRoot, env: { SLIDES_FILE: entry }, quiet });
+export function generateSlides(entry, { quiet = false, env = {} } = {}) {
+  run([join(packageRoot, 'scripts/generate.mjs')], { cwd: packageRoot, env: { SLIDES_FILE: entry, ...env }, quiet });
 }
 
 /**
  * Generates and builds the deck into `workDir` (a folder this tool owns and empties, see safe-dir.mjs).
  * Resolves to the folder with `index.html` inside it. `base` is the address the deck will be served under.
+ * `env` reaches the generator and the build (SLIDE_NG_BUILD and friends, see scripts/lib/build-options.mjs).
  */
-export function buildDeck({ entry, workDir, base = '/', quiet = false, cwd = process.cwd() }) {
+export function buildDeck({ entry, workDir, base = '/', quiet = false, cwd = process.cwd(), env = {} }) {
   claimDirectory(workDir, cwd);
-  generateSlides(entry, { quiet });
+  generateSlides(entry, { quiet, env: { SLIDE_NG_BASE: base, ...env } });
   const ng = join(packageRoot, 'node_modules/@angular/cli/bin/ng.js');
-  run([ng, 'build', '--output-path', workDir, '--base-href', base], { cwd: packageRoot, env: { SLIDES_FILE: entry }, quiet });
+  run([ng, 'build', '--output-path', workDir, '--base-href', base], { cwd: packageRoot, env: { SLIDES_FILE: entry, ...env }, quiet });
   markDirectory(workDir);
   return join(workDir, 'browser');
 }

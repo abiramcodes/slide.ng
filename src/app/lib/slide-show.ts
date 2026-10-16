@@ -11,6 +11,7 @@ import { pickTransition } from './transitions';
 import { Ui } from './ui-state';
 import { ViewPrefs } from './view-prefs';
 import { filterCss } from './filters';
+import { documentTitle } from './page-title';
 
 // The slide on screen: a canvas of fixed size, scaled to fit this element, with the current slide
 // component inside. The deck and the presenter's main pane both use it. Whatever is placed
@@ -75,9 +76,7 @@ export class SlideShow {
     if (wanted != null) slide.clicks.setCurrent(+wanted || 0); // clamped once the slide is mounted
     this.nav.setContext(no, slide.clicks);
     if (this.context() === 'slide') {
-      const meta = this.nav.meta();
-      const deckTitle = HEADMATTER['title'];
-      document.title = [meta.title, deckTitle].filter((t, i, all) => t && all.indexOf(t) === i).join(' - ') || 'slide.ng';
+      document.title = documentTitle(this.nav.meta().title, HEADMATTER);
     }
   }
 

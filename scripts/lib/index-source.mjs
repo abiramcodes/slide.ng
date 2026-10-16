@@ -4,6 +4,7 @@ import { layoutName } from './layouts.mjs';
 import { slideClass, slideName } from './emit.mjs';
 import { noteToHtml } from './note-html.mjs';
 import { downloadTarget } from '../export/filename.mjs';
+import { pwaEnabled } from '../build/pwa.mjs';
 
 // What the app needs to know about one slide, besides its component.
 function metaOf(slide, index) {
@@ -39,6 +40,9 @@ export const DRAWINGS: Record<number, string> = ${JSON.stringify(deck.drawings ?
 
 /** Headmatter "download": the PDF the nav bar offers (a file next to the page, or a web address), or null. */
 export const DOWNLOAD: string | null = ${JSON.stringify(downloadTarget(deck.headmatter, deck.entry))};
+
+/** Headmatter "pwa": register the offline service worker (a build writes sw.js; the dev server has none). */
+export const PWA: boolean = ${pwaEnabled(deck.headmatter)};
 
 export const SLIDES: SlideMeta[] = [
 ${entries.join('\n')}

@@ -35,6 +35,6 @@ export function serveDirectory(root, base = '/') {
   });
   return new Promise((resolvePromise) => server.listen(0, '127.0.0.1', () => {
     const { port } = server.address();
-    resolvePromise({ server, port, origin: `http://127.0.0.1:${port}`, close: () => new Promise((done) => server.close(done)) });
+    resolvePromise({ server, port, origin: `http://127.0.0.1:${port}`, close: () => { server.closeAllConnections(); return new Promise((done) => server.close(done)); } });
   }));
 }
