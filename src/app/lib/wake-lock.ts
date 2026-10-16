@@ -31,6 +31,11 @@ export class WakeLock {
     if (this.sentinel) return;
     try {
       const sentinel = await navigator.wakeLock.request('screen');
+      // The setting was switched off while the browser was answering: do not keep the lock.
+      if (!this.enabled()) {
+        await sentinel.release();
+        return;
+      }
       sentinel.addEventListener('release', () => {
         this.sentinel = null;
         this.held.set(false);
