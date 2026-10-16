@@ -41,7 +41,7 @@ and the repository's `examples/<name>.md` has a slide for every layout.
 | `shibainu`    | `@slide-ng/theme-shibainu`                                             | `@slidev/theme-shibainu`       | 14 (`cover`, `default`, `center`, `section`, `default-2` to `default-7`, `right`, `quote`, ...) |
 | `bricks`      | `@slide-ng/theme-bricks`                                               | `@slidev/theme-bricks`         | 9; components `<polygon-1 />` to `<polygon-11 />`                                               |
 | `apple-basic` | `@slide-ng/theme-apple-basic`                                          | `@slidev/theme-apple-basic`    | 10                                                                                              |
-| `adev`        | `@slide-ng/theme-adev`                                                 | none (inspired by angular.dev) | 12; components `<adev-callout />`, `<adev-card-grid />` and more                                |
+| `adev`        | `@slide-ng/theme-adev`                                                 | none (inspired by angular.dev) | 12; components `<adev-alert />`, `<adev-card-grid />` and more                                  |
 
 `default` is a port of Slidev's default theme already; its web fonts (Avenir Next, Nunito Sans) are not loaded for it, set `fonts:` to get them.
 
