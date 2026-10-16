@@ -1,9 +1,11 @@
-import { Component, ElementRef, inject, input } from '@angular/core';
+import { Component, ElementRef, computed, inject, input } from '@angular/core';
 import { Drawings } from '../drawing/drawings';
 import { Dark } from '../lib/dark';
 import { Download } from '../lib/download';
 import { Fullscreen } from '../lib/fullscreen';
+import { Filters, defaultFilters } from '../lib/filters';
 import { Nav } from '../lib/nav';
+import { ViewPrefs } from '../lib/view-prefs';
 import { PresenterPrefs } from '../presenter/prefs';
 import { Ui } from '../lib/ui-state';
 import { IconBtn } from './icon-btn';
@@ -72,6 +74,8 @@ import { Settings } from './settings';
 
         <div class="w-1px opacity-10 bg-current m-1 lg:m-2"></div>
 
+        <app-recording-controls />
+
         @if (nav.isPresenter) {
           <button
             icon-btn
@@ -122,8 +126,6 @@ import { Settings } from './settings';
 
         <div class="w-1px opacity-10 bg-current m-1 lg:m-2"></div>
 
-        <app-recording-controls />
-
         @if (nav.isPresenter) {
           <button icon-btn id="nav-play" title="Play Mode" (click)="nav.exitPresenter()">
             <div class="i-carbon:presentation-file"></div>
@@ -140,28 +142,9 @@ import { Settings } from './settings';
               [active]="editor.open()"
               (click)="editor.toggle()"
             >
-              <div class="i-carbon:edit"></div>
+              <div class="i-carbon:text-annotation-toggle"></div>
             </button>
           }
-          <button icon-btn id="nav-info" title="Show info" (click)="ui.info.set(!ui.info())">
-            <div class="i-carbon:information"></div>
-          </button>
-        }
-
-        <div class="w-1px opacity-10 bg-current m-1 lg:m-2"></div>
-
-        @if (nav.isPresenter) {
-          <button
-            icon-btn
-            id="nav-layout"
-            title="Toggle Presenter Layout"
-            class="aspect-ratio-initial flex items-center"
-            (click)="prefs.nextLayout()"
-          >
-            <div class="i-carbon:template"></div>
-            <span id="nav-layout-no">{{ prefs.layout() }}</span>
-          </button>
-          <div class="w-1px opacity-10 bg-current m-1 lg:m-2"></div>
         }
 
         @if (download.wanted) {
@@ -181,6 +164,27 @@ import { Settings } from './settings';
           }
         }
 
+        @if (!nav.isPresenter) {
+          <button icon-btn id="nav-info" title="Show info" (click)="ui.info.set(!ui.info())">
+            <div class="i-carbon:information"></div>
+          </button>
+        }
+
+        <div class="w-1px opacity-10 bg-current m-1 lg:m-2"></div>
+
+        @if (nav.isPresenter) {
+          <button
+            icon-btn
+            id="nav-layout"
+            title="Toggle Presenter Layout"
+            class="aspect-ratio-initial flex items-center"
+            (click)="prefs.nextLayout()"
+          >
+            <div class="i-carbon:template"></div>
+            <span id="nav-layout-no">{{ prefs.layout() }}</span>
+          </button>
+        }
+
         <div class="flex relative" #menu>
           <button
             icon-btn
@@ -190,6 +194,12 @@ import { Settings } from './settings';
             (click)="ui.settings.set(!ui.settings())"
           >
             <div class="i-carbon:settings-adjust"></div>
+            @if (filtered()) {
+              <div
+                id="nav-settings-dot"
+                class="w-2 h-2 bg-primary rounded-full absolute top-0.5 right-0.5"
+              ></div>
+            }
           </button>
           @if (ui.settings()) {
             <div
@@ -222,6 +232,12 @@ export class NavBar {
   protected dark = inject(Dark);
   protected fullscreen = inject(Fullscreen);
   protected download = inject(Download);
+  private view = inject(ViewPrefs);
+  protected filtered = computed(() =>
+    (Object.keys(defaultFilters) as (keyof Filters)[]).some(
+      (k) => this.view.filters()[k] !== defaultFilters[k],
+    ),
+  );
   private el = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
 
   // A click anywhere outside the bar closes the settings menu.
