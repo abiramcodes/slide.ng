@@ -65,13 +65,13 @@ describe('resolveRoots', () => {
   });
   it('fails for a theme package that is not installed, naming the install command (like Slidev), and for a missing path', () => {
     const deck = folder();
-    expect(() => resolveRoots({ deckRoot: deck, headmatter: { theme: 'seriph' } })).toThrow('The theme "seriph" was not found. Install it with: npm install -D slide-ng-theme-seriph');
+    expect(() => resolveRoots({ deckRoot: deck, headmatter: { theme: 'ocean' } })).toThrow('The theme "ocean" was not found. Install it with: npm install -D slide-ng-theme-ocean');
     expect(() => resolveRoots({ deckRoot: deck, headmatter: { theme: './nope' } })).toThrow('is not a folder');
   });
   it('uses the package manager of the lock file in the install command', () => {
     const deck = folder();
     writeFileSync(join(deck, 'pnpm-lock.yaml'), '');
-    expect(() => resolveRoots({ deckRoot: deck, headmatter: { theme: 'seriph' } })).toThrow('pnpm add -D slide-ng-theme-seriph');
+    expect(() => resolveRoots({ deckRoot: deck, headmatter: { theme: 'ocean' } })).toThrow('pnpm add -D slide-ng-theme-ocean');
   });
   it('reads a name with a slash as a path and @/ as relative to the deck, like Slidev', () => {
     const deck = folder();

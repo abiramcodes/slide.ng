@@ -10,6 +10,7 @@
     "src",
     "public",
     "template",
+    "themes",
     "angular.json",
     "tsconfig.json",
     "tsconfig.app.json",
