@@ -12,7 +12,14 @@ if (!process.env.SKIP_BUILD) {
     execSync('node scripts/generate.mjs', { stdio: 'ignore' }); // put the generated files of the normal deck back
   }
 }
-const { server, port } = await serve('dist/phase2/browser');
+// The deck's `plantUmlServer` is /plantuml on this same server; answer it with a tiny picture, so no network is needed.
+const tinySvg = '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="20"><rect width="40" height="20" fill="teal"/></svg>';
+const { server, port } = await serve('dist/phase2/browser', (req, res) => {
+  if (!req.url.startsWith('/plantuml/svg/')) return false;
+  res.setHeader('content-type', 'image/svg+xml');
+  res.end(tinySvg);
+  return true;
+});
 const real = await launch();
 // Pages here may use the clipboard (the copy button test reads it back).
 const browser = {
@@ -21,7 +28,7 @@ const browser = {
 const t = reporter();
 const ctx = makeContext(`http://localhost:${port}`, browser, t);
 
-const topics = process.argv.slice(2).length ? process.argv.slice(2) : ['code', 'magic', 'math'];
+const topics = process.argv.slice(2).length ? process.argv.slice(2) : ['code', 'magic', 'math', 'diagrams'];
 for (const topic of topics) {
   console.log(`\n== ${topic}`);
   await (await import(`./phase2/${topic}.mjs`)).run(ctx);

@@ -1,10 +1,12 @@
 // Helpers shared by the showcase browser tests: open a page, press keys, read the readout.
 export function makeContext(base, browser, t) {
   const problems = []; // console errors and warnings, must stay empty
-  async function open(url, size = { width: 1280, height: 720 }) {
+  // `before(page)` can set up the page (routes, init scripts) before it loads.
+  async function open(url, size = { width: 1280, height: 720 }, before = async () => {}) {
     const page = await browser.newPage({ viewport: size });
     page.on('console', (m) => { if (['error', 'warning'].includes(m.type())) problems.push(`${m.type()}: ${m.text()}`); });
     page.on('pageerror', (e) => problems.push(String(e)));
+    await before(page);
     await page.goto(base + url);
     await page.waitForFunction(() => /clicks \d+\/\d+/.test(document.querySelector('#hud')?.innerText ?? ''));
     await page.waitForTimeout(150);

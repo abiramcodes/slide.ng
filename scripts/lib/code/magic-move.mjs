@@ -1,12 +1,12 @@
 // ````md magic-move  with several ```code``` blocks inside -> <shiki-magic-move>.
 // Each block is one step. We tokenise every step here and send the tokens (compressed) to the
 // component, which animates between the steps with @shikijs/magic-move.
-import { deflateRawSync } from 'node:zlib';
 import { toKeyedTokens } from '@shikijs/magic-move/core';
 import { codeToTokens, themeOptions } from './highlighter.mjs';
 import { cleanTitle, parseInfo, parseOptions } from './meta.mjs';
 import { extractFences } from '../fences.mjs';
 import { attrs, attr } from '../protect.mjs';
+import { pack } from '../pack.mjs';
 
 const INFO = /^(?:md|markdown) magic-move\s*(?:\[([^\]]*)\])?\s*(\{[^}]*\})?/;
 
@@ -34,7 +34,7 @@ export function renderMagicMove(fence, ctx = {}) {
   const defaultLines = options.lines ?? head.lineNumbers ?? false;
   const steps = blocks.map((f) => toStep(f, defaultLines));
   const ranges = blocks.map((f) => parseInfo(f.info).ranges);
-  const packed = deflateRawSync(JSON.stringify(steps)).toString('base64');
+  const packed = pack(steps);
   const a = attrs({
     title: cleanTitle(title),
     at: options.at,

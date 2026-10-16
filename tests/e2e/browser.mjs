@@ -5,9 +5,11 @@ import path from 'node:path';
 import { chromium } from 'playwright-core';
 
 // Serves a folder like a single-page app: unknown paths return index.html.
-export function serve(root) {
+// `extra(req, res)` can answer an address itself (return true) before the files are looked at.
+export function serve(root, extra = () => false) {
   const types = { '.js': 'text/javascript', '.css': 'text/css', '.html': 'text/html', '.ico': 'image/x-icon' };
   const server = http.createServer((req, res) => {
+    if (extra(req, res)) return;
     let file = path.join(root, req.url.split('?')[0]);
     if (!existsSync(file) || statSync(file).isDirectory()) file = path.join(root, 'index.html');
     res.setHeader('content-type', types[path.extname(file)] ?? 'text/plain');

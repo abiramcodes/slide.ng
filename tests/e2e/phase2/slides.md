@@ -1,5 +1,6 @@
 ---
 title: slide.ng phase 2 showcase
+plantUmlServer: /plantuml
 lineNumbers: false
 ---
 
@@ -125,3 +126,22 @@ $$ {1|2|all}
 \nabla \times \vec{E} &= -\frac{\partial\vec{B}}{\partial t}
 \end{aligned}
 $$
+
+---
+
+# Diagrams
+
+```mermaid {theme:'neutral', scale:0.8}
+graph TD
+B[Text] --> C{Decision}
+C -->|One| D[Result 1]
+C -->|Two| E{{Result 2}}
+```
+
+<mermaid id="direct" code="pie title Pets&#10;&quot;Dogs&quot; : 3&#10;&quot;Cats&quot; : 2" />
+
+```plantuml
+@startuml
+Alice -> Bob : Hello!
+@enduml
+```

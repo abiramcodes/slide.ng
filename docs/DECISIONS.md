@@ -136,3 +136,13 @@ Nothing else was added: footnotes, alerts, the PlantUML encoding and the code ru
     `$`, none before the closing one, and the closing one is not followed by a digit).
 13. **Range handling shared by code and math** lives in `code/ranged-block.ts` (`ranges`, `at`, `finally`, `startLine`, `hide`); `CodeBlockWrapper`
     and `KatexBlockWrapper` extend it. `mhchem` (chemistry) is not loaded.
+14. **Mermaid is drawn in the browser with `import('mermaid')`**, one diagram at a time (a promise queue), with a cache so overview thumbnails
+    do not draw it again. The diagram text travels as a packed attribute (`packed`), because Mermaid syntax has `{{ }}`. `<mermaid code="...">`
+    takes plain text for direct use. Options: `scale`, `theme` (no theme means `dark` or `default` following the colour mode, as in Slidev) and any other
+    key is passed to `mermaid.initialize` (`config`). The SVG is put in the page directly (not in a shadow root), which keeps CSS simple.
+    Mermaid pulls in CommonJS packages; they are listed in `allowedCommonJsDependencies` in `angular.json` to keep the build output free of warnings.
+15. **`data-slide-ng-waitfor`** is on a diagram's element while it is still being drawn; its value is the selector that will exist when it is done
+    (as Slidev's `data-waitfor` does for its exporter). The attribute is removed when the picture is ready, so "no element has the attribute" means the
+    slide is ready for export. (Export itself is a later phase.)
+16. **PlantUML is an `<img>`** from `plantUmlServer` (default `https://www.plantuml.com/plantuml`). The generator encodes the text (deflate plus
+    PlantUML's base64 alphabet, 15 lines instead of the `plantuml-encoder` package). The deck needs the network for the picture, as in Slidev.
