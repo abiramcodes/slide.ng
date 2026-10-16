@@ -14,6 +14,7 @@ import { applyThemeFlag, parseFlags } from './flags.mjs';
 import { packageRoot } from './package-root.mjs';
 import { askPassword } from './prompt.mjs';
 import { remoteLines } from './remote-info.mjs';
+import { watchChildren } from './watch-children.mjs';
 
 export const DEV_FLAGS = {
   port: { type: 'number', alias: 'p' },
@@ -125,10 +126,14 @@ export async function devCommand(argv) {
     spawn(process.execPath, ngArgs, { cwd: appRoot, env, stdio }),
   ];
   const stopAll = () => children.forEach((c) => c.kill());
-  children[2].on('exit', (code) => {
-    stopAll();
-    process.exit(code ?? 0);
-  });
+  watchChildren(
+    [
+      { name: 'the slide generator', child: children[0] },
+      { name: 'the companion server', child: children[1] },
+      { name: 'the Angular dev server', child: children[2] },
+    ],
+    (code) => process.exit(code),
+  );
   for (const sig of ['SIGINT', 'SIGTERM'])
     process.on(sig, () => {
       stopAll();
