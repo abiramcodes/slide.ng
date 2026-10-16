@@ -36,7 +36,16 @@ Before the clicks.
 Plain slide.
 
 ---
+dragPos:
+  square: 600,300,100,100
+---
 
 # Fourth
 
 Last slide.
+
+<div id="d1" v-drag="[100,200,160,60]" style="background:#fca5a5">Box</div>
+<div id="d2" v-drag="square" style="background:#93c5fd">Named</div>
+<v-drag id="d3" pos="500,100,150,_" style="background:#86efac">Component</v-drag>
+<v-drag-arrow id="d4" pos="300,250,420,330" />
+<div id="d5" v-drag style="background:#fde68a;width:100px">Bare</div>

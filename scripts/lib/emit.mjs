@@ -5,6 +5,7 @@ import { extractStyles, scopeCss } from './scoped-style.mjs';
 import { splitSlots } from './slots.mjs';
 import { attr } from './protect.mjs';
 import { toTemplate } from './to-template.mjs';
+import { tagDragSites } from './drag-sites.mjs';
 
 const pad = (no) => String(no).padStart(3, '0');
 export const slideName = (no) => `slide-${pad(no)}`;
@@ -36,7 +37,7 @@ function body(markdown, def, no, ctx) {
 /** @param {any} slide @param {number} no @param {{ root?: string, headmatter?: any }} [deck] where `@/` is, and the deck-wide settings */
 export function slideSource(slide, no, deck = {}) {
   const def = LAYOUTS[slide.layout ?? layoutName(slide.frontmatter, no - 1)];
-  const { markdown, css } = extractStyles(slide.content);
+  const { markdown, css } = extractStyles(tagDragSites(slide.content));
   const html = `${openTag(def, slide.frontmatter)}${body(markdown, def, no, { file: slide.file, root: deck.root, headmatter: deck.headmatter })}</${def.tag}>`;
 
   // Look for components outside code samples only (code is just text).

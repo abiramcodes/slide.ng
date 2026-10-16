@@ -30,6 +30,8 @@ export interface ShortcutActions {
   /** The drawing toolbar is on: it owns d, o, g, Escape, ... (Slidev disables the shortcuts then). */
   drawingEnabled(): boolean;
   toggleDrawing(): void;
+  /** A v-drag element is selected: the arrow keys nudge it instead of moving through the slides. */
+  dragActive(): boolean;
 }
 
 /** Deck authors provide this to change the list: `{ provide: SHORTCUTS_SETUP, useValue: (a, list) => [...list, mine] }`. */
@@ -38,7 +40,7 @@ export const SHORTCUTS_SETUP = new InjectionToken<(actions: ShortcutActions, lis
 });
 
 export function defaultShortcuts(a: ShortcutActions): Shortcut[] {
-  const play = () => !a.overviewOpen(); // arrow keys move through the overview while it is open
+  const play = () => !a.overviewOpen() && !a.dragActive(); // arrow keys move through the overview while it is open, and nudge a selected v-drag
   const overview = () => a.overviewOpen();
   const notDrawing = () => !a.drawingEnabled();
   return [
@@ -50,8 +52,8 @@ export function defaultShortcuts(a: ShortcutActions): Shortcut[] {
     { name: 'prev_page_key', key: 'PageUp', run: a.prev },
     { name: 'next_down', key: 'ArrowDown', run: a.nextSlide, when: play },
     { name: 'prev_up', key: 'ArrowUp', run: a.prevSlide, when: play },
-    { name: 'next_shift', key: 'shift+ArrowRight', run: a.nextSlide },
-    { name: 'prev_shift', key: 'shift+ArrowLeft', run: a.prevSlide },
+    { name: 'next_shift', key: 'shift+ArrowRight', run: a.nextSlide, when: play },
+    { name: 'prev_shift', key: 'shift+ArrowLeft', run: a.prevSlide, when: play },
     { name: 'toggle_dark', key: 'd', run: a.toggleDark, when: notDrawing },
     { name: 'toggle_overview', key: 'o', run: a.toggleOverview, when: notDrawing },
     { name: 'toggle_overview_backtick', key: '`', run: a.toggleOverview, when: notDrawing },

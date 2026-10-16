@@ -33,5 +33,8 @@ export const COMPONENTS = [
   { className: 'BlueSky', file: 'builtin/blue-sky', test: /<blue-sky/ },
   { className: 'VMark', file: 'lib/v-mark', test: /[\s[]v-mark[\s=>/.\]]/ },
   { className: 'VMotion', file: 'lib/v-motion', test: /\[v-motion\]|\sv-motion[\s=>/]/ },
+  { className: 'VDrag', file: 'drag/v-drag', test: /\sv-drag[\s=>/]/ },
+  { className: 'VDragBox', file: 'drag/v-drag-box', test: /<v-drag[\s>/]/ },
+  { className: 'VDragArrow', file: 'drag/v-drag-arrow', test: /<v-drag-arrow[\s>/]/ },
   { className: 'Counter', file: 'lib/counter', test: /<app-counter/ },
 ];

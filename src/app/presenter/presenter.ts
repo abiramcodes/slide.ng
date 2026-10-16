@@ -3,6 +3,7 @@ import { Title } from '@angular/platform-browser';
 import { HEADMATTER } from '../../slides/generated';
 import { hideIdleCursor } from '../lib/idle-cursor';
 import { keyHandler } from '../lib/key-handler';
+import { DragControls } from '../drag/drag-controls';
 import { Drawings } from '../drawing/drawings';
 import { DrawingControls } from '../drawing/drawing-controls';
 import { DrawingLayer } from '../drawing/drawing-layer';
@@ -30,7 +31,7 @@ import { TimerInlined } from './timer-inlined';
 // It drives the other windows (see sync/nav-sync.ts). Same navigation as the play page.
 @Component({
   selector: 'app-presenter',
-  imports: [SlideShow, PresenterCursor, DrawingLayer, DrawingControls, NextPreview, NoteDisplay, NavBar, ProgressBar, TimerBar, TimerInlined, ClicksSlider, WebCamera, ScreenMirror, Overview, Goto, ContextMenu],
+  imports: [SlideShow, PresenterCursor, DrawingLayer, DrawingControls, DragControls, NextPreview, NoteDisplay, NavBar, ProgressBar, TimerBar, TimerInlined, ClicksSlider, WebCamera, ScreenMirror, Overview, Goto, ContextMenu],
   providers: [Nav, Ui, Drawings],
   host: { '(window:keydown)': 'key($event)', class: 'block h-full' },
   template: `
@@ -48,7 +49,7 @@ import { TimerInlined } from './timer-inlined';
               <button type="button" id="main-mirror" class="px-2 py-0.5" [class.bg-active]="mirror()" (click)="mirror.set(true)">Screen Mirror</button>
             </div>
           </div>
-          <div class="relative flex-auto p-2 lg:p-4" [style.display]="mirror() ? 'none' : null"><div class="relative h-full w-full"><app-slide-show context="presenter"><app-drawing-layer /><app-presenter-cursor /></app-slide-show></div></div>
+          <div class="relative flex-auto p-2 lg:p-4" [style.display]="mirror() ? 'none' : null"><div class="relative h-full w-full"><app-slide-show context="presenter"><app-drawing-layer /><app-drag-controls /><app-presenter-cursor /></app-slide-show></div></div>
           <div class="relative flex-auto p-2 lg:p-4" [style.display]="mirror() ? null : 'none'"><app-screen-mirror /></div>
           <app-clicks-slider
             class="w-full pb-2 px-4 flex-none"

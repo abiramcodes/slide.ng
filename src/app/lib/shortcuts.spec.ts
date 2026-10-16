@@ -25,10 +25,10 @@ describe('matches', () => {
   });
 });
 
-function actions(log: string[], overview = false, drawing = false): ShortcutActions {
+function actions(log: string[], overview = false, drawing = false, drag = false): ShortcutActions {
   const names = ['next', 'prev', 'nextSlide', 'prevSlide', 'toggleDark', 'toggleOverview', 'toggleGoto', 'toggleFullscreen', 'closeAll', 'overviewGo'];
   const base: any = Object.fromEntries(names.map((n) => [n, () => log.push(n)]));
-  return { ...base, overviewOpen: () => overview, drawingEnabled: () => drawing, overviewMove: (by: string) => log.push(`move ${by}`) };
+  return { ...base, overviewOpen: () => overview, drawingEnabled: () => drawing, dragActive: () => drag, overviewMove: (by: string) => log.push(`move ${by}`) };
 }
 
 describe('default shortcuts (the same keys as Slidev)', () => {
@@ -55,6 +55,11 @@ describe('default shortcuts (the same keys as Slidev)', () => {
   it('leaves d, o, `, g and Escape to the drawing toolbar while it is on, arrows still move', () => {
     expect(['d', 'o', '`', 'g', 'Escape'].map((k) => run(k, {}, false, true))).toEqual(['', '', '', '', '']);
     expect(run('ArrowRight', {}, false, true)).toBe('next');
+  });
+  it('leaves the arrow keys to a selected v-drag element', () => {
+    const run = (k: string, mods = {}) => { const log: string[] = []; findShortcut(key(k, mods), defaultShortcuts(actions(log, false, false, true)))?.run(); return log.join(); };
+    expect([run('ArrowRight'), run('ArrowUp'), run('ArrowRight', { shiftKey: true })]).toEqual(['', '', '']);
+    expect(run(' ')).toBe('next');
   });
   it('uses the arrows to move inside the overview, and Enter to go', () => {
     expect(run('ArrowRight', {}, true)).toBe('move right');
