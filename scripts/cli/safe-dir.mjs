@@ -7,6 +7,7 @@ import {
   lstatSync,
   mkdirSync,
   readdirSync,
+  realpathSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
@@ -14,6 +15,14 @@ import { homedir } from 'node:os';
 import { dirname, join, parse, resolve, sep } from 'node:path';
 
 export const MARKER = '.slide-ng-build';
+
+const real = (p) => {
+  try {
+    return realpathSync(p);
+  } catch {
+    return resolve(p);
+  }
+};
 
 /** Throws when `dir` must not be emptied. `cwd` is the folder the command runs in (it can never be the target). */
 export function checkClaimable(dir, cwd = process.cwd()) {
@@ -23,7 +32,9 @@ export function checkClaimable(dir, cwd = process.cwd()) {
   if (path === resolve(homedir()))
     throw new Error(`Refusing to use ${path}: it is your home folder`);
   // The project (or a folder above it) would be wiped by a clean build.
-  if (resolve(cwd) === path || resolve(cwd).startsWith(path + sep))
+  const here = real(cwd);
+  const target = real(path);
+  if (here === target || here.startsWith(target + sep))
     throw new Error(`Refusing to use ${path}: it contains the current folder`);
   if (!existsSync(path)) return;
   if (lstatSync(path).isSymbolicLink())

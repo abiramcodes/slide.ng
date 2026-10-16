@@ -46,6 +46,12 @@ describe('checkClaimable', () => {
     expect(() => checkClaimable(base, base)).toThrow('current folder');
     expect(() => checkClaimable(tmpdir(), base)).toThrow('current folder');
   });
+  it('refuses the current folder given through a symbolic link', () => {
+    const base = tmp();
+    const other = tmp();
+    symlinkSync(base, join(other, 'via'));
+    expect(() => checkClaimable(join(other, 'via'), base)).toThrow('current folder');
+  });
   it('refuses a symbolic link and a file', () => {
     const base = tmp();
     mkdirSync(join(base, 'real'));
