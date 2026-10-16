@@ -58,7 +58,8 @@
     "test:export": "node tests/export/run.mjs && node tests/export/build.mjs && node tests/export/theme.mjs && node tests/export/scaffold.mjs && node tests/export/mcp.mjs && node tests/export/offline.mjs && node tests/export/offline-net.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "prepare": "node scripts/prepare.mjs"
   },
   "dependencies": {
     "@angular/build": "^22.2.3",
