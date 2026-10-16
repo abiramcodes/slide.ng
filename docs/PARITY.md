@@ -218,13 +218,13 @@ Slidev is Vue and Vite; slide.ng is Angular. Anything that is about Vue, Vite pl
 | `setup/main.ts`, `setup/vite.config.ts`, `vite.config.ts`, `vue.ts`, `setup/root.ts` | custom/config-vite.md, config-vue.md | different by design | no Vite or Vue; Angular providers in `setup/providers.ts` instead; not verified (no test) |
 | Theme gallery, addon gallery, community themes | resources/*.md | not done (skipped on purpose) |  |
 
-## AI and tooling
+## Tooling
 
 | Feature | Slidev reference | slide.ng status | Notes or test |
 | --- | --- | --- | --- |
 | MCP server over stdio: list, get, update, insert, remove, move, outline | features/mcp.md | done | slide 1 (headmatter) cannot be removed or moved; test: update_slide: slides.md on disk has the new text |
 | MCP path confinement | features/mcp.md | done | test: update_slide: a slide of a file outside the folder is refused |
-| Work with AI guide / skills | guide/work-with-ai.md | not done | documentation only |
+| Guide page for working with agents and skills | docs/guide (agents page) | not done | documentation only |
 | VS Code extension | features/vscode-extension.md | not done (skipped on purpose) |  |
 | Prettier plugin | features/prettier-plugin.md | not done (skipped on purpose) | the `format` command covers the markdown structure |
 | Vue-syntax to Angular converter | - | not done (skipped on purpose) |  |
