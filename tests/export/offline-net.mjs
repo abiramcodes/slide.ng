@@ -16,6 +16,8 @@ const scratch = mkdtempSync(join(tmpdir(), 'slide-ng-offline-net-'));
 const env = {
   ...process.env,
   CHROME_PATH: process.env.CHROME_PATH ?? '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
+  // The "remote" servers of this test are on 127.0.0.1, which downloads refuse unless a test says so.
+  SLIDE_NG_ALLOW_LOCAL_FETCH: '1',
 };
 const run = promisify(execFile);
 
@@ -32,6 +34,7 @@ remoteAssets: true
 fonts:
   sans: NetTest
   provider: ${fonts.cssUrl}
+  allowCustomProvider: true
 ---
 
 # One

@@ -1,11 +1,14 @@
 // `remoteAssets: true` (headmatter): while building, download the remote images a deck uses and serve them from the
 // build itself, so the deck works offline and does not depend on someone else's server.
 //
-// Only images are taken: the answer must have an `image/*` content type and be at most 20 MB. The address list
+// Only images are taken: the answer must have an `image/*` content type, start with the bytes of a known picture format
+// and be at most 20 MB. An address that is not public (loopback, private, link-local, metadata) is refused (safe-fetch.mjs),
+// and so is SVG: a downloaded .svg is served from the deck's own address, where it could run script. The address list
 // comes from the deck's own text (markdown images, <img src>, CSS url(), and the frontmatter keys that name an image).
 import { createHash } from 'node:crypto';
 import { mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { safeFetch } from './safe-fetch.mjs';
 
 const MAX_BYTES = 20 * 1024 * 1024;
 const TIMEOUT_MS = 20_000;
@@ -31,7 +34,6 @@ const EXTENSIONS = {
   'image/jpeg': '.jpg',
   'image/gif': '.gif',
   'image/webp': '.webp',
-  'image/svg+xml': '.svg',
   'image/avif': '.avif',
   'image/x-icon': '.ico',
 };
@@ -42,19 +44,43 @@ export function localName(url, contentType) {
   return `${hash}${EXTENSIONS[contentType.split(';')[0].trim().toLowerCase()] ?? '.img'}`;
 }
 
-/** Downloads one picture. Returns `{ name, bytes }`, or null when it is not an image (a warning is given). */
-export async function downloadImage(url, warn, fetchImpl = fetch) {
+/** What the first bytes say a picture is: a content type from the list above, 'image/svg+xml' for SVG, or null. */
+export function sniffImage(bytes) {
+  const starts = (...b) => b.every((v, i) => bytes[i] === v);
+  const text = (from, str) => bytes.subarray(from, from + str.length).toString('latin1') === str;
+  if (starts(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a)) return 'image/png';
+  if (starts(0xff, 0xd8, 0xff)) return 'image/jpeg';
+  if (text(0, 'GIF87a') || text(0, 'GIF89a')) return 'image/gif';
+  if (text(0, 'RIFF') && text(8, 'WEBP')) return 'image/webp';
+  if (text(4, 'ftyp') && (text(8, 'avif') || text(8, 'avis'))) return 'image/avif';
+  if (starts(0, 0, 1, 0)) return 'image/x-icon';
+  if (/<svg[\s>]/i.test(bytes.subarray(0, 4096).toString('utf8'))) return 'image/svg+xml';
+  return null;
+}
+
+/**
+ * Downloads one picture. Returns `{ name, bytes }`, or null when it is not taken (a warning says why): not an image, SVG,
+ * too big, not a public address, a failed request. `options.allowLocal` is for tests that use a local server.
+ * @param {string} url @param {(m: string) => any} warn @param {typeof fetch} [fetchImpl] @param {{ allowLocal?: boolean }} [options]
+ */
+export async function downloadImage(url, warn, fetchImpl, options = {}) {
   try {
-    const res = await fetchImpl(url, {
-      signal: AbortSignal.timeout(TIMEOUT_MS),
-      redirect: 'follow',
+    const res = await safeFetch(url, {
+      maxBytes: MAX_BYTES,
+      timeoutMs: TIMEOUT_MS,
+      fetchImpl,
+      allowLocal: options.allowLocal,
     });
     const type = res.headers.get('content-type') ?? '';
     if (!res.ok || !type.toLowerCase().startsWith('image/'))
       return warn(`${url} is not an image (status ${res.status}, type "${type}"), left as it is`);
-    const bytes = Buffer.from(await res.arrayBuffer());
-    if (bytes.length > MAX_BYTES) return warn(`${url} is larger than 20 MB, left as it is`);
-    return { name: localName(url, type), bytes };
+    const sniffed = sniffImage(res.bytes);
+    if (sniffed === 'image/svg+xml')
+      return warn(
+        `${url} is an SVG picture; it is not downloaded because an SVG can carry script. Left as it is (or save it into the deck's folder)`,
+      );
+    if (!sniffed) return warn(`${url} does not start like a picture file, left as it is`);
+    return { name: localName(url, sniffed), bytes: res.bytes };
   } catch (error) {
     return warn(`could not download ${url} (${error.message}), left as it is`);
   }
@@ -78,8 +104,15 @@ export function emptyFolder(folder) {
 /**
  * Downloads the images of all slides into `folder` and rewrites the slides' text and frontmatter.
  * Returns how many were bundled. `folder` is emptied first.
+ * @param {any[]} slides @param {string} folder @param {(m: string) => any} [warn] @param {typeof fetch} [fetchImpl] @param {{ allowLocal?: boolean }} [options]
  */
-export async function bundleRemoteAssets(slides, folder, warn = console.warn, fetchImpl = fetch) {
+export async function bundleRemoteAssets(
+  slides,
+  folder,
+  warn = console.warn,
+  fetchImpl,
+  options = {},
+) {
   const texts = slides.map(
     (s) => `${s.content}\n${JSON.stringify(s.frontmatter).replace(/\\"/g, '"')}`,
   );
@@ -89,7 +122,7 @@ export async function bundleRemoteAssets(slides, folder, warn = console.warn, fe
 
   const mapping = {};
   for (const url of urls) {
-    const image = await downloadImage(url, warn, fetchImpl);
+    const image = await downloadImage(url, warn, fetchImpl, options);
     if (!image) continue;
     writeFileSync(join(folder, image.name), image.bytes);
     mapping[url] = `${FOLDER}/${image.name}`;

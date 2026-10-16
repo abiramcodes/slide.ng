@@ -22,6 +22,8 @@ const scratch = mkdtempSync(join(tmpdir(), 'slide-ng-build-'));
 const env = {
   ...process.env,
   CHROME_PATH: process.env.CHROME_PATH ?? '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
+  // The "remote" servers of this test are on 127.0.0.1, which downloads refuse unless a test says so.
+  SLIDE_NG_ALLOW_LOCAL_FETCH: '1',
 };
 // Asynchronous, because the "remote" server below runs in this same process and must be able to answer.
 const run = promisify(execFile);

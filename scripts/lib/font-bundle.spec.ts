@@ -2,7 +2,14 @@ import { mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { bundleFonts, fontAddresses, fontFileName, wantsFontFiles } from './font-bundle.mjs';
+import {
+  bundleFonts,
+  fontAddresses,
+  fontFileName,
+  onlyFontFaces,
+  sniffFont,
+  wantsFontFiles,
+} from './font-bundle.mjs';
 import { fontsCss, fontsUrl, resolveFonts } from './fonts.mjs';
 import { themeCss } from './theme-files.mjs';
 
@@ -77,7 +84,12 @@ describe('fontAddresses and fontFileName', () => {
 
 describe('bundleFonts', () => {
   const head = {
-    fonts: { sans: 'Robot', weights: '400,600', provider: 'https://fonts.test/css2' },
+    fonts: {
+      sans: 'Robot',
+      weights: '400,600',
+      provider: 'https://fonts.test/css2',
+      allowCustomProvider: true,
+    },
   };
   const sheet = fontsUrl(resolveFonts(head.fonts))!;
   const ok = { type: 'font/woff2', body: Buffer.from('wOF2-data') };
@@ -167,10 +179,90 @@ describe('the style sheet of a self-hosted deck', () => {
     );
     expect(css.startsWith('@font-face')).toBe(true);
   });
-  it('accepts the address of a css2 endpoint as the provider', () => {
-    expect(fontsUrl(resolveFonts({ sans: 'Robot', provider: 'http://127.0.0.1:9/css2' }))).toBe(
+  it('accepts the address of a css2 endpoint as the provider, with the explicit opt-in', () => {
+    const fonts = { sans: 'Robot', provider: 'http://127.0.0.1:9/css2', allowCustomProvider: true };
+    expect(fontsUrl(resolveFonts(fonts))).toBe(
       'http://127.0.0.1:9/css2?family=Robot:wght@200;400;600&display=swap',
     );
     expect(fontsUrl(resolveFonts({ sans: 'Robot', provider: 'javascript:alert(1)' }))).toBeNull();
+  });
+});
+
+describe('bundleFonts: what is not taken', () => {
+  const head = {
+    fonts: {
+      sans: 'Robot',
+      weights: '400',
+      provider: 'https://fonts.test/css2',
+      allowCustomProvider: true,
+    },
+  };
+  const sheet = fontsUrl(resolveFonts(head.fonts))!;
+  const run = (table: Parameters<typeof fakeFetch>[0]) => {
+    const warnings: string[] = [];
+    const { impl } = fakeFetch(table);
+    return bundleFonts(
+      head,
+      mkdtempSync(join(tmpdir(), 'fonts-')),
+      (m: string) => (warnings.push(m), null),
+      impl,
+    ).then((result) => ({ result, warnings }));
+  };
+
+  it('keeps only the @font-face rules of the sheet: no @import, no other rule', async () => {
+    const css = `@import url(https://evil.test/x.css);\nbody { background: url(https://evil.test/p.png); }\n${CSS}`;
+    const { result } = await run({
+      [sheet]: { type: 'text/css', body: css },
+      'https://fonts.test/a/robot-latin.woff2': { type: 'font/woff2', body: Buffer.from('wOF2-1') },
+      'https://fonts.test/a/robot-ext.woff2': { type: 'font/woff2', body: Buffer.from('wOF2-2') },
+    });
+    expect(result?.css).not.toContain('evil.test');
+    expect(result?.css).not.toContain('@import');
+    expect(result?.css).not.toContain('body');
+    expect(result?.css).toContain('@font-face');
+  });
+  it('refuses a file that does not start like a font (HTML, an image, a script)', async () => {
+    const { result, warnings } = await run({
+      [sheet]: { type: 'text/css', body: CSS },
+      'https://fonts.test/a/robot-latin.woff2': { type: 'font/woff2', body: '<html>x</html>' },
+      'https://fonts.test/a/robot-ext.woff2': { type: 'font/woff2', body: '<svg onload=1>' },
+    });
+    expect(result).toBeNull();
+    expect(warnings.filter((w) => w.includes('does not start like a font'))).toHaveLength(2);
+  });
+  it('refuses a provider answer that is not a style sheet', async () => {
+    const { result, warnings } = await run({ [sheet]: { type: 'text/html', body: CSS } });
+    expect(result).toBeNull();
+    expect(warnings[0]).toContain('did not answer with a style sheet');
+  });
+  it('refuses addresses that are not public, also for the provider itself', async () => {
+    const warnings: string[] = [];
+    const local = {
+      fonts: { sans: 'Robot', provider: 'http://127.0.0.1:9/css2', allowCustomProvider: true },
+    };
+    const result = await bundleFonts(
+      local,
+      mkdtempSync(join(tmpdir(), 'fonts-')),
+      (m: string) => (warnings.push(m), null),
+      undefined,
+      { allowLocal: false },
+    );
+    expect(result).toBeNull();
+    expect(warnings.join()).toContain('not a public address');
+  });
+});
+
+describe('sniffFont and onlyFontFaces', () => {
+  it('knows woff2, woff, otf and ttf', () => {
+    expect(sniffFont(Buffer.from('wOF2....'))).toBe('.woff2');
+    expect(sniffFont(Buffer.from('wOFF....'))).toBe('.woff');
+    expect(sniffFont(Buffer.from('OTTO....'))).toBe('.otf');
+    expect(sniffFont(Buffer.from([0, 1, 0, 0, 9]))).toBe('.ttf');
+    expect(sniffFont(Buffer.from('<svg'))).toBeNull();
+  });
+  it('drops comments and everything that is not a font face', () => {
+    expect(onlyFontFaces('/* c */ @import "x"; a{b:c} @font-face { src: url(x) }').trim()).toBe(
+      '@font-face { src: url(x) }',
+    );
   });
 });

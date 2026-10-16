@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fontsCss, fontsUrl, resolveFonts } from './fonts.mjs';
+import { cssString, fontsCss, fontsUrl, resolveFonts } from './fonts.mjs';
 import { themeCss } from './theme-files.mjs';
 
 describe('resolveFonts', () => {
@@ -64,5 +64,51 @@ describe('fontsCss', () => {
     expect(css.startsWith('@import url("https://fonts.googleapis.com/css2?family=Robot')).toBe(
       true,
     );
+  });
+});
+
+describe('fonts.provider', () => {
+  const url = (fonts: object) => fontsUrl(resolveFonts({ sans: 'Robot', ...fonts }));
+  it('takes the known providers by name or by address', () => {
+    expect(url({})).toMatch(/^https:\/\/fonts\.googleapis\.com\/css2\?/);
+    expect(url({ provider: 'https://fonts.googleapis.com/css2' })).toMatch(
+      /^https:\/\/fonts\.googleapis\.com\//,
+    );
+    expect(url({ provider: 'https://api.fonts.coollabs.io/css2' })).toContain('coollabs');
+  });
+  it('refuses any other address unless the deck allows it, with a clear error', () => {
+    for (const provider of [
+      'https://evil.test/css2',
+      'http://fonts.googleapis.com/css2',
+      'http://127.0.0.1:8/css2',
+    ])
+      expect(() => url({ provider }), provider).toThrow('allowCustomProvider');
+    expect(url({ provider: 'https://mirror.test/css2', allowCustomProvider: true })).toMatch(
+      /^https:\/\/mirror\.test\/css2\?/,
+    );
+  });
+  it('refuses an address with a user name', () => {
+    expect(() => url({ provider: 'https://user:pw@fonts.googleapis.com/css2' })).toThrow(
+      'user name',
+    );
+  });
+  it('a provider that is not an address loads nothing', () => {
+    expect(url({ provider: 'none' })).toBeNull();
+    expect(url({ provider: 'x"); } body { background: url(//evil' })).toBeNull();
+  });
+  it('escapes the address in @import so it cannot close the string or the rule', () => {
+    const css = fontsCss({
+      fonts: {
+        sans: 'Robot',
+        provider: 'https://mirror.test/a")}*{background:url(//evil.test/x)}/*',
+        allowCustomProvider: true,
+      },
+    });
+    const line = css.split('\n').find((l) => l.startsWith('@import'))!;
+    expect(line).toMatch(/^@import url\("[^"]*"\);$/);
+    expect(line).not.toContain('")}');
+  });
+  it('cssString escapes quotes, backslashes and line breaks', () => {
+    expect(cssString('a"b\\c\nd')).not.toMatch(/["\n]/);
   });
 });

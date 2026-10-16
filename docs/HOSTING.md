@@ -144,9 +144,11 @@ of the deck; without it the tag points at `<base>og-image.png`.
 
 With `remoteAssets: true` the build downloads the remote pictures a deck uses (markdown `![](https://...)`, `<img src>`, CSS
 `url()`, and the frontmatter keys `image`, `background`, `backgroundImage`, `poster`) into `remote-assets/` and rewrites the
-slides to use them. Only answers with an `image/*` content type up to 20 MB are taken; anything else is left as it is and
-reported. The download runs on the machine that builds, so a deck from someone else can make that machine request
-addresses of its choice: build untrusted decks without `remoteAssets`.
+slides to use them. Only answers with an `image/*` content type that also start like a PNG, JPEG, GIF, WebP, AVIF or ICO file, up to 20 MB, are taken; anything
+else is left as it is and reported. SVG pictures are not downloaded (a served `.svg` can run script); save the file into the deck instead.
+The download runs on the machine that builds, so it refuses addresses that are not public (loopback, link-local such as the cloud metadata
+address, private ranges), also when a name resolves to one and also after a redirect (at most 3 redirects are followed), and it stops reading at the size limit.
+Build decks you do not trust without `remoteAssets` all the same. Tests that use a local server as the "remote" set `SLIDE_NG_ALLOW_LOCAL_FETCH=1`; nothing else should.
 
 ## Web fonts
 
@@ -155,7 +157,9 @@ deck is shown. With `fonts: { selfHost: true }` the build downloads the provider
 them from the build (`media/`), so the deck does not call the provider. It is on by default for `pwa: true` and `build --offline`
 (`selfHost: false` turns it off). Google's answer depends on the browser name, so the download asks as a current Chrome and gets woff2 files.
 If the download fails the build warns and the deck keeps the `@import`. `provider` can be `google`, `coollabs`, `none`, or the address of a
-Google-compatible `css2` endpoint (a mirror in your company). The download runs on the machine that builds: build decks from others without `selfHost`, as with `remoteAssets`.
+Google-compatible `css2` endpoint (a mirror in your company), which needs `fonts: { allowCustomProvider: true }`; any other address is a build error.
+Only the `@font-face` rules of the provider's sheet are kept, and a font file must start like woff2, woff, otf or ttf. The download follows the same address rules as the pictures (no address that is not public, 3 redirects, size limits).
+The download runs on the machine that builds: build decks from others without `selfHost`, as with `remoteAssets`.
 Tested against a local fake provider only (`tests/export/offline.mjs`, `offline-net.mjs`); real Google Fonts were not called: NOT VERIFIED.
 
 ## Offline folder

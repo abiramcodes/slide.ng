@@ -4,9 +4,11 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   bundleRemoteAssets,
+  downloadImage,
   findRemoteImages,
   localName,
   rewriteAddresses,
+  sniffImage,
 } from './remote-assets.mjs';
 
 describe('findRemoteImages', () => {
@@ -41,7 +43,6 @@ describe('localName', () => {
     expect(localName('https://x.test/a.png', 'image/png')).toBe(
       localName('https://x.test/a.png', 'image/png; charset=x'),
     );
-    expect(localName('https://x.test/a', 'image/svg+xml')).toMatch(/\.svg$/);
     expect(localName('https://x.test/a', 'image/unknown')).toMatch(/\.img$/);
   });
 });
@@ -114,5 +115,72 @@ describe('bundleRemoteAssets', () => {
     expect(slides[0].content).toContain('https://x.test/page.html');
     expect(warnings.length).toBe(2);
     expect(readdirSync(folder)).toEqual([]);
+  });
+});
+
+describe('downloadImage: what is not taken', () => {
+  const png = Buffer.from('89504e470d0a1a0a00', 'hex');
+  const answer = (body: Buffer | string, type = 'image/png', headers = {}) =>
+    (async () =>
+      new Response(typeof body === 'string' ? body : new Uint8Array(body), {
+        headers: { 'content-type': type, ...headers },
+      })) as never;
+  const ask = async (fetchImpl: never, url = 'https://x.test/a.png') => {
+    const warnings: string[] = [];
+    const got = await downloadImage(url, (m: string) => (warnings.push(m), null), fetchImpl);
+    return { got, warnings };
+  };
+
+  it('refuses addresses that are not public, without sending a request', async () => {
+    for (const url of [
+      'http://127.0.0.1:9/a.png',
+      'http://169.254.169.254/latest/meta-data/x.png',
+      'http://192.168.1.1/a.png',
+      'http://localhost:9/a.png',
+    ]) {
+      const warnings: string[] = [];
+      const got = await downloadImage(url, (m: string) => (warnings.push(m), null), undefined, {
+        allowLocal: false,
+      });
+      expect(got, url).toBeNull();
+      expect(warnings[0], url).toContain('not a public address');
+    }
+  });
+  it('drops SVG, because a served .svg can run script', async () => {
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"></svg>';
+    const { got, warnings } = await ask(answer(svg, 'image/svg+xml'));
+    expect(got).toBeNull();
+    expect(warnings[0]).toContain('SVG');
+    expect((await ask(answer(`<?xml version="1.0"?>\n${svg}`, 'image/png'))).got).toBeNull();
+  });
+  it('checks the first bytes, not the content type the server claims', async () => {
+    const { got, warnings } = await ask(answer('<html><script>1</script></html>'));
+    expect(got).toBeNull();
+    expect(warnings[0]).toContain('does not start like a picture');
+  });
+  it('names the file after the sniffed format', async () => {
+    const jpeg = Buffer.from('ffd8ffe000104a46494600', 'hex');
+    const { got } = await ask(answer(jpeg, 'image/png'));
+    expect(got?.name).toMatch(/\.jpg$/);
+  });
+  it('refuses a picture that says it is over 20 MB before reading it', async () => {
+    const { got, warnings } = await ask(
+      answer(png, 'image/png', { 'content-length': String(30 * 1024 * 1024) }),
+    );
+    expect(got).toBeNull();
+    expect(warnings[0]).toContain('Content-Length');
+  });
+});
+
+describe('sniffImage', () => {
+  it('knows the formats it takes', () => {
+    const b = (hex: string) => Buffer.from(hex, 'hex');
+    expect(sniffImage(b('89504e470d0a1a0a'))).toBe('image/png');
+    expect(sniffImage(b('ffd8ff'))).toBe('image/jpeg');
+    expect(sniffImage(Buffer.from('GIF89a..'))).toBe('image/gif');
+    expect(sniffImage(Buffer.from('RIFF....WEBPVP8 '))).toBe('image/webp');
+    expect(sniffImage(Buffer.from('\0\0\0\x18ftypavif'))).toBe('image/avif');
+    expect(sniffImage(b('00000100'))).toBe('image/x-icon');
+    expect(sniffImage(Buffer.from('plain text'))).toBeNull();
   });
 });
