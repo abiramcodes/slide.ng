@@ -6,6 +6,8 @@ import { slideName, slideSource } from './lib/emit.mjs';
 import { indexSource } from './lib/index-source.mjs';
 import { layoutName } from './lib/layouts.mjs';
 import { makeCss, tsFiles } from './lib/make-css.mjs';
+import { detectFeatures } from './lib/features.mjs';
+import { initHighlighter } from './lib/code/highlighter.mjs';
 
 // SLIDES_FILE lets tests build another deck.
 const INPUT = process.env.SLIDES_FILE ?? 'slides.md';
@@ -22,10 +24,12 @@ async function generate() {
   deck.problems.forEach((p) => console.warn(`[slides] ${p}`));
   // Decide each layout once, so that an unknown name is reported once.
   deck.slides.forEach((s, i) => (s.layout = layoutName(s.frontmatter, i)));
+  const features = detectFeatures(deck.slides);
+  await initHighlighter({ langs: features.langs, headmatter: deck.headmatter });
   mkdirSync(OUT, { recursive: true });
   const wanted = new Set(deck.slides.map((_, i) => `${slideName(i + 1)}.ts`).concat('index.ts', 'uno.css'));
   for (const f of readdirSync(OUT)) if (!wanted.has(f)) rmSync(OUT + f);
-  deck.slides.forEach((s, i) => write(`${OUT}${slideName(i + 1)}.ts`, slideSource(s, i + 1)));
+  deck.slides.forEach((s, i) => write(`${OUT}${slideName(i + 1)}.ts`, slideSource(s, i + 1, deck)));
   write(`${OUT}index.ts`, indexSource(deck));
   write(`${OUT}uno.css`, await makeCss([...deck.files, ...tsFiles('src/app')]));
   console.log(`[slides] generated ${deck.slides.length} slides`);

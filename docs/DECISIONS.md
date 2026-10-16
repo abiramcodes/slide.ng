@@ -94,3 +94,31 @@ Short notes on choices made, and why. Newest at the bottom.
 23. **The readout `#hud` stays** (tests read it) but is hidden from the eye.
 24. **`@types/node`** was added as a dev dependency so the unit tests can use `node:fs` for the `src:` tests.
 
+
+## Made during phase 2
+
+New dependencies, each with its reason (dev = only used while generating or testing, not in the browser bundle):
+`shiki` (dev, highlights code while generating), `katex` (dev, math to HTML while generating; its CSS is added only when used),
+`@iconify-json/mdi` and `@iconify-json/ph` (dev, icon data for the generator), `@shikijs/magic-move` (the animation of Magic Move; lazy),
+`mermaid` (diagrams; lazy), `monaco-editor` (editor; lazy), `rough-notation` (the `v-mark` drawings; lazy).
+Nothing else was added: footnotes, alerts, the PlantUML encoding and the code runner are small hand-written pieces.
+
+1. **Code is highlighted while generating, and the browser gets finished HTML.** Shiki runs in `scripts/lib/code/highlighter.mjs` with both
+   themes (`vitesse-light`, `vitesse-dark`, Slidev's defaults) written as CSS variables; `src/styles/code.css` picks one by the `dark` class.
+   Headmatter `shiki: { themes: { light, dark } }` changes the themes and `codeAliases: { name: shikiName }` adds language names.
+2. **The languages are found before generating** (`features.mjs` scans fences and `<<<` lines), so the highlighter can be synchronous and
+   `toTemplate` stays a plain function. A language Shiki does not know is shown as plain text with a warning.
+3. **Line highlights are done in the browser, not in the HTML.** The generator writes the ranges as an attribute (`ranges="2-3|5|all"`) and
+   `<code-block-wrapper>` toggles `highlighted` / `dishonored` classes from the click number, which is Slidev's design. One code path serves
+   static `{2,3}` and click-stepped ranges. A static highlight appears on the first rendered frame after the component starts, not in the HTML.
+4. **Fence options are written as plain attributes** (`lines="true" startLine="5" maxHeight="100px"`) and read with Angular's attribute
+   transforms. The options text `{lines:true,maxHeight:'100px'}` is read by a small parser (numbers, booleans, quoted text and bare words),
+   not evaluated as JavaScript as Slidev does.
+5. **`@/` in `<<<` is the folder of the entry markdown file**, like Slidev's `userRoot`. A missing snippet file is a warning plus a visible
+   comment inside the block, so one typo does not stop the build.
+6. **`::code-group` takes the fences inside it and ignores the text between them.** Tab names are the `[titles]`; the title bar of the single
+   blocks is hidden inside a group. Slidev's automatic file icons (vscode-icons) and the `~icon~` title syntax are not drawn.
+7. **Fences are found by a small line scanner** (`fences.mjs`) instead of a regular expression, so four backtick fences can hold three backtick
+   ones (needed for Magic Move) and `<<<` / `::code-group` are handled in the same pass.
+8. **The deck for the phase 2 tests is `tests/e2e/phase2/slides.md`**, next to the phase 1 showcase, with its own runner (`npm run test:e2e`
+   runs all three decks). It is the showcase deck the task asks for; the starter `slides.md` stays small.

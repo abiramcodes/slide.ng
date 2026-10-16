@@ -1,0 +1,55 @@
+// `<<< ./file.ts#region ts {2|3}` : put a file's text (or one region of it) in a code block.
+// Port of Slidev's snippet.ts. `@/` means the project root.
+import { existsSync, readFileSync, statSync } from 'node:fs';
+import { dirname, extname, resolve } from 'node:path';
+
+// (The language is the word after the file name; it cannot start with `{`, which begins the ranges.)
+export const SNIPPET_LINE = /^<<<[ \t]*(\S.*?)(#[\w-]+)?[ \t]*(?:[ \t]([^\s{]\S*?))?[ \t]*(\{.*)?$/;
+
+// Comment styles that can mark a region: [start, end] for several languages.
+const MARKERS = [
+  [/^\s*\/\/\s*#?region\b\s*(.*?)\s*$/, /^\s*\/\/\s*#?endregion\b\s*(.*?)\s*$/],
+  [/^\s*<!--\s*#?region\b\s*(.*?)\s*-->/, /^\s*<!--\s*#?endregion\b\s*(.*?)\s*-->/],
+  [/^\s*\/\*\s*#region\b\s*(.*?)\s*\*\//, /^\s*\/\*\s*#endregion\b\s*(.*?)\s*\*\//],
+  [/^\s*#[rR]egion\b\s*(.*?)\s*$/, /^\s*#[eE]nd ?[rR]egion\b\s*(.*?)\s*$/],
+  [/^\s*#\s*#?region\b\s*(.*?)\s*$/, /^\s*#\s*#?endregion\b\s*(.*?)\s*$/],
+];
+
+// Lines of the region called `name`, markers left out. null when there is none.
+export function findRegion(lines, name) {
+  for (const [start, end] of MARKERS) {
+    const from = lines.findIndex((l) => start.exec(l)?.[1] === name);
+    if (from < 0) continue;
+    let depth = 1; // regions of the same name may nest
+    for (let i = from + 1; i < lines.length; i++) {
+      if (start.exec(lines[i])?.[1] === name) depth++;
+      const closing = end.exec(lines[i])?.[1];
+      if ((closing === name || closing === '') && --depth === 0) return lines.slice(from + 1, i);
+    }
+  }
+  return null;
+}
+
+// Remove the indentation that every line has in common.
+export function dedent(lines) {
+  const indents = lines.filter((l) => l.trim()).map((l) => /^[ \t]*/.exec(l)[0].length);
+  const cut = indents.length ? Math.min(...indents) : 0;
+  return lines.map((l) => l.slice(cut));
+}
+
+// `line` is the whole `<<<` line, `file` the markdown file it is in, `root` the project folder.
+// Returns { code, lang, meta, path } or throws with a readable message.
+export function resolveSnippet(line, file, root) {
+  const m = SNIPPET_LINE.exec(line.trim());
+  if (!m) return null;
+  const [, name, region = '', lang = '', meta = ''] = m;
+  const path = name.startsWith('@/') ? resolve(root, name.slice(2)) : resolve(dirname(file), name);
+  if (!existsSync(path) || !statSync(path).isFile()) throw new Error(`Code snippet not found: ${path}`);
+  let lines = readFileSync(path, 'utf8').replace(/\r/g, '').replace(/\n$/, '').split('\n');
+  if (region) {
+    const found = findRegion(lines, region.slice(1));
+    if (found) lines = dedent(found);
+    else console.warn(`[slides] region "${region.slice(1)}" not found in ${path}, using the whole file`);
+  }
+  return { code: lines.join('\n'), lang: lang.trim() || extname(name).slice(1), meta: meta.trim(), path };
+}

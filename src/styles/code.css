@@ -1,0 +1,61 @@
+/* Code blocks. Ported from Slidev's code.css, with the `--uno:` lines written out as plain CSS. */
+
+/* Shiki writes both colours as variables (--shiki-light, --shiki-dark); the page picks one. */
+html.dark .shiki, html.dark .shiki span { color: var(--shiki-dark, inherit); }
+html:not(.dark) .shiki, html:not(.dark) .shiki span { color: var(--shiki-light, inherit); }
+
+.slidev-code-wrapper { margin: var(--slidev-code-margin) !important; scroll-padding: var(--slidev-code-padding); }
+.slidev-code {
+  font-family: var(--slidev-code-font-family) !important;
+  padding: var(--slidev-code-padding) !important;
+  font-size: var(--slidev-code-font-size) !important;
+  line-height: var(--slidev-code-line-height) !important;
+  border-radius: var(--slidev-code-radius) !important;
+  background: var(--slidev-code-background);
+  overflow: auto;
+  margin: 0;
+}
+.slidev-code code { background: none; padding: 0; font-size: inherit; }
+
+/* Title bar over a block, and the tabs of a code group */
+.slidev-code-block-title, .slidev-code-group-tabs {
+  background: var(--slidev-code-background);
+  color: var(--slidev-code-tab-text-color);
+  padding-left: 14px; padding-right: 14px;
+  font-size: var(--slidev-code-tab-font-size);
+  border-radius: var(--slidev-code-radius) var(--slidev-code-radius) 0 0;
+  box-shadow: inset 0 -1px var(--slidev-code-tab-divider);
+  display: flex; gap: 8px; align-items: center;
+}
+.slidev-code-block-title { padding: var(--slidev-code-padding); }
+.slidev-code-tab {
+  font-size: var(--slidev-code-tab-font-size); white-space: nowrap; cursor: pointer;
+  transition: color 0.25s; padding: var(--slidev-code-padding);
+  border-bottom: 2px solid transparent; color: var(--slidev-code-tab-text-color);
+  background: none; border-top: 0; border-left: 0; border-right: 0;
+}
+.slidev-code-tab:hover, .slidev-code-tab.active { color: var(--slidev-code-tab-active-text-color); }
+.slidev-code-tab.active { border-bottom-color: var(--slidev-theme-primary); }
+.slidev-code-group-blocks .slidev-code-wrapper { margin: 0 !important; display: none; }
+.slidev-code-group-blocks .slidev-code-wrapper.active { display: block; }
+.slidev-code-group-blocks .slidev-code { border-radius: 0 0 var(--slidev-code-radius) var(--slidev-code-radius) !important; }
+.slidev-code-block-title + .slidev-code, .slidev-code-group-tabs + .slidev-code { border-top-left-radius: 0 !important; border-top-right-radius: 0 !important; }
+
+/* Line highlights: the other lines fade */
+.slidev-code .slidev-code-dishonored { opacity: 0.3; transition: opacity 0.2s; }
+.slidev-code .slidev-code-highlighted { transition: opacity 0.2s; }
+
+/* Line numbers */
+.slidev-code-line-numbers .slidev-code code { counter-reset: step; counter-increment: step calc(var(--start, 1) - 1); }
+.slidev-code-line-numbers .slidev-code code .line::before {
+  content: counter(step); counter-increment: step;
+  display: inline-block; text-align: right; width: 1rem; margin-right: 1.5rem; color: #9ca3af;
+}
+html.dark .slidev-code-line-numbers .slidev-code code .line::before { color: #4b5563; }
+
+.slidev-code-copy { background: none; border: 0; color: inherit; cursor: pointer; }
+.slidev-code-copy span { display: block; }
+
+/* The reset removes borders; KaTeX needs them back */
+.katex, .katex :after, .katex :before { border-color: currentColor; }
+.slidev-code-group-blocks .slidev-code-block-title { display: none; }

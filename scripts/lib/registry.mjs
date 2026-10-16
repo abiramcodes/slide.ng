@@ -17,5 +17,7 @@ export const COMPONENTS = [
   { className: 'LightOrDark', file: 'builtin/light-or-dark', test: /<light-or-dark/ },
   { className: 'RenderWhen', file: 'builtin/render-when', test: /<render-when/ },
   { className: 'SlideLink', file: 'builtin/slide-link', test: /<slide-link/ },
+  { className: 'CodeBlockWrapper', file: 'code/code-block-wrapper', test: /<code-block-wrapper/ },
+  { className: 'CodeGroup', file: 'code/code-group', test: /<code-group/ },
   { className: 'Counter', file: 'lib/counter', test: /<app-counter/ },
 ];

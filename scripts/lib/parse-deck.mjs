@@ -18,11 +18,12 @@ export async function parseDeck(file = 'slides.md', sources) {
     frontmatter: { ...defaults, ...s.frontmatter },
     content: s.content,
     note: s.note,
+    file: s.source?.filepath, // the markdown file this slide came from (snippet paths start there)
   }));
 
   // Import problems (missing file, circular import, bad range) are collected by the parser.
   const problems = Object.values(data.markdownFiles).flatMap((md) =>
     (md.errors ?? []).map((e) => `${md.filepath}:${e.row}: ${e.message}`),
   );
-  return { headmatter, slides, files: Object.keys(data.markdownFiles), problems };
+  return { headmatter, root: dirname(entry), slides, files: Object.keys(data.markdownFiles), problems };
 }

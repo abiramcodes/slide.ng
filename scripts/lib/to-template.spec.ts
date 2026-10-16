@@ -1,4 +1,10 @@
 import { toTemplate } from './to-template.mjs';
+import { initHighlighter } from './code/highlighter.mjs';
+
+beforeAll(() => initHighlighter({ langs: ['ts', 'html', 'md'] }));
+
+// The words of some HTML, without the tags.
+const text = (html: string) => html.replace(/<[^>]+>/g, '');
 
 describe('toTemplate: Angular syntax is protected', () => {
   it('keeps {{ interpolation }} as written', () => {
@@ -42,21 +48,49 @@ describe('toTemplate: code is literal', () => {
   const fence = '```ts\nconst o = { a: 1 }; // @Component {{ x }} <b>\n```';
   it('escapes braces, @, {{ and < in a code fence', () => {
     const html = toTemplate(fence);
-    expect(html).toContain('<pre ngNonBindable><code class="language-ts">');
-    expect(html).toContain('const o = &#123; a: 1 &#125;; // &#64;Component &#123;&#123; x &#125;&#125; &lt;b&gt;');
+    expect(html).toContain('<pre ngNonBindable');
+    expect(text(html)).toContain('const o = &#123; a: 1 &#125;; // &#64;Component &#123;&#123; x &#125;&#125; &#x3C;b>');
     expect(html).not.toContain('{');
+    expect(html).not.toContain('@');
   });
   it('does not touch Angular syntax inside a fence', () => {
     const html = toTemplate('```html\n@if (x) {\n<app-counter [start]="1" />\n}\n```');
     expect(html).not.toContain('@if');
-    expect(html).toContain('&lt;app-counter [start]="1" /&gt;');
+    expect(text(html)).toContain('&#x3C;app-counter [start]="1" />');
   });
   it('keeps a blank line and --- inside a fence', () => {
-    expect(toTemplate('```md\na\n\n---\nb\n```')).toContain('a\n\n---\nb');
+    expect(text(toTemplate('```md\na\n\n---\nb\n```'))).toContain('a\n\n---\nb');
   });
   it('makes inline code literal too', () => {
     const html = toTemplate('Use `{{ x }}` and `@if` here');
     expect(html).toContain('<code ngNonBindable>&#123;&#123; x &#125;&#125;</code>');
     expect(html).toContain('<code ngNonBindable>&#64;if</code>');
+  });
+});
+
+describe('toTemplate: highlighted code', () => {
+  it('wraps the highlighted block in a code-block-wrapper with its ranges and options', () => {
+    const html = toTemplate("```ts [a.ts] {1|2} {lines:true,startLine:3,maxHeight:'80px'}\nlet a;\nlet b;\n```");
+    expect(html).toContain('<code-block-wrapper ranges="1|2" title="a.ts" lines="true" startLine="3" maxHeight="80px">');
+    expect(html).toContain('class="shiki shiki-themes vitesse-light vitesse-dark slidev-code"');
+    expect(html).toContain('--shiki-light:');
+    expect(html).toContain('--shiki-dark:');
+  });
+  it('uses the deck-wide lineNumbers and codeCopy settings', () => {
+    const html = toTemplate('```ts\nlet a;\n```', { headmatter: { lineNumbers: true, codeCopy: false } });
+    expect(html).toContain('lines="true"');
+    expect(html).toContain('noCopy="true"');
+  });
+  it('shows an unknown language as plain text, with a warning', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const html = toTemplate('```zzz\nhello\n```');
+    expect(text(html)).toContain('hello');
+    expect(warn.mock.calls[0][0]).toContain('"zzz"');
+    warn.mockRestore();
+  });
+  it('wraps a ::code-group in <code-group>', () => {
+    const html = toTemplate('::code-group\n\n```ts [a]\nlet a;\n```\n\n```ts [b]\nlet b;\n```\n\n::');
+    expect(html.startsWith('<code-group><code-block-wrapper')).toBe(true);
+    expect(html.match(/<code-block-wrapper/g)).toHaveLength(2);
   });
 });

@@ -6,10 +6,13 @@ const MARKER = /^::\s*([\w.\-:]+)\s*::\s*$/;
 export function splitSlots(markdown) {
   const slots = new Map([['default', []]]);
   let name = 'default';
-  let inFence = false;
+  let fence = 0; // number of backticks of the open fence, 0 outside code
   for (const line of markdown.split('\n')) {
-    if (/^```/.test(line)) inFence = !inFence; // a `::x::` inside a code sample is just text
-    const marker = !inFence && MARKER.exec(line);
+    // a `::x::` inside a code sample is just text; a longer fence may hold shorter ones (magic-move)
+    const ticks = /^(`{3,})/.exec(line)?.[1].length ?? 0;
+    if (ticks && !fence) fence = ticks;
+    else if (ticks >= fence && /^`+\s*$/.test(line)) fence = 0;
+    const marker = !fence && MARKER.exec(line);
     if (marker) {
       name = marker[1];
       if (!slots.has(name)) slots.set(name, []);

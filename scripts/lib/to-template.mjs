@@ -4,32 +4,24 @@
 // `[prop]="v"`, `{{ x }}`). So we hide that syntax behind placeholders,
 // run the markdown converter, then put the syntax back untouched.
 import { marked } from 'marked';
+import { extractFences } from './fences.mjs';
+import { renderFence } from './code/render-fence.mjs';
+import { escapeCode, protect } from './protect.mjs';
 
-// In normal text Angular would read `{`, `}` and `@` as syntax.
-// Writing them as HTML entities makes them plain characters.
-export const protect = (s) =>
-  s.replace(/\{/g, '&#123;').replace(/\}/g, '&#125;').replace(/@/g, '&#64;');
-
-// (Angular still reads `{{` after entities are decoded, so code also gets ngNonBindable.)
-// Same, plus the characters that are special in HTML (for code blocks).
-export const escapeCode = (s) =>
-  protect(s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+export { escapeCode, protect };
 
 // A tag that uses Angular syntax: [x]="..", (x)="..", *x, #x or @x on it.
 const ANGULAR_TAG = '<[a-z][\\w-]*\\s[^>\\n]*[\\[(*#@][^>\\n]*>';
 
-export function toTemplate(markdown) {
+/** @param {string} markdown @param {{ file?: string, root?: string, headmatter?: any }} [ctx] file, root: where snippet paths start; headmatter: deck-wide code settings */
+export function toTemplate(markdown, ctx = {}) {
   const kept = []; // Angular syntax we put back at the end
   const keep = (s) => `NGKEEP${kept.push(s) - 1}X`;
   // A line that is only an HTML comment is left alone by the markdown converter.
   const hide = (s) => `<!--${keep(s)}-->`;
 
   // 1. Code fences and inline code are plain text: set them aside first.
-  const fences = [];
-  let md = markdown.replace(/\r/g, '').replace(/^```.*\n[\s\S]*?^```$/gm, (m) => {
-    fences.push(m);
-    return `\nNGFENCE${fences.length - 1}X\n`;
-  });
+  let { markdown: md, fences } = extractFences(markdown, ctx);
   const inlines = [];
   md = md.replace(/(`+)(.+?)\1/g, (_, __, code) => `NGCODE${inlines.push(code) - 1}X`);
 
@@ -45,10 +37,7 @@ export function toTemplate(markdown) {
   let html = protect(marked.parse(md, { async: false }));
 
   // 4. Put everything back.
-  html = html.replace(/<p>NGFENCE(\d+)X<\/p>/g, (_, i) => {
-    const [, lang, code] = /^```(\w*).*\n([\s\S]*?)\n```$/m.exec(fences[+i]);
-    return `<pre ngNonBindable><code class="language-${lang}">${escapeCode(code)}</code></pre>`;
-  });
+  html = html.replace(/<p>NGFENCE(\d+)X<\/p>/g, (_, i) => renderFence(fences[+i], ctx));
   html = html.replace(/NGCODE(\d+)X/g, (_, i) => `<code ngNonBindable>${escapeCode(inlines[+i])}</code>`);
   return html.replace(/<!--NGKEEP(\d+)X-->/g, (_, i) => kept[+i]).replace(/NGKEEP(\d+)X/g, (_, i) => kept[+i]);
 }

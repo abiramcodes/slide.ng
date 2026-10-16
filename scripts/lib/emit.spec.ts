@@ -2,6 +2,10 @@ import { LAYOUTS, layoutName } from './layouts.mjs';
 import { slideSource } from './emit.mjs';
 import { indexSource } from './index-source.mjs';
 import { parseDeck } from './parse-deck.mjs';
+import { initHighlighter } from './code/highlighter.mjs';
+
+// Code fences are highlighted while generating, so the highlighter must be ready.
+beforeAll(() => initHighlighter({ langs: ['ts', 'html'] }));
 
 const slide = (frontmatter: Record<string, unknown>, content: string) => ({ title: null, frontmatter, content, note: undefined });
 
@@ -51,7 +55,8 @@ describe('slideSource', () => {
   });
   it('does not import a component that is only mentioned inside code', () => {
     const src = slideSource(slide({}, '```html\n<app-counter />\n<div v-click>\n```\n\nand `<v-clicks>`'), 2);
-    expect(src).toContain('imports: [DefaultLayout]');
+    expect(src).toContain('imports: [DefaultLayout, CodeBlockWrapper]'); // the fence itself is a code block
+    expect(src).not.toContain('Counter');
   });
   it('detects v-clicks, [v-click] bindings and v-after', () => {
     expect(slideSource(slide({}, '<v-clicks>\n\n- a\n\n</v-clicks>'), 2)).toContain('VClicks');
