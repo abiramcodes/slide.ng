@@ -43,7 +43,9 @@ async function generate() {
   deck.slides.forEach((s, i) => write(`${OUT}${slideName(i + 1)}.ts`, slideSource(s, i + 1, deck)));
   write(`${OUT}index.ts`, indexSource(deck));
   write(`${OUT}features.css`, featureCss(features));
-  write(`${OUT}uno.css`, await makeCss([...deck.files, ...tsFiles('src/app')]));
+  // The generated slides are scanned too: icon tags and alerts only become class names there.
+  const slideFiles = deck.slides.map((_, i) => `${OUT}${slideName(i + 1)}.ts`);
+  write(`${OUT}uno.css`, await makeCss([...deck.files, ...slideFiles, ...tsFiles('src/app')]));
   console.log(`[slides] generated ${deck.slides.length} slides`);
   return deck.files;
 }

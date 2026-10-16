@@ -9,6 +9,9 @@ import { renderFence } from './code/render-fence.mjs';
 import { escapeCode, protect } from './protect.mjs';
 import { extractMath, renderMath } from './math.mjs';
 import { rewriteDirectives } from './directives.mjs';
+import { markAlerts } from './alerts.mjs';
+import { extractFootnotes, finishFootnotes } from './footnotes.mjs';
+import { rewriteIcons } from './icons.mjs';
 
 export { escapeCode, protect };
 
@@ -31,8 +34,12 @@ export function toTemplate(markdown, ctx = {}) {
   const math = extractMath(md);
   md = math.markdown;
 
-  // 2. Hide Angular syntax. Vue-style v-mark and v-motion are rewritten into Angular first.
-  md = rewriteDirectives(md);
+  // Footnote definitions are cut out here and listed again at the end.
+  const footnotes = extractFootnotes(md);
+  md = footnotes.markdown;
+
+  // 2. Hide Angular syntax. Vue-style v-mark and v-motion, and icon tags, are rewritten into plain HTML first.
+  md = rewriteIcons(rewriteDirectives(md));
   md = md.replace(/^[ \t]*(\}[ \t]*)?(@\w+.*\{|\})[ \t]*$/gm, hide); // @if (..) {   }   } @else {
   md = md.replace(/^[ \t]*@let\s.*;[ \t]*$/gm, hide); // @let x = 1;
   md = md.replace(new RegExp(`^[ \\t]*${ANGULAR_TAG}[ \\t]*$`, 'gm'), hide); // tag alone on a line
@@ -41,7 +48,8 @@ export function toTemplate(markdown, ctx = {}) {
   md = md.replace(/\{\{[\s\S]*?\}\}/g, keep); // {{ interpolation }}
 
   // 3. Markdown -> HTML, then make the remaining braces and @ harmless.
-  let html = protect(marked.parse(md, { async: false }));
+  let html = protect(markAlerts(marked.parse(md, { async: false })));
+  html = finishFootnotes(html, footnotes.notes, (note) => protect(marked.parseInline(note, { async: false })));
 
   // 4. Put everything back.
   html = html.replace(/<p>NGMATH(\d+)X<\/p>/g, (_, i) => renderMath(math.maths[+i]));

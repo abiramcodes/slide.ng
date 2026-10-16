@@ -1,0 +1,21 @@
+/* Markdown extras: GitHub alerts, task lists and footnotes. Colours are GitHub's. */
+.markdown-alert { --alert: #0969da; margin: 1em 0; padding: 0.4em 1em; border-left: 0.25em solid var(--alert); }
+.markdown-alert > p { margin: 0.5em 0; }
+.markdown-alert-title { display: flex; align-items: center; gap: 0.5em; font-weight: 600; color: var(--alert); }
+.markdown-alert-tip { --alert: #1a7f37; }
+.markdown-alert-important { --alert: #8250df; }
+.markdown-alert-warning { --alert: #9a6700; }
+.markdown-alert-caution { --alert: #cf222e; }
+html.dark .markdown-alert { --alert: #4493f8; }
+html.dark .markdown-alert-tip { --alert: #3fb950; }
+html.dark .markdown-alert-important { --alert: #ab7df8; }
+html.dark .markdown-alert-warning { --alert: #d29922; }
+html.dark .markdown-alert-caution { --alert: #f85149; }
+
+/* Task list: a checkbox instead of a bullet. */
+li:has(> input[type='checkbox']) { list-style: none; margin-left: -1.2em; }
+li > input[type='checkbox'] { margin-right: 0.5em; }
+
+.footnote-ref { font-size: 0.7em; margin-left: 1px; }
+.footnotes { margin-top: 1.5em; padding-top: 0.5em; border-top: 1px solid #8884; font-size: 0.75em; opacity: 0.75; }
+.footnotes ol { margin: 0; padding-left: 1.5em; list-style: decimal; }

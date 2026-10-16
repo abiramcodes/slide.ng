@@ -243,3 +243,23 @@ const plain = 'no twoslash here'
 <div id="mo" class="w-20 h-10 bg-blue-300" v-motion :initial="{ x: -80, opacity: 0 }" :enter="{ x: 0, opacity: 1 }" :click-4="{ y: 40 }" :leave="{ x: 80 }">motion</div>
 
 <div id="mo2" class="w-20 h-10 bg-green-300" [v-click]="[5, 6]" v-motion :initial="{ x: -50 }" :enter="{ x: 0 }" :leave="{ x: 50 }">with v-click</div>
+
+---
+
+# Markdown extras
+
+> [!NOTE]
+> A note with `code` and **bold**.
+
+> [!WARNING]
+> Careful here.
+
+- [x] done task
+- [ ] open task
+
+A claim[^1] and another[^second].
+
+[^1]: The first footnote.
+[^second]: The second one, with `{{ x }}` in it.
+
+<carbon-apps id="i1" /> <mdi-account-circle id="i2" class="text-red-500" /> <ph-star-fill id="i3" />
