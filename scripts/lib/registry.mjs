@@ -24,5 +24,12 @@ export const COMPONENTS = [
   { className: 'Mermaid', file: 'code/mermaid', test: /<mermaid[\s>]/ },
   { className: 'PlantUml', file: 'code/plant-uml', test: /<plant-uml[\s>]/ },
   { className: 'MonacoEditor', file: 'code/monaco-editor', test: /<monaco[\s>]/ },
+  { className: 'Arrow', file: 'builtin/arrow', test: /<arrow[\s>/]/ },
+  { className: 'AutoFitText', file: 'builtin/auto-fit-text', test: /<auto-fit-text/ },
+  { className: 'Transform', file: 'builtin/transform', test: /<transform[\s>/]/ },
+  { className: 'Youtube', file: 'builtin/youtube', test: /<youtube[\s>/]/ },
+  { className: 'SlideVideo', file: 'builtin/slide-video', test: /<slide-video/ },
+  { className: 'Tweet', file: 'builtin/tweet', test: /<tweet[\s>/]/ },
+  { className: 'BlueSky', file: 'builtin/blue-sky', test: /<blue-sky/ },
   { className: 'Counter', file: 'lib/counter', test: /<app-counter/ },
 ];

@@ -198,3 +198,34 @@ p.x
 ```ts {1}
 const plain = 'no twoslash here'
 ```
+
+---
+
+# Components
+
+<arrow id="a1" x1="100" y1="300" x2="300" y2="400" color="green" width="3" />
+<arrow id="a2" x1="400" y1="300" x2="500" y2="300" two-way />
+
+<transform id="t1" scale="0.5" origin="top left">
+
+<div id="t1-inner" class="w-40 h-10 bg-gray-200">scaled</div>
+
+</transform>
+
+<auto-fit-text id="fit" class="w-60 h-20 bg-gray-100" min="10" max="60">Some text that should fit its box</auto-fit-text>
+
+<youtube id="luoMHjh-XcQ" width="320" height="180" />
+
+---
+
+# Video and embeds
+
+<slide-video id="vid" v-click autoplay="true" autoreset="click" controls>
+  <source src="/missing.webm" type="video/webm" />
+</slide-video>
+
+<slide-video id="vid-once" v-click autoplay="once"></slide-video>
+
+<tweet id="20" scale="0.5" />
+
+<blue-sky uri="at://did:plc:432mbsu2xucyvxl6sluohidu/app.bsky.feed.post/3lgwg2vy44s2q" />

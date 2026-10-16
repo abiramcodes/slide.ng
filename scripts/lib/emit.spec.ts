@@ -134,3 +134,19 @@ describe('indexSource', () => {
     expect(src.match(/component: Slide00\d/g)?.length).toBe(2);
   });
 });
+
+describe('slideSource: built-in components are imported when the slide uses them', () => {
+  const imports = (md: string) => /imports: \[(.*)\]/.exec(slideSource(slide({}, md), 2))![1];
+  it('finds each tag', () => {
+    expect(imports('<arrow x1="1" y1="1" x2="2" y2="2" />')).toContain('Arrow');
+    expect(imports('<auto-fit-text>x</auto-fit-text>')).toContain('AutoFitText');
+    expect(imports('<transform scale="0.5">x</transform>')).toContain('Transform');
+    expect(imports('<youtube id="a" />')).toContain('Youtube');
+    expect(imports('<slide-video v-click></slide-video>')).toContain('SlideVideo');
+    expect(imports('<tweet id="20" />')).toContain('Tweet');
+    expect(imports('<blue-sky uri="at://x" />')).toContain('BlueSky');
+  });
+  it('does not mix <transform> up with the longer names or other words', () => {
+    expect(imports('plain text about a transformation')).toBe('DefaultLayout');
+  });
+});

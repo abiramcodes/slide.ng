@@ -170,3 +170,14 @@ Nothing else was added: footnotes, alerts, the PlantUML encoding and the code ru
     `features.css`), so no TypeScript reaches the browser. It starts a TypeScript program (about one second) only when the deck has a twoslash block.
     A block that fails to compile is shown without types and a warning. Such blocks do not scroll (`overflow: visible`) so popups are not clipped.
     Imports of packages the deck does not install (`import { ref } from 'vue'`) cannot be typed, as in a normal TypeScript program.
+24. **Built-in components keep Slidev's names in kebab case**: `<arrow>`, `<auto-fit-text>`, `<transform>`, `<youtube>`, `<tweet>`, `<blue-sky>`,
+    `<slide-video>` (Slidev: `SlidevVideo`; `slide-video` keeps clear of `<video>`), `<code-group>`, `<monaco>`, `<mermaid>`, `<plant-uml>`. Multi-word
+    inputs that people write in HTML are dashed, like `v-click`: `two-way`, `multi-line`.
+25. **`<auto-fit-text>` has no `fitty` dependency.** It tries font sizes between `min` and `max` by halving until the text fits the box's width (and its
+    height, when the box has one). A box with no height only limits the width. It fits again when the box is resized and when web fonts have loaded.
+26. **`<slide-video>` finds out when it is shown** from the slide number and from a `v-click` on the same element (it injects the `v-click` directive),
+    instead of Slidev's global map of click elements. `autoplay`, `autoreset`, `poster`, `timestamp` and `controls` work; the `print*` props do not (no print mode yet).
+    In overview thumbnails it never plays.
+27. **`<tweet>` and `<blue-sky>` load the sites' own embed scripts** (`platform.twitter.com/widgets.js`, `embed.bsky.app/static/embed.js`) when the component starts,
+    so these two need the network at presentation time. The tests answer both scripts with small stand-ins and check the markup and calls. A Bluesky post
+    address is turned into an `at://` address with Bluesky's public API, as in Slidev. The Bluesky placeholder uses a Carbon icon (the `simple-icons` set is not installed).
