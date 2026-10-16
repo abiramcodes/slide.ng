@@ -487,9 +487,9 @@ setup file, a theme file) next to the samples of the same page. Fragments that c
       "sources": {
         "docs/PARITY.md": "0dd8653c7d9529a5ace583a1a765e68b6a4266ecc6caf7971c4267b510c169c3",
         "docs/STATUS.md": "a5af008f001e2c6cafa230c32417bf75bad1ae91e7599f7676ca14f3ad14de0e",
-        "scripts/mcp/index.mjs": "549db19c9de74f5adfd07ca62749bcfa6d0a877c58d174a222c07e4038ed9364"
+        "scripts/mcp/index.mjs": "89cb1ddb27da3be95f9d6148ee2cb9b6e74cc106198e5ad7ea96ce4dd9572cb8"
       },
-      "hash": "12cc7a47b7fe31b64b206447b54fb66c5477b9fdd5431f97b09a5041981ee827"
+      "hash": "eeccce3d8cda14fa7da6262f9ab859baa24fdb2a81619db54064c0281926dc4b"
     },
     "references/mcp-tools.md": {
       "sources": {
