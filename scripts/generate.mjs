@@ -10,6 +10,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
+import { coalesce } from './lib/coalesce.mjs';
 import { offerInstall } from './lib/install-root.mjs';
 import { parseDeck } from './lib/parse-deck.mjs';
 import { RootNotFoundError } from './lib/roots.mjs';
@@ -184,16 +185,16 @@ const { files, folders } = await generate();
 if (process.argv.includes('--watch')) {
   let timer;
   const watched = new Set();
+  // Runs never overlap: generating uses shared state, and a change during a run asks for one more run.
+  const regenerate = coalesce(() =>
+    generate()
+      .then(watchAll)
+      .catch((e) => console.error(e.message)),
+  );
   // Editors save in bursts; wait a moment so we generate once.
   const onChange = () => {
     clearTimeout(timer);
-    timer = setTimeout(
-      () =>
-        generate()
-          .then(watchAll)
-          .catch((e) => console.error(e.message)),
-      100,
-    );
+    timer = setTimeout(regenerate, 100);
   };
   // The entry file, every file it imports with `src:`, and the folders of themes and addons.
   const watchAll = ({ files, folders }) => {
