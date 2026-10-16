@@ -2,11 +2,13 @@
 // `.slide-ng/drawings/` (when the deck has `drawings: { persist: true }`) are the starting point.
 import { effect, inject } from '@angular/core';
 import { DevApi } from '../dev/dev-api';
-import { saveDrawings } from '../dev/dev-persist';
+import { createDrawingSaver } from '../dev/dev-persist';
 import { DRAWINGS } from '../../slides/generated';
 import { SyncState } from '../sync/sync-state';
 import { DrawingsState, cleanDrawings } from '../sync/shared-state';
 import { diskScope } from '../lib/disk-scope';
+
+const RETRY_MS = 5000;
 
 /** The localStorage key; an offline folder (file://) adds its own path, see disk-scope.ts. */
 export const drawingsKey = () => `slide-ng-drawings${diskScope()}`;
@@ -46,20 +48,17 @@ export function startPersistence(persist: boolean) {
   // With `drawings.persist` and the dev server, every drawing is also written to .slide-ng/drawings/<slide>.svg.
   const api = inject(DevApi);
   if (!persist || !api.enabled) return;
-  let onDisk: Record<number, string> = cleanDrawings(DRAWINGS);
-  let writing = false;
+  const saver = createDrawingSaver(api, cleanDrawings(DRAWINGS), () => sync.drawings());
   let diskTimer: ReturnType<typeof setTimeout> | undefined;
-  effect(() => {
-    const state = sync.drawings();
+  const later = (ms: number, retries: number) => {
     clearTimeout(diskTimer);
     diskTimer = setTimeout(async () => {
-      if (writing) return;
-      writing = true;
-      try {
-        onDisk = await saveDrawings(api, onDisk, state);
-      } finally {
-        writing = false;
-      }
-    }, 800);
+      await saver.save();
+      if (saver.dirty && retries > 0) later(RETRY_MS, retries - 1); // a write failed: try again
+    }, ms);
+  };
+  effect(() => {
+    sync.drawings();
+    later(800, 3);
   });
 }

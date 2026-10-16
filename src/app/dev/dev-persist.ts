@@ -31,3 +31,37 @@ export async function saveDrawings(
   }
   return next;
 }
+
+/**
+ * Saves the drawings one write at a time. A change that arrives during a write is saved right after it,
+ * so the last stroke is never dropped. `dirty` is true while something is still not on disk (a failed write).
+ */
+export function createDrawingSaver(
+  api: DevApi,
+  initial: Record<number, string>,
+  read: () => Record<number, string>,
+) {
+  let onDisk = initial;
+  let running = false;
+  let again = false;
+  return {
+    get dirty() {
+      return Object.keys(changedDrawings(onDisk, read())).length > 0;
+    },
+    async save() {
+      if (running) {
+        again = true;
+        return;
+      }
+      running = true;
+      try {
+        do {
+          again = false;
+          onDisk = await saveDrawings(api, onDisk, read());
+        } while (again);
+      } finally {
+        running = false;
+      }
+    },
+  };
+}
