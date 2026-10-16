@@ -2,7 +2,9 @@
 //   slide-ng build [slides.md] [--base /talk/] [--out dist] [--download] [--without-notes]
 import { copyFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
+import { makeOffline } from '../build/offline.mjs';
 import { ogImagePlan, placeOgImage } from '../build/og-image.mjs';
+import { applyOffline } from '../lib/build-options.mjs';
 import { writeIcons } from '../build/pwa-icons.mjs';
 import { pwaEnabled, writePwa } from '../build/pwa.mjs';
 import { launchBrowser } from '../export/browser.mjs';
@@ -19,6 +21,7 @@ export const BUILD_FLAGS = {
   base: { type: 'string' },
   out: { type: 'string', alias: 'o' },
   download: { type: 'boolean' },
+  offline: { type: 'boolean' },
   'without-notes': { type: 'boolean' },
   'executable-path': { type: 'string' },
   timeout: { type: 'number' },
@@ -39,36 +42,42 @@ export async function buildCommand(argv) {
   applyThemeFlag(flags);
   const entry = resolve(positionals[0] ?? 'slides.md');
   const root = dirname(entry);
-  const base = normalizeBase(flags.base);
+  const offline = Boolean(flags.offline);
+  if (offline && flags.base) throw new Error('--offline builds a folder that works at any path, so it cannot take --base');
+  const base = offline ? './' : normalizeBase(flags.base);
   const out = resolve(flags.out ?? 'dist');
   checkClaimable(out); // fail now, not after a long build
   const deck = await parseDeck(entry);
   const head = deck.headmatter;
+  if (offline) applyOffline(head);
 
   const download = flags.download || downloadTarget(head, entry) !== null;
   const workDir = join(root, '.slide-ng', 'build');
   const env = {
     SLIDE_NG_BUILD: '1', SLIDE_NG_BASE: base,
     SLIDE_NG_DOWNLOAD: flags.download ? '1' : '0', SLIDE_NG_WITHOUT_NOTES: flags['without-notes'] ? '1' : '0',
+    SLIDE_NG_OFFLINE: offline ? '1' : '0',
   };
   try {
     const dist = buildDeck({ entry, workDir, base, env });
-    await afterBuild({ dist, deck, entry, root, base, workDir, download, flags });
+    await afterBuild({ dist, deck, entry, root, base, workDir, download, flags, offline });
     publishDirectory(dist, out);
-    console.log(`\nBuilt ${deck.slides.length} slides into ${out} (base ${base}).`);
+    console.log(`\nBuilt ${deck.slides.length} slides into ${out} (${offline ? `offline folder, open ${join(out, 'index.html')}` : `base ${base}`}).`);
   } finally {
     rmSync(workDir, { recursive: true, force: true }); // the folder this command made itself
   }
 }
 
 // Files that can only be made once the app exists: the picture, the PDF, the 404 page, the offline worker.
-async function afterBuild({ dist, deck, entry, root, base, workDir, download, flags }) {
+async function afterBuild({ dist, deck, entry, root, base, workDir, download, flags, offline }) {
   const head = deck.headmatter;
   const routerMode = head.routerMode === 'hash' ? 'hash' : 'history';
   const exportOptions = { 'executable-path': flags['executable-path'], timeout: flags.timeout };
   const needsBrowser = ogImagePlan(head, root).kind === 'auto' || download;
-  const server = needsBrowser ? await serveDirectory(dist, base) : null;
-  const served = server && { origin: server.origin, base };
+  // The temporary server answers at its root; an offline folder has no base path (its addresses are relative).
+  const serverBase = offline ? '/' : base;
+  const server = needsBrowser ? await serveDirectory(dist, serverBase) : null;
+  const served = server && { origin: server.origin, base: serverBase };
 
   try {
     // Open Graph picture: the first slide.
@@ -89,6 +98,12 @@ async function afterBuild({ dist, deck, entry, root, base, workDir, download, fl
     }
   } finally {
     await server?.close();
+  }
+
+  if (offline) {
+    const { removed } = await makeOffline(dist);
+    console.log(`Offline folder: one classic script (${removed} chunks folded in), no service worker, hash routing.`);
+    return;
   }
 
   // GitHub Pages answers an unknown address with 404.html; Netlify reads _redirects. Both send it to the app.

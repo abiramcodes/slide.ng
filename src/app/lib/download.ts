@@ -15,7 +15,9 @@ export class Download {
 
   constructor() {
     if (!this.url || isDevMode()) return;
-    if (!DOWNLOAD!.startsWith('http') && !DOWNLOAD!.startsWith('/')) void this.check(this.url);
+    // From a folder opened on disk (`build --offline`) a request cannot be asked; the build wrote the file next to the page.
+    if (location.protocol === 'file:') this.available.set(!DOWNLOAD!.startsWith('http'));
+    else if (!DOWNLOAD!.startsWith('http') && !DOWNLOAD!.startsWith('/')) void this.check(this.url);
     else this.available.set(true); // somebody else's address: take their word for it
   }
 

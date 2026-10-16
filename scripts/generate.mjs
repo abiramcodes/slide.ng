@@ -18,9 +18,10 @@ import { applyPreTransformers } from './lib/setup/pre-transform.mjs';
 import { readDrawings } from './lib/drawings.mjs';
 import { applyRoots } from './lib/theme-files.mjs';
 import { monacoWriteTargets, resetMonacoWriteTargets } from './lib/code/monaco.mjs';
-import { buildOptions, wantsRemoteAssets } from './lib/build-options.mjs';
+import { applyOffline, buildOptions, wantsRemoteAssets } from './lib/build-options.mjs';
 import { headParts, renderIndexHtml } from './lib/head.mjs';
 import { bundleRemoteAssets, emptyFolder } from './lib/remote-assets.mjs';
+import { bundleFonts, wantsFontFiles } from './lib/font-bundle.mjs';
 import { ogImageAddress, ogImagePlan } from './build/og-image.mjs';
 import { pwaEnabled } from './build/pwa.mjs';
 
@@ -86,12 +87,19 @@ async function generate() {
   // Options of `slide-ng build` (see lib/build-options.mjs).
   if (build.download && deck.headmatter.download == null) deck.headmatter.download = true;
   if (build.withoutNotes) deck.slides.forEach((s) => { s.note = null; });
+  if (build.offline) applyOffline(deck.headmatter);
   mkdirSync(OUT, { recursive: true });
   // Remote pictures are fetched into the build only for a production build with `remoteAssets: true`.
   if (wantsRemoteAssets(deck.headmatter, build.building)) {
     const n = await bundleRemoteAssets(deck.slides, `${OUT}remote-assets`, (m) => console.warn(`[slides] ${m}`));
     console.log(`[slides] bundled ${n} remote images`);
   } else emptyFolder(`${OUT}remote-assets`);
+  // Web fonts are downloaded into the build for an offline folder, a deck with `pwa`, or `fonts: { selfHost: true }` (see lib/font-bundle.mjs).
+  if (wantsFontFiles(deck.headmatter, build)) {
+    const bundled = await bundleFonts(deck.headmatter, `${OUT}fonts`, (m) => console.warn(`[slides] ${m}`));
+    deck.fontFaces = bundled?.css ?? null;
+    if (bundled) console.log(`[slides] bundled ${bundled.files} font files`);
+  } else emptyFolder(`${OUT}fonts`);
   writeIndexHtml(deck, build.base);
   deck.drawings = readDrawings(deck.root, deck.headmatter);
   // Themes and addons: copies them into the app, finds their layouts, components and layers (see lib/theme-files.mjs).
@@ -104,7 +112,7 @@ async function generate() {
   await applyPreTransformers(deck.slides, deck.transformers.pre, deck.headmatter);
   const features = detectFeatures(deck.slides);
   await initHighlighter({ langs: features.langs, headmatter: deck.headmatter, twoslash: features.twoslash, setup: await shikiSetup(deck.roots) });
-  const wanted = new Set(deck.slides.map((_, i) => `${slideName(i + 1)}.ts`).concat('index.ts', 'index.html', 'layers.ts', 'setup.ts', 'theme.css', 'uno.css', 'features.css', 'remote-assets', 'roots', 'public'));
+  const wanted = new Set(deck.slides.map((_, i) => `${slideName(i + 1)}.ts`).concat('index.ts', 'index.html', 'layers.ts', 'setup.ts', 'theme.css', 'uno.css', 'features.css', 'remote-assets', 'fonts', 'roots', 'public'));
   for (const f of readdirSync(OUT)) if (!wanted.has(f)) rmSync(OUT + f, { recursive: true });
   resetMonacoWriteTargets();
   deck.slides.forEach((s, i) => write(`${OUT}${slideName(i + 1)}.ts`, slideSource(s, i + 1, deck)));
