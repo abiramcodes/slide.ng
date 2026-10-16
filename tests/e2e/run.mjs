@@ -50,8 +50,8 @@ t.ok('slide 3 inline code is literal', (await page.locator('p code').allInnerTex
 
 // ---- layouts --------------------------------------------------------------------------
 await press(page, 'ArrowRight');
-const center = await page.locator('h1').evaluate((e) => getComputedStyle(e.closest('div')).textAlign);
-t.ok('slide 4 center layout centers text', (await page.locator('sn-center').count()) === 1 && center === 'center', center);
+const mid = await page.locator('h1').evaluate((e) => { const b = e.getBoundingClientRect(); return [b.x + b.width / 2, b.y + b.height / 2]; });
+t.ok('slide 4 center layout puts the content in the middle', (await page.locator('sn-center').count()) === 1 && Math.abs(mid[1] - 360) < 80, mid.join());
 await press(page, 'ArrowRight');
 const left = await page.locator('h1', { hasText: 'Left' }).boundingBox();
 const right = await page.locator('h1', { hasText: 'Right' }).boundingBox();

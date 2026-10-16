@@ -1,0 +1,79 @@
+// Keyboard shortcuts as a plain list of { name, key, run, when }.
+// The defaults are the same keys as Slidev's setup/shortcuts.ts. A deck can change them by
+// providing SHORTCUTS_SETUP (see docs/SYNTAX.md): it gets the default list and returns the list to use.
+import { InjectionToken } from '@angular/core';
+
+export interface Shortcut {
+  name: string;
+  /** A key name as in KeyboardEvent.key, optionally with `shift+` in front. A space is written `space`. */
+  key: string;
+  run: () => void;
+  /** The shortcut only works while this returns true. */
+  when?: () => boolean;
+}
+
+/** What shortcuts can act on. Filled by the deck. */
+export interface ShortcutActions {
+  next(): void;
+  prev(): void;
+  nextSlide(): void;
+  prevSlide(): void;
+  toggleDark(): void;
+  toggleOverview(): void;
+  toggleGoto(): void;
+  toggleFullscreen(): void;
+  closeAll(): void;
+  overviewOpen(): boolean;
+  /** Overview: move the highlight (left/right by 1, up/down by a row) or open the highlighted slide. */
+  overviewMove(by: 'left' | 'right' | 'up' | 'down'): void;
+  overviewGo(): void;
+}
+
+/** Deck authors provide this to change the list: `{ provide: SHORTCUTS_SETUP, useValue: (a, list) => [...list, mine] }`. */
+export const SHORTCUTS_SETUP = new InjectionToken<(actions: ShortcutActions, list: Shortcut[]) => Shortcut[]>('SHORTCUTS_SETUP', {
+  factory: () => (_actions, list) => list,
+});
+
+export function defaultShortcuts(a: ShortcutActions): Shortcut[] {
+  const play = () => !a.overviewOpen(); // arrow keys move through the overview while it is open
+  const overview = () => a.overviewOpen();
+  return [
+    { name: 'next_space', key: 'space', run: a.next },
+    { name: 'prev_space', key: 'shift+space', run: a.prev },
+    { name: 'next_right', key: 'ArrowRight', run: a.next, when: play },
+    { name: 'prev_left', key: 'ArrowLeft', run: a.prev, when: play },
+    { name: 'next_page_key', key: 'PageDown', run: a.next },
+    { name: 'prev_page_key', key: 'PageUp', run: a.prev },
+    { name: 'next_down', key: 'ArrowDown', run: a.nextSlide, when: play },
+    { name: 'prev_up', key: 'ArrowUp', run: a.prevSlide, when: play },
+    { name: 'next_shift', key: 'shift+ArrowRight', run: a.nextSlide },
+    { name: 'prev_shift', key: 'shift+ArrowLeft', run: a.prevSlide },
+    { name: 'toggle_dark', key: 'd', run: a.toggleDark },
+    { name: 'toggle_overview', key: 'o', run: a.toggleOverview },
+    { name: 'toggle_overview_backtick', key: '`', run: a.toggleOverview },
+    { name: 'hide_overview', key: 'Escape', run: a.closeAll },
+    { name: 'goto', key: 'g', run: a.toggleGoto },
+    { name: 'fullscreen', key: 'f', run: a.toggleFullscreen },
+    { name: 'right_overview', key: 'ArrowRight', run: () => a.overviewMove('right'), when: overview },
+    { name: 'left_overview', key: 'ArrowLeft', run: () => a.overviewMove('left'), when: overview },
+    { name: 'up_overview', key: 'ArrowUp', run: () => a.overviewMove('up'), when: overview },
+    { name: 'down_overview', key: 'ArrowDown', run: () => a.overviewMove('down'), when: overview },
+    { name: 'goto_from_overview', key: 'Enter', run: a.overviewGo, when: overview },
+  ];
+}
+
+// Does the key event match the spec? Ctrl, Meta and Alt are never ours (browser shortcuts).
+export function matches(e: Pick<KeyboardEvent, 'key' | 'shiftKey' | 'ctrlKey' | 'metaKey' | 'altKey'>, spec: string): boolean {
+  if (e.ctrlKey || e.metaKey || e.altKey) return false;
+  const shift = spec.startsWith('shift+');
+  const key = shift ? spec.slice(6) : spec;
+  const pressed = e.key === ' ' ? 'space' : e.key;
+  // A single character (d, o, g, `): Shift or Caps Lock only change its case, so compare without case.
+  if (pressed.length === 1) return pressed.toLowerCase() === key.toLowerCase();
+  return pressed === key && e.shiftKey === shift;
+}
+
+/** The first shortcut that matches and is allowed right now. */
+export function findShortcut(e: KeyboardEvent, list: Shortcut[]): Shortcut | undefined {
+  return list.find((s) => matches(e, s.key) && (s.when?.() ?? true));
+}

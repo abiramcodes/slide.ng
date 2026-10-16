@@ -1,20 +1,21 @@
 // What a generated slide is allowed to use.
 // A standalone Angular component must list what its template uses, so the
-// generator checks the slide's HTML against these tables and imports only
+// generator checks the slide's HTML against this table and imports only
 // what is needed. To make your own component available in slides, add a line
-// to COMPONENTS.
-
-// Layouts: the name used in `layout:` frontmatter.
-export const LAYOUTS = {
-  default: { className: 'DefaultLayout', tag: 'sn-default', file: 'layouts/default' },
-  cover: { className: 'CoverLayout', tag: 'sn-cover', file: 'layouts/cover' },
-  center: { className: 'CenterLayout', tag: 'sn-center', file: 'layouts/center' },
-  'two-cols': { className: 'TwoColsLayout', tag: 'sn-two-cols', file: 'layouts/two-cols' },
-};
+// to COMPONENTS. (Layouts live in layouts.mjs.)
+export { LAYOUTS } from './layouts.mjs';
 
 // Components and directives: `test` finds out if the slide uses it.
 export const COMPONENTS = [
   { className: 'VClick', file: 'lib/v-click', test: /[\s[](v-click|v-after)(-hide)?\]?[\s=>/]/ },
   { className: 'VClicks', file: 'lib/v-clicks', test: /<v-clicks/ },
+  { className: 'VClickGap', file: 'lib/v-click-gap', test: /<v-click-gap/ },
+  { className: 'VSwitch', file: 'lib/v-switch', test: /<v-switch/ },
+  { className: 'SlideToc', file: 'builtin/slide-toc', test: /<slide-toc/ },
+  { className: 'SlideCurrentNo', file: 'builtin/slide-current-no', test: /<slide-current-no/ },
+  { className: 'SlidesTotal', file: 'builtin/slides-total', test: /<slides-total/ },
+  { className: 'LightOrDark', file: 'builtin/light-or-dark', test: /<light-or-dark/ },
+  { className: 'RenderWhen', file: 'builtin/render-when', test: /<render-when/ },
+  { className: 'SlideLink', file: 'builtin/slide-link', test: /<slide-link/ },
   { className: 'Counter', file: 'lib/counter', test: /<app-counter/ },
 ];

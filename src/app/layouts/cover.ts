@@ -1,9 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
+import { background } from './background';
 
-// Title slide: content centred vertically, text left-aligned.
+// Title slide. `background` (colour or image) is dimmed so the title stays readable.
 @Component({
   selector: 'sn-cover',
-  host: { class: 'block w-full h-full' },
-  template: `<div class="h-full box-border px-24 flex flex-col justify-center"><ng-content /></div>`,
+  host: { class: 'slidev-layout cover', '[style]': 'style()' },
+  template: '<div class="my-auto w-full"><ng-content /></div>',
 })
-export class CoverLayout {}
+export class CoverLayout {
+  background = input('');
+  style = computed(() => background(this.background(), true));
+}

@@ -15,8 +15,14 @@ export interface ClickInfo {
   isCurrent: (current: number) => boolean;
 }
 
+// "As many clicks as the slide has": asking for this many shows the final state (the slide clamps it).
+export const CLICKS_MAX = 999999;
+
 // The first click of a slide. Slides can change it with `clicksStart` frontmatter.
 export const CLICKS_START = new InjectionToken<number>('CLICKS_START', { factory: () => 0 });
+
+// `clicks: 4` in the frontmatter fixes the number of clicks, whatever the elements ask for.
+export const CLICKS_TOTAL = new InjectionToken<number | null>('CLICKS_TOTAL', { factory: () => null });
 
 // Port of normalizeSingleAtValue. Result is null (never), "+n"/"-n" (relative) or a number (absolute).
 // `v-click` written without a value arrives as '' - we treat it like "no value", which means '+1'.
@@ -36,6 +42,7 @@ const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), h
 @Injectable()
 export class ClicksContext {
   readonly clicksStart = inject(CLICKS_START);
+  private totalOverride = inject(CLICKS_TOTAL);
   // One entry per element that takes part in clicks (the element itself is the key).
   private relativeSizeMap = new Map<unknown, number>();
   private maxMap = new Map<unknown, number>();
@@ -43,8 +50,8 @@ export class ClicksContext {
   readonly mounted = signal(false);
   private maxes = signal<number[]>([]); // signals cannot watch a Map, so we publish a copy
 
-  /** Like Slidev: 0 until the slide is mounted, then the biggest registered max. */
-  readonly total = computed(() => (this.mounted() ? Math.max(0, ...this.maxes()) : 0));
+  /** Like Slidev: 0 until the slide is mounted, then the biggest registered max (or the frontmatter override). */
+  readonly total = computed(() => this.totalOverride ?? (this.mounted() ? Math.max(0, ...this.maxes()) : 0));
   /** The current click, always between clicksStart and total. */
   readonly current = computed(() => clamp(+this.raw(), this.clicksStart, this.total()));
 

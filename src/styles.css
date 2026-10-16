@@ -1,21 +1,22 @@
-/* Global styles: the page frame, the canvas, slide typography and the click classes. */
-html, body { height: 100%; margin: 0; overflow: hidden; background: #111; font-family: system-ui, sans-serif; }
+/* Global styles. The details live in src/styles/. */
+@import './styles/vars.css';
+@import './styles/layouts.css';
+@import './styles/controls.css';
+
+html, body { height: 100%; margin: 0; overflow: hidden; background: var(--slidev-slide-container-background); font-family: ui-sans-serif, system-ui, sans-serif; }
 
 /* The stage fills the window; the canvas is centred and scaled by the deck (see lib/canvas.ts). */
-.stage { position: fixed; inset: 0; }
-.canvas { position: absolute; left: 50%; top: 50%; background: #fff; color: #222; overflow: hidden; transform-origin: center; }
-.canvas > * { display: block; width: 100%; height: 100%; }
+.stage { position: fixed; inset: 0; background: var(--slidev-slide-container-background); }
+.canvas { position: absolute; left: 50%; top: 50%; overflow: hidden; transform-origin: center; background: #fff; color: #181818; }
+html.dark .canvas { background: #121212; color: #ddd; }
 
-#hud { position: fixed; right: 8px; bottom: 4px; font-size: 12px; color: #888; }
+/* Slides are stacked on top of each other so that a transition can show two at once. */
+.canvas > * { position: absolute; inset: 0; display: block; }
 
-/* Slide typography (a small version of Slidev's default look). */
-.canvas h1 { font-size: 2.6rem; line-height: 1.2; margin: 0 0 1rem; font-weight: 700; }
-.canvas h2 { font-size: 1.8rem; margin: 0 0 0.8rem; }
-.canvas p, .canvas li { font-size: 1.25rem; line-height: 1.6; margin: 0.4rem 0; }
-.canvas code { font-family: ui-monospace, monospace; background: #eee; padding: 0 0.25em; border-radius: 4px; }
-.canvas pre { background: #1e1e2e; color: #eee; padding: 1rem; border-radius: 8px; overflow: auto; }
-.canvas pre code { background: none; padding: 0; }
+/* The readout the tests use (slide number and clicks). Hidden from the eye, still in the page. */
+#hud { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
 /* Ported from Slidev's vclick.css: hidden elements keep their space but cannot be seen or clicked. */
 .slidev-vclick-target { transition: all 0.1s ease; }
 .slidev-vclick-hidden { opacity: 0 !important; pointer-events: none !important; user-select: none !important; }
+.slidev-vclick-display-none { display: none !important; }

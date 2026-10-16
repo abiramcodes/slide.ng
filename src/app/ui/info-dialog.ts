@@ -1,0 +1,32 @@
+import { Component, inject } from '@angular/core';
+import { HEADMATTER, INFO_HTML } from '../../slides/generated';
+import { Ui } from '../lib/ui-state';
+
+// The "info" dialog: the deck's `info:` text from the headmatter (markdown), or its title, plus a credit line.
+@Component({
+  selector: 'app-info-dialog',
+  template: `
+    @if (ui.info()) {
+      <div id="info-dialog" class="fixed inset-0 grid z-modal">
+        <div class="absolute inset-0 -z-1 bg-black/80" (click)="ui.info.set(false)"></div>
+        <div class="slidev-layout m-auto rounded-md bg-main text-main shadow dark:border dark:border-gray/20 px-6 py-4 flex flex-col gap-4 text-base max-w-150" style="height: auto">
+          @if (infoHtml) {
+            <div [innerHTML]="infoHtml"></div>
+          } @else {
+            <div class="text-xl font-bold">{{ title }}</div>
+          }
+          <div class="flex gap-1 items-center text-sm">
+            <span class="opacity-50 mr-2">Made with</span>
+            <b>slide.ng</b>
+            <span class="opacity-50">, inspired by Slidev</span>
+          </div>
+        </div>
+      </div>
+    }
+  `,
+})
+export class InfoDialog {
+  protected ui = inject(Ui);
+  protected infoHtml = INFO_HTML;
+  protected title = (HEADMATTER['title'] as string | undefined) ?? 'slide.ng';
+}

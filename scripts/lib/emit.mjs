@@ -1,46 +1,59 @@
-// Writes the TypeScript source of the generated files.
+// Writes the TypeScript source of one generated slide component.
 import { COMPONENTS, LAYOUTS } from './registry.mjs';
+import { layoutName } from './layouts.mjs';
+import { extractStyles, scopeCss } from './scoped-style.mjs';
+import { splitSlots } from './slots.mjs';
 import { toTemplate } from './to-template.mjs';
 
 const pad = (no) => String(no).padStart(3, '0');
 export const slideName = (no) => `slide-${pad(no)}`;
 export const slideClass = (no) => `Slide${pad(no)}`;
+export { layoutName };
 
 // Escape a value for use inside a double-quoted HTML attribute.
 const attr = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/[{}@]/g, (c) => `&#${c.charCodeAt(0)};`);
 
-// Slidev's rule: first slide is a cover, the others use `default`.
-export function layoutName(frontmatter, index) {
-  const wanted = frontmatter.layout ?? (index === 0 ? 'cover' : 'default');
-  if (LAYOUTS[wanted]) return wanted;
-  console.warn(`[slides] unknown layout "${wanted}", using "default"`);
-  return 'default';
+// The layout's opening tag: frontmatter keys the layout knows become attributes (= inputs).
+function openTag(def, frontmatter) {
+  const attrs = def.props.filter((p) => frontmatter[p] != null).map((p) => ` ${p}="${attr(frontmatter[p])}"`);
+  if (frontmatter.class) attrs.push(` ${def.classProp ? 'contentClass' : 'class'}="${attr(frontmatter.class)}"`);
+  return `<${def.tag}${attrs.join('')}>`;
 }
 
-// The slide body. For `two-cols`, `::right::` splits it into two parts.
-function body(content, layout) {
-  if (layout !== 'two-cols') return toTemplate(content);
-  const [left, right = ''] = content.split(/^::right::[ \t]*$/m);
-  return `${toTemplate(left)}<div right>${toTemplate(right)}</div>`;
+// The slide body. `::name::` lines cut it into slots; a named slot is projected into the layout.
+function body(markdown, def, no) {
+  return splitSlots(markdown)
+    .map(([name, text]) => {
+      if (name === 'default') return toTemplate(text);
+      if (!def.slots.includes(name)) {
+        console.warn(`[slides] slide ${no}: layout "${def.tag.slice(3)}" has no slot "${name}", showing it as normal content`);
+        return toTemplate(text);
+      }
+      return `<ng-container ngProjectAs="[${name}]">${toTemplate(text)}</ng-container>`;
+    })
+    .join('');
 }
 
 export function slideSource(slide, no) {
-  const layout = layoutName(slide.frontmatter, no - 1);
-  const { className, tag, file } = LAYOUTS[layout];
-  const cls = slide.frontmatter.class ? ` class="${attr(slide.frontmatter.class)}"` : '';
-  const html = `<${tag}${cls}>${body(slide.content, layout)}</${tag}>`;
+  const def = LAYOUTS[layoutName(slide.frontmatter, no - 1)];
+  const { markdown, css } = extractStyles(slide.content);
+  const html = `${openTag(def, slide.frontmatter)}${body(markdown, def, no)}</${def.tag}>`;
 
   // Look for components outside code samples only (code is just text).
   const markup = html.replace(/<pre[\s\S]*?<\/pre>/g, '').replace(/<code[^>]*>[\s\S]*?<\/code>/g, '');
   const used = COMPONENTS.filter((c) => c.test.test(markup));
-  const imports = [{ className, file }, ...used];
+  const imports = [def, ...used];
   const importLines = [...new Set(imports.map((c) => `import { ${c.className} } from '../../app/${c.file}';`))];
-  const start = slide.frontmatter.clicksStart;
-  const providers = ['ClicksContext', ...(start ? [`{ provide: CLICKS_START, useValue: ${+start} }`] : [])];
+
+  const { clicksStart, clicks } = slide.frontmatter;
+  const providers = ['ClicksContext'];
+  if (clicksStart) providers.push(`{ provide: CLICKS_START, useValue: ${+clicksStart} }`);
+  if (clicks) providers.push(`{ provide: CLICKS_TOTAL, useValue: ${+clicks} }`);
+  const styles = scopeCss(css, slideName(no));
 
   return `// GENERATED from slides.md (slide ${no}) - do not edit
-import { Component } from '@angular/core';
-import { CLICKS_START, ClicksContext } from '../../app/lib/clicks';
+import { Component${styles ? ', ViewEncapsulation' : ''} } from '@angular/core';
+import { CLICKS_START, CLICKS_TOTAL, ClicksContext } from '../../app/lib/clicks';
 import { SlideBase } from '../../app/lib/slide-base';
 ${importLines.join('\n')}
 
@@ -48,27 +61,8 @@ ${importLines.join('\n')}
   selector: '${slideName(no)}',
   imports: [${imports.map((c) => c.className).join(', ')}],
   providers: [${providers.join(', ')}],
-  template: ${JSON.stringify(html)},
+  template: ${JSON.stringify(html)},${styles ? `\n  styles: [${JSON.stringify(styles)}],\n  encapsulation: ViewEncapsulation.None,` : ''}
 })
 export default class ${slideClass(no)} extends SlideBase {}
-`;
-}
-
-// index.ts: the list of slides with their metadata.
-export function indexSource(deck) {
-  const imports = deck.slides.map((_, i) => `import ${slideClass(i + 1)} from './${slideName(i + 1)}';`);
-  const entries = deck.slides.map((s, i) => {
-    const meta = { title: s.title ?? null, layout: layoutName(s.frontmatter, i), note: s.note ?? null, frontmatter: s.frontmatter };
-    return `  { ${JSON.stringify(meta).slice(1, -1)}, component: ${slideClass(i + 1)} },`;
-  });
-  return `// GENERATED from slides.md - do not edit
-import type { SlideMeta } from '../../app/lib/slide-meta';
-${imports.join('\n')}
-
-export const HEADMATTER: Record<string, unknown> = ${JSON.stringify(deck.headmatter)};
-
-export const SLIDES: SlideMeta[] = [
-${entries.join('\n')}
-];
 `;
 }

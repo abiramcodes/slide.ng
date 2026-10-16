@@ -5,7 +5,8 @@
   "compilerOptions": {
     "allowJs": true,
     "types": [
-      "vitest/globals"
+      "vitest/globals",
+      "node"
     ]
   },
   "include": [

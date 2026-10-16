@@ -1,0 +1,56 @@
+import { Component, computed, inject, input, numberAttribute } from '@angular/core';
+import { Nav } from '../lib/nav';
+import { TocItem, filterToc } from '../lib/toc-tree';
+import { SlideLink } from './slide-link';
+
+// One level of the list. It uses itself for the children.
+@Component({
+  selector: 'app-toc-list',
+  imports: [SlideLink],
+  template: `
+    @if (list().length) {
+      <ol [class]="classes()" [attr.start]="level() === 1 ? start() : null" [style.list-style]="style()">
+        @for (item of list(); track item.no) {
+          <li class="slidev-toc-item" [class.slidev-toc-item-active]="item.active" [class.slidev-toc-item-parent-active]="item.activeParent">
+            <slide-link [to]="item.path">{{ item.title }}</slide-link>
+            <app-toc-list [list]="item.children" [level]="level() + 1" [start]="start()" [listClass]="listClass()" [listStyle]="listStyle()" />
+          </li>
+        }
+      </ol>
+    }
+  `,
+})
+export class TocList {
+  list = input<TocItem[]>([]);
+  level = input(1);
+  start = input<string | number>(1);
+  listClass = input<string | string[]>('');
+  listStyle = input<string | string[]>('');
+
+  protected classes = computed(() => [[this.listClass()].flat().join(' '), 'slidev-toc-list', `slidev-toc-list-level-${this.level()}`].join(' '));
+  // `listStyle` can give one list-style per level, like Slidev.
+  protected style = computed(() => [this.listStyle()].flat()[this.level() - 1] || null);
+}
+
+// <slide-toc /> is the table of contents, built from the slides' titles and levels (Slidev's <Toc />).
+//   columns, listClass, start, listStyle, minDepth, maxDepth, mode = all | onlyCurrentTree | onlySiblings
+@Component({
+  selector: 'slide-toc',
+  imports: [TocList],
+  host: { class: 'slidev-toc block', '[style.column-count]': 'columns()' },
+  template: `<app-toc-list [list]="items()" [start]="start()" [listClass]="listClass()" [listStyle]="listStyle()" />`,
+})
+export class SlideToc {
+  columns = input(1, { transform: numberAttribute });
+  listClass = input<string | string[]>('');
+  start = input<string | number>(1);
+  listStyle = input<string | string[]>('');
+  maxDepth = input(Infinity, { transform: numberAttribute });
+  minDepth = input(1, { transform: numberAttribute });
+  mode = input<'all' | 'onlyCurrentTree' | 'onlySiblings'>('all');
+
+  private nav = inject(Nav);
+  protected items = computed(() =>
+    filterToc(this.nav.tocTree(), { minDepth: this.minDepth(), maxDepth: this.maxDepth(), mode: this.mode() }),
+  );
+}

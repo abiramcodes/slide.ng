@@ -1,15 +1,19 @@
-import { Component } from '@angular/core';
+import { Component, input } from '@angular/core';
 
-// Two columns. The generator wraps everything after `::right::` in <div right>,
-// which lands in the second column. Everything before it is the first column.
+// Two columns. The left one gets the default content and `::left::`, the right one `::right::`.
+// `layoutClass` goes on the whole layout, `contentClass` (the frontmatter `class`) on both columns.
 @Component({
   selector: 'sn-two-cols',
-  host: { class: 'block w-full h-full' },
+  host: { class: 'slidev-layout two-columns w-full h-full grid grid-cols-2', '[class]': 'layoutClass()' },
   template: `
-    <div class="h-full box-border px-24 py-16 grid grid-cols-2 gap-12">
-      <div><ng-content /></div>
-      <div><ng-content select="[right]" /></div>
+    <div class="col-left" [class]="contentClass()">
+      <ng-content />
+      <ng-content select="[left]" />
     </div>
+    <div class="col-right" [class]="contentClass()"><ng-content select="[right]" /></div>
   `,
 })
-export class TwoColsLayout {}
+export class TwoColsLayout {
+  layoutClass = input('');
+  contentClass = input('');
+}
