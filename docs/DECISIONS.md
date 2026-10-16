@@ -224,3 +224,73 @@ Nothing else: recording uses the browser's MediaRecorder, the wake lock uses the
 17. **`{monaco-write}`** works for `<<< ./file.ts {monaco-write}` (a whole file inside the deck's folder). The generator lists `{ id: path }` in `.slide-ng/monaco-files.json`; the page sends only the id. A region, a plain code block or a file outside the folder gets a warning and a normal editor. The text is saved 600 ms after typing stops.
 18. **The side editor is a plain textarea**, not Monaco: it needs no extra loading and cannot fail on a scaled canvas. It shows the raw slide (frontmatter, content, notes) and saves 600 ms after typing. It does not notice edits made elsewhere while it is open (reopen or change slide). Its open state is kept in the browser because a rebuild can reload the page.
 19. **Test decks:** `tests/e2e/phase3/slides.md` (presenter, sync, drawing, camera, settings, drag), `tests/e2e/phase3/layout/slides.md` (hash routing, canvas size, zoom and the four layers, which live in its own `layers/` folder), `tests/e2e/dev/slides.md` (copied to `work.md` for the dev-server test).
+
+
+## Made during phase 4
+
+The person was away, so these were decided without asking. Each one can be changed; the reasons are here so that it is clear what to argue with.
+
+New dependencies, each with its reason:
+`playwright-core` (export and the Open Graph picture drive a Chromium; it was a dev dependency, now a normal one; it never downloads a browser, `--executable-path` or `CHROME_PATH` names the one to use),
+`pdf-lib` (joins one PDF page per slide, sets the title and writes the outline; Chromium can do neither), `pptxgenjs` (the only part of the PPTX format the exporter needs: pictures and notes),
+`@modelcontextprotocol/sdk` and `zod` (the protocol and its schemas; `zod` is the SDK's own required peer, so it is declared). The generator, the dev server and the exporter now run from an installed
+package, so `@angular/build`, `@angular/cli`, `@angular/compiler-cli`, `typescript`, the UnoCSS and Shiki packages, `katex`, `yaml`, `ws`, `playwright-core` and the Iconify sets moved from
+`devDependencies` to `dependencies`. Only test tools stay as dev dependencies. Nothing else: the static server, the flag reader, the head templating, the offline worker and the zip of the scaffold are
+plain Node.
+
+1. **Print route contract.** `/print` is a page of its own (not a mode of the deck page) with `.print-slide-container` ids `<slideNo>-<clickN>`, `?print=clicks` for one page per click step and `?range=`.
+   `data-slide-ng-print="ready"` says the page is done; lazy components keep `data-slide-ng-waitfor` until they are drawn, so an exporter never needs a fixed delay. The notes have `/presenter/print`.
+2. **Export goes through a real browser and the print route**, one PDF page per slide or click step (`page.pdf` with the canvas size and `preferCSSPageSize`), merged with `pdf-lib`. PNG, Markdown and
+   PPTX use screenshots of the same pages. PPTX holds pictures and notes; **editable PPTX is out of scope** (STATUS.md). The outline is written by hand into the PDF (`--with-toc`).
+3. **A deck can not choose what runs or where files go.** `exportFilename` is turned into a plain file name (no separators, no `..`, no leading dot); `executablePath` and `output` in the headmatter are ignored;
+   `--output` names files in the current folder, or a folder the exporter creates itself, and the exporter only ever deletes files it wrote in a folder it made. Tests try `../../../x`, absolute names and an existing folder.
+4. **Build = `ng build` into a work folder, then copy.** `slide-ng build` builds into `<deck>/.slide-ng/build`, makes the extra files (picture, PDF, `404.html`, `_redirects`, offline files), and copies the result into `--out`.
+   `--out` is only replaced when it is empty, absent or carries `.slide-ng-build`; the current folder and folders with other files are refused before the long build starts. The work folder is removed afterwards.
+5. **`--base` goes through `--base-href` and `routerMode`.** With history routing a host must send every path to `index.html` (`404.html` and `_redirects` are written for GitHub Pages and Netlify); `routerMode: hash` needs nothing. docs/HOSTING.md.
+6. **Head tags are templated into a copy of `src/index.html`** (`generated/index.html`) with every value escaped and attribute names checked. `ogImage: auto` makes a screenshot of slide 1 (1440x810) during the build;
+   a path or an address is used as given. `info` is the description, `titleTemplate` uses `%s`.
+7. **`remoteAssets: true` downloads pictures at build** (images only, `image/*` content type, 20 MB at most, named by a hash) and rewrites the slides to use the copies. Not in dev, so the dev server never needs the network for it.
+8. **The offline worker is written by hand** (`sw.js`, written by `build/pwa.mjs`): a cache named by a hash of the file list, files from the build only, the PDF left out, cache first (a miss goes to the network, and a page navigation falls back to the cached `index.html`). It is registered only in production builds
+   (`pwa: true`). There are no install icons and no UI that says "available offline"; both are listed as gaps.
+9. **The download button is disabled unless the PDF exists.** The page asks for the file with a HEAD request, so `npm start` and builds made without `--download` show a greyed entry with a hint instead of a dead link.
+10. **Build budgets raised** to 1 MB warning and 2 MB error for the first load. A deck with Monaco and KaTeX is about 850 kB, which is over the old 500 kB warning (1 MB error).
+11. **One package, not a monorepo.** This repository is the package: `bin/slide-ng.mjs`, the generator and the app sources, and `template/` for `slide-ng create`. A monorepo with a separate `create-slide-ng` and a theme package
+    would need a registry, workspaces and release tooling that nothing here can test. `create` copies `template/` and fills the name and version; the new deck's `package.json` depends on `slide-ng`. The package is still `private`
+    (nothing is published by this work); an open decision.
+12. **A deck outside the repository builds in a working copy of the app** (`<deck>/.slide-ng/app`, from `cli/app-root.mjs`): a fresh copy of `src/`, the Angular and TypeScript settings and `public/`, with `node_modules` linked from the
+    package. The package folder is never written to. A deck inside the repository (`npm start`, the tests) builds in place. A copy is slower to start than in place; the Angular cache in the copy is kept between runs.
+13. **The scaffold is tested without a registry.** `tests/export/scaffold.mjs` runs `create`, links the repository as `node_modules/slide-ng` in the new deck (what `npm install` would do) and builds it from there. A real `npm install slide-ng` from a registry was not tried.
+14. **Roots, in this order: built-in theme, `theme:`, each `addons:`, the deck's own folder; later wins.** A root is a folder with any of `layouts/`, `components/`, `layers/`, `styles/index.css`, `public/`, `setup/providers.ts`,
+    `uno.config.mjs`, `theme.json`. Details in docs/THEMES.md. The roots are copied into `src/slides/generated/roots/<id>/` (symbolic links are never followed or copied) so that Angular compiles them with the rest and a theme in
+    `node_modules` can import `@angular/core`.
+15. **Theme code reaches the app through `slide-ng/*`** (a TypeScript path to `src/app/*`) instead of `../`, because it is copied. The built-in layouts have no `../` imports, so `theme eject` copies them as they are.
+16. **Layouts and components are found by reading the file as text** (a `@Component({ selector: '...' })` followed by `export class`), like the built-in registry did by hand. A layout that replaces a built-in one keeps its inputs; `theme.json`
+    changes them. Angular decorators are not parsed, so inputs are never read from the component.
+17. **An unknown theme package is a warning, not an error** (the built-in theme is used), because decks written for other themes should still run. A path that is not a folder is an error. `--theme`/`-t` and `SLIDE_NG_THEME` override the headmatter.
+18. **Setup hooks are Angular providers** (`setup/providers.ts`, an array). Shortcuts use the existing `SHORTCUTS_SETUP` token (one wins: the last root), code runners use the new multi token `CODE_RUNNERS`. There are no hooks for Shiki,
+    KaTeX, Mermaid, Monaco or the markdown pipeline; that is the second biggest gap in PARITY.md.
+19. **One example theme, `examples/theme-minimal`**: replaces `cover` and `quote`, adds `<minimal-callout>`, CSS, a UnoCSS shortcut, `colorSchema: dark` and `transition: fade` as defaults and a `b` shortcut. No community theme was ported.
+20. **The dev server is one command with several processes** (`cli/dev.mjs`): the generator in watch mode, the companion server and `ng serve`. `npm start` is the same code. `--port` (default 4200), `--open` (`ng serve --open`), `--remote[=password]`,
+    `--bind`, `--theme`, `--log` (`error`/`silent` hide the output of the child programs), `--force` (clears the build cache). `--tunnel` (needs a tunnel service) and `--base` are refused with a message instead of being ignored.
+    `--remote` is an optional-value flag: it never takes the next argument, so `slide-ng --remote my.md` means what it says.
+21. **`slide-ng mcp`** has seven tools: `list_slides`, `get_outline`, `get_slide`, `update_slide`, `insert_slide`, `remove_slide`, `move_slide`. They read with the generator's parser and edit slides.md as text. Every edit is parsed
+    again in memory first; if any other slide would change, nothing is written. Slide 1 carries the headmatter, so it cannot be removed or moved and nothing can be put before it. Insert, remove and move work on decks whose slides are all
+    in the entry file; `update_slide` also works on an imported file, but only inside the deck's folder (the same `confine` check as the dev server).
+22. **`replaceSource` keeps the blank line under a plain `---`** (a bug found while writing the MCP tests: replacing a slide that has no frontmatter with text that starts directly at the top made the parser read the text as frontmatter).
+    The dev server's side editor gets the fix too.
+23. **The side editor looks at the file every two seconds** while it is open and nothing typed is waiting to be saved, and takes over a change made elsewhere (another editor, git, the MCP server). A poll, because the dev server has no file
+    watcher channel to the page; the cost is one small request per two seconds while the editor is open.
+24. **Two phase 3 limits were smaller than written:** `v-drag` boxes are drawn in the right place in overview thumbnails (they are only not editable there), and the presenter's next-step preview now draws the global layers. Slidev does not draw global
+    layers in overview thumbnails either, so they were left out there.
+25. **The four layer files of the layout test deck live in its own folder** (`tests/e2e/phase3/layout/layers/`) instead of being copied into `src/app/layers` during the build; that is the deck-folder feature doing the job.
+26. **Left out on purpose:** editable PPTX, the VS Code extension, the prettier plugin, the Vue-syntax converter, community themes, the browser exporter page and `overviewSnapshots` (as asked). Also left out because they would not fit: `--tunnel`,
+    Monaco type loading, `fonts`, MDC/Comark.
+
+### Open decisions (for the person to settle)
+
+- Publish `slide-ng` to a registry (remove `private`, choose a version scheme)? Until then `create` writes `"slide-ng": "^0.0.0"`, which only resolves with a link or a local tarball.
+- Default canvas width: 960 (now) or Slidev's 980? Decks that care can set `canvasWidth: 980`.
+- Default dev port: 4200 (Angular's) or Slidev's 3030?
+- Should an uninstalled theme be an error instead of a warning?
+- Add setup hooks for Shiki, KaTeX, Mermaid and Monaco, or keep themes to layouts, components, styles and providers?
+- PWA icons and an "available offline" indicator.

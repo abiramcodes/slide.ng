@@ -10,7 +10,11 @@ slides.md  (+ files it imports with `src:`)
 src/slides/generated/        <- not committed
    slide-001.ts ... slide-NNN.ts   one standalone Angular component per slide
    index.ts                        list of slides + metadata, headmatter, info html
-   uno.css                         CSS for the UnoCSS classes in use
+   index.html                      the page (title, SEO tags, favicon, manifest link) made from src/index.html
+   uno.css, features.css, theme.css  styles (class names in use, feature stylesheets, theme styles)
+   layers.ts, setup.ts             layer components and setup providers found in the roots
+   roots/<id>/...  public/         copies of the theme, addon and deck folders, and their merged public files
+   remote-assets/                  pictures downloaded for `remoteAssets` (production builds only)
    |
    v  ng build / ng serve  (normal Angular CLI, AOT)
 dist/slide-ng/browser
@@ -21,7 +25,7 @@ dist/slide-ng/browser
 | file | job |
 | ---- | --- |
 | `generate.mjs` | entry point: read the deck, write the generated files, optional `--watch`. `SLIDES_FILE=path` builds another deck (tests do) |
-| `dev.mjs` | `npm start`: run the generator in watch mode next to `ng serve` |
+| `dev.mjs` | `npm start`: the same as `slide-ng dev` (`cli/dev.mjs`) |
 | `lib/parse-deck.mjs` | read the deck with `@slidev/parser` (`load`: follows `src:` imports), merge headmatter `defaults` |
 | `lib/layouts.mjs` | table of the 21 layouts (component, props, slots) and `layoutName` (fallback with a warning) |
 | `lib/slots.mjs` | `::name::` slot sugar: cut a slide's markdown into slots |
@@ -41,6 +45,11 @@ dist/slide-ng/browser
 | `lib/directives.mjs`, `icons.mjs`, `alerts.mjs`, `footnotes.mjs` | Vue-style `v-mark` / `v-motion` attributes, icon tags, GitHub alerts and footnotes |
 | `lib/pack.mjs` | JSON -> deflate -> base64, so text with `{{ }}` can travel in an attribute (the browser has `code/unpack.ts`) |
 | `lib/protect.mjs` | the entity escaping for `{ } @` and the `attr()` helpers |
+| `lib/roots.mjs` | the roots of a deck (theme, addons, deck folder): find them, read `theme.json`, merge default headmatter |
+| `lib/scan-roots.mjs`, `sync-roots.mjs`, `theme-files.mjs` | find layouts and components in the roots, copy the roots into `generated/roots`, write `layers.ts`, `setup.ts`, `theme.css` |
+| `lib/head.mjs` | tags for `<head>` from the headmatter (title, description, Open Graph, favicon, `htmlAttrs`), escaped |
+| `lib/remote-assets.mjs`, `build-options.mjs` | download remote pictures for a build; read the `SLIDE_NG_*` variables that `slide-ng build` sets |
+| `lib/frontmatter-edit.mjs` | set one key in a deck's headmatter and keep the rest of the file (`theme eject` uses it) |
 
 ### Why placeholders in `to-template.mjs`
 
@@ -189,6 +198,37 @@ The generator numbers every `v-drag` (`drag-sites.mjs`) and adds `drag-site="N"`
 puts the element at it and, on a move, tells `DragState`, which keeps the place for this visit and hands it to the dev server's saver. `generated/layers.ts` imports the layer files that exist;
 `app-slide-layer` shows one. `zoom` is a CSS variable on the slide element and one rule in `styles.css`.
 
+## Export, build, themes, CLI and MCP (phase 4)
+
+```
+bin/slide-ng.mjs  ->  scripts/cli/<command>.mjs   dev, build, export, export-notes, format, theme, create;  scripts/mcp for mcp
+```
+
+**CLI.** `bin/slide-ng.mjs` only picks a command (`cli/pick-command.mjs`) and loads it. `cli/flags.mjs` is the one flag reader (unknown flags fail).
+`cli/runtime.mjs` runs the generator and `ng build` for one deck; `cli/app-root.mjs` decides where: a deck inside this repository (tests, `npm start`) is built in place,
+any other deck gets a working copy of the app in `<deck>/.slide-ng/app` (a fresh copy of `src/`, the Angular and TypeScript settings and `public/`, with `node_modules` linked), so an
+installed package is never written to. The package is one package with a `bin` entry and a `template/` folder for `create` (not a monorepo; see DECISIONS.md).
+
+**Print route.** `/print` (and `/presenter/print` for notes) draws every slide as `.print-slide-container` with the id `<slideNo>-<clickN>`; `?print=clicks` makes one page per click
+step. It sets `data-slide-ng-print="ready"` when done. Components that load late (Mermaid, PlantUML, Monaco, Magic Move, `v-mark`, code runners) put `data-slide-ng-waitfor` on
+themselves until they are drawn, and the exporter waits for none to be left.
+
+**Export** (`scripts/export/`). `cli/export.mjs` builds the deck (or uses `--dist` or `--url`), serves it with `static-server.mjs` (base path, SPA fallback, path confinement) and
+`index.mjs` drives Chromium through `playwright-core`: `page.mjs` opens the print route and waits, `pdf.mjs` makes one PDF page per slide or click step and merges them with `pdf-lib`
+(title, outline from `outline.mjs`), `images.mjs` takes PNGs, `markdown.mjs` writes the Markdown file and its pictures, `pptx.mjs` makes a PPTX of pictures with `pptxgenjs`.
+File names pass `filename.mjs` (`exportFilename` becomes a plain name); `--output` can only name files in the current folder or a folder the exporter creates.
+
+**Build** (`cli/build.mjs`). `ng build --output-path .slide-ng/build --base-href <base>`, then `build/og-image.mjs`, the optional PDF, `404.html`, `_redirects` and
+`build/pwa.mjs` (`manifest.webmanifest`, `sw.js` with a cache name from a hash of the file list). The result is copied into `--out` by `cli/safe-dir.mjs`, which only replaces a
+folder that carries the marker file `.slide-ng-build`, and removes the work folder it made itself. `app/lib/offline-worker.ts` registers the worker in production builds.
+
+**Roots** (themes and addons; reference in THEMES.md). `generate.mjs` calls `parseDeck` with the roots (theme, addons, deck folder), `theme-files.mjs` copies them into
+`generated/roots/<id>/`, and the app picks up what they bring through generated files: `layers.ts`, `setup.ts` (providers added in `app.config.ts`), `theme.css` (last style in
+`angular.json`) and `generated/public` (a second asset folder). `tsconfig.json` maps `slide-ng/*` to `src/app/*` so copied theme code can import the app. In dev the generator watches the root folders.
+
+**MCP** (`scripts/mcp/`). `index.mjs` is a stdio server (`@modelcontextprotocol/sdk`), `tools.mjs` has the seven tools, `deck-edit.mjs` the text edits (remove, insert, move; pure functions
+tested with the real parser). Every change is parsed again before it is written, and only the deck's own markdown files are touched (`dev/auth.mjs` `confine`, the same check the dev server uses).
+
 ## Styling
 
 UnoCSS, with `@unocss/core`, the `wind3` preset (dark variant by class) and `preset-icons` with the Carbon set
@@ -207,4 +247,5 @@ reset and `src/styles/` (variables, the layouts' typography ported from Slidev's
   It answers the PlantUML server and the tweet / Bluesky scripts with stand-ins, so no network is needed.
 - `tests/e2e/phase3.mjs` + `phase3/`: builds `tests/e2e/phase3/slides.md` and `layout/slides.md`, one file per topic (`sync`, `presenter`, `laser`, `drawing`, `camera`, `settings`, `drag`, `layout`), with Chromium's fake camera and microphone.
 - `tests/e2e/dev-hmr.mjs`: dev server live-update check. `tests/e2e/dev-server.mjs`: starts the real dev server on a small deck: v-drag write-back, drawings, side editor, `{monaco-write}`, refused requests, and `--remote` with a password (HTTP, WebSocket, two browsers).
+- `tests/e2e/phase4.mjs` + `phase4/`: the print route (`print.mjs`). `tests/export/` (`npm run test:export`): `run.mjs` (the export command on a deck: PDF, PNG, MD, PPTX, notes, outline, refusals), `build.mjs` (build, head tags, Open Graph picture, remote assets, download, offline worker, sub-path hosting, refusals), `theme.mjs` (the example theme, eject, `--theme`), `scaffold.mjs` (`create`, then format and build the new deck), `mcp.mjs` (a scripted client over stdio).
 - `tests/e2e/screenshots.mjs` and `screenshots-features.mjs`: not tests; write `docs/screenshots/` (layouts, controls, and every feature slide).

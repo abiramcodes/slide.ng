@@ -27,8 +27,34 @@ You need Node 22.22.3 or newer.
 ```sh
 npm install
 npm start          # dev server at http://localhost:4200, reloads when you edit slides.md
-npm run build      # production build in dist/slide-ng/browser
+npm run build      # production build of the repository's own deck in dist/slide-ng/browser
 ```
+
+## The command line
+
+`bin/slide-ng.mjs` is the `slide-ng` command (`npm start` runs the same code as `slide-ng dev`). Without a command it starts the dev server.
+A deck is a markdown file; the default is `slides.md`. Decks outside this repository are built in a working copy in `<deck>/.slide-ng/app`.
+
+```sh
+node bin/slide-ng.mjs create my-deck           # a new deck folder (slides.md, package.json that depends on slide-ng)
+node bin/slide-ng.mjs [dev] [slides.md]        # dev server
+node bin/slide-ng.mjs build  [slides.md]       # a static site in ./dist, ready for any web server
+node bin/slide-ng.mjs export [slides.md]       # PDF, PNG, PPTX or Markdown (needs Chromium)
+node bin/slide-ng.mjs export-notes [slides.md] # a PDF of the speaker notes
+node bin/slide-ng.mjs format [slides.md]       # tidy the markdown file
+node bin/slide-ng.mjs theme eject              # copy the theme in use into ./theme to edit it
+node bin/slide-ng.mjs mcp [slides.md]          # MCP server on stdio: read and edit slides with a tool client
+```
+
+| command | flags |
+| --- | --- |
+| `dev` | `--port`/`-p` (4200), `--open`/`-o`, `--remote[=password]`, `--bind <address>`, `--log error\|warn\|info\|silent`, `--force`/`-f` (clear the build cache), `--theme`/`-t`. `--tunnel` and `--base` are refused with a message |
+| `build` | `--out`/`-o` (`dist`), `--base /talk/`, `--download` (also make the PDF and a download button), `--without-notes`, `--theme`/`-t`, `--executable-path`, `--timeout` |
+| `export` | `--format pdf\|png\|pptx\|md`, `--output`/`-o`, `--range 1,4-5`, `--with-clicks`/`-c`, `--dark`, `--timeout`, `--wait`, `--wait-until`, `--executable-path`, `--per-slide`, `--scale`, `--omit-background`, `--with-toc`, `--theme`/`-t`, and `--dist <folder>` / `--url <address>` to export an existing build or a running server |
+| `create` | `<folder>`, `--force` (add the missing files to a folder that has files) |
+
+The export needs a Chromium: set `CHROME_PATH` or pass `--executable-path`. It never downloads one. The headmatter can set `exportFilename`, `export: { ... }` (the same names as the flags) and `download`.
+Hosting, `--base`, the PDF button, the offline mode and the head tags are in [docs/HOSTING.md](docs/HOSTING.md). Themes and addons are in [docs/THEMES.md](docs/THEMES.md) and [docs/WRITING-A-THEME.md](docs/WRITING-A-THEME.md).
 
 Keys: right arrow / space = next click or slide, left arrow = back, `o` overview, `g` go to slide, `d` dark mode, `f` fullscreen.
 Move the mouse to the bottom left for the bar, right click for the menu. All keys are in [docs/SYNTAX.md](docs/SYNTAX.md).
@@ -57,7 +83,10 @@ The URL is the state: `/7?clicks=2` is slide 7 at click 2.
 - `v-drag`, `<v-drag>`, `<v-drag-arrow>` written back into slides.md in dev; `zoom`, `canvasWidth`, `aspectRatio`, `routerMode`, global and slide layers.
 - Dev companion server: side editor, `{monaco-write}`, drawing files, WebSocket sync for other devices.
 
-Not yet: export / PDF, PWA, touch controls. See [docs/STATUS.md](docs/STATUS.md).
+- Export to PDF (with outline), PNG, PPTX (pictures) and Markdown; speaker notes as PDF; `slide-ng build` with `--base`, 404 page, Open Graph picture, remote assets, download button and an offline worker.
+- Themes and addons (`theme:`, `addons:`), `theme eject`, an example theme, `slide-ng create`, `slide-ng format`, an MCP server.
+
+How it compares with Slidev, row by row: [docs/PARITY.md](docs/PARITY.md). What is missing or not checked: [docs/STATUS.md](docs/STATUS.md).
 Pictures of the layouts and of every feature slide (light and dark) are in `docs/screenshots/`; `npm run screenshots` makes them again.
 
 ## Remote use
@@ -75,6 +104,7 @@ Without `=secret` a random password is made and printed. There is no HTTPS: use 
 npm test             # unit tests (generator, code and math handling, click engine, table of contents, shortcuts, transitions)
 npm run test:e2e     # builds the starter deck and the showcase, code and interaction decks, and checks them in a real browser
 npm run test:dev     # starts the dev server: live updates, v-drag write-back, drawings, side editor, {monaco-write}, --remote password
+npm run test:export  # the command line: export (PDF, PNG, PPTX, MD), build, themes, create, the MCP server
 ```
 
 The browser tests use Chromium through `playwright-core`. Set `CHROME_PATH` if

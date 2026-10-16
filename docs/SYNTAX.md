@@ -48,6 +48,9 @@ In the headmatter (the frontmatter of the first slide) you can also set:
 | `colorSchema`  | `auto` (default: follow the system, the user can toggle), `light` or `dark` (fixed, no toggle) |
 | `transition`   | the transition of every slide that sets none                         |
 | `defaults`     | frontmatter that every slide starts from, e.g. `defaults: { layout: center }`; a slide's own keys win |
+| `theme`, `addons` | the look of the deck: a folder, a package name, or `default`; see "Themes and addons" below |
+| `titleTemplate`, `author`, `keywords`, `favicon`, `lang`, `htmlAttrs`, `seoMeta` | the page's `<head>`, see "The page, export and build" below |
+| `download`, `exportFilename`, `export`, `remoteAssets`, `pwa` | export and build settings, see below |
 
 Any other key is kept in the slide's metadata and ignored.
 
@@ -580,12 +583,58 @@ While `npm start` runs: the **edit** button in the bar opens a side editor with 
 A static build has none of this and makes no requests.
 
 ```sh
-npm start -- --remote=secret     # others on your network can open the deck and follow the presenter
+npm start -- --remote=secret     # (or `slide-ng --remote=secret`) others on your network can open the deck and follow the presenter
 npm start -- --remote            # same, with a random password that is printed
 ```
 
 It prints the deck address and the presenter address (`/presenter/1?password=secret`). Use that address on the presenter's device; a viewer opens `http://<your address>:4200/1?password=secret`.
 The password lets a device sync and write; it is sent without encryption, so use it on a network you trust.
+
+## The page, export and build
+
+Keys in the headmatter (the first frontmatter) that matter for `slide-ng build` and `slide-ng export` (flags and hosting are in README.md and HOSTING.md):
+
+```md
+---
+title: My talk
+titleTemplate: '%s | Conf 2026'   # %s is the title; the browser tab shows "My talk | Conf 2026"
+info: |                           # markdown for the info dialog; without markup, up to 300 characters, it is also the page description
+  ## About this talk
+author: Ada
+keywords: [angular, slides]       # a list or a comma separated text
+lang: en                          # <html lang>
+favicon: /favicon.ico             # a file of public/, or a web address
+htmlAttrs: { data-theme: x }      # more attributes on <html>
+seoMeta:                          # Open Graph and Twitter tags (ogTitle, ogDescription, ogImage, ogUrl, twitterCard, ...)
+  ogImage: auto                   # auto = a screenshot of slide 1 made by the build; or a web address. An og-image.png next to slides.md is used when none is given
+  ogUrl: https://example.org/talk # the public address; makes the picture's address complete
+download: true                    # a PDF button in the bar (the PDF is made by `slide-ng build --download`); or a file name or address
+exportFilename: my-talk           # the name of the exported file, without the extension. Only a plain name: folders and .. are removed
+export:                           # defaults for `slide-ng export`; command line flags win
+  format: pdf
+  withClicks: true
+  dark: false
+remoteAssets: true                # a build downloads pictures with http(s) addresses and serves them itself
+pwa: true                         # a build adds a manifest and a service worker: the deck opens offline after one visit
+---
+```
+
+`export:` takes `format`, `range`, `withClicks`, `dark`, `timeout`, `wait`, `waitUntil`, `withToc`, `perSlide`, `scale` and `omitBackground`. It cannot name an output folder or
+a browser program: a deck may come from someone else, so those only come from the command line or the environment.
+In an exported PDF a slide that has clicks shows its last state, unless `--with-clicks` makes a page for every click step. `render-when context="print"` shows content only on paper.
+
+## Themes and addons
+
+```md
+---
+theme: ./my-theme       # a folder next to the deck, or a package: `ocean` means slide-ng-theme-ocean
+addons: [./charts]
+---
+```
+
+A theme or addon can bring layouts, components, layers, CSS, public files, UnoCSS settings, default headmatter and Angular providers (for example shortcuts). Folders next to your `slides.md`
+(`layouts/`, `components/`, `layers/`, `styles/`, `public/`, `setup/`) work the same way and win over the theme. `slide-ng theme eject` copies the theme you use into `./theme`.
+A package name that is not installed gives a warning and the built-in look is used. The full contract is in THEMES.md, a walk-through in WRITING-A-THEME.md.
 
 ## Keys, mouse and the interface
 
