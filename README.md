@@ -55,7 +55,7 @@ node bin/slide-ng.mjs mcp [slides.md]          # MCP server on stdio: read and e
 | `create` | `<folder>`, `--force` (add the missing files to a folder that has files) |
 
 The export needs a Chromium: set `CHROME_PATH` or pass `--executable-path`. It never downloads one. The headmatter can set `exportFilename`, `export: { ... }` (the same names as the flags) and `download`.
-Hosting, `--base`, the PDF button, the offline mode and the head tags are in [docs/HOSTING.md](docs/HOSTING.md). Setup files (`setup/shiki.ts`, `katex.ts`, `mermaid.ts`, `monaco.ts`, `shortcuts.ts`, ...) are in [docs/SETUP.md](docs/SETUP.md). Themes and addons are in [docs/THEMES.md](docs/THEMES.md) and [docs/WRITING-A-THEME.md](docs/WRITING-A-THEME.md); the official themes are in [`themes/`](themes), shown in [`examples/themes/`](examples/themes).
+Hosting, `--base`, the PDF button, the offline mode and the head tags are in [docs/HOSTING.md](docs/HOSTING.md); going offline for a talk is in [docs/OFFLINE.md](docs/OFFLINE.md). Setup files (`setup/shiki.ts`, `katex.ts`, `mermaid.ts`, `monaco.ts`, `shortcuts.ts`, ...) are in [docs/SETUP.md](docs/SETUP.md). Themes and addons are in [docs/THEMES.md](docs/THEMES.md) and [docs/WRITING-A-THEME.md](docs/WRITING-A-THEME.md); the official themes are in [`themes/`](themes), shown in [`examples/themes/`](examples/themes).
 
 Keys: right arrow / space = next click or slide, left arrow = back, `o` overview, `g` go to slide, `d` dark mode, `f` fullscreen.
 Move the mouse to the bottom left for the bar, right click for the menu. All keys are in [docs/SYNTAX.md](docs/SYNTAX.md).
