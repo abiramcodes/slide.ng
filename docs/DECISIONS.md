@@ -165,3 +165,8 @@ Nothing else was added: footnotes, alerts, the PlantUML encoding and the code ru
     for `.monaco-editor`.
 22. **Options after `{monaco}` are flat** (`{autorun:false,showOutputAt:'+1',height:'auto',lines:true,readonly:true}`); `editorOptions` (a nested object) is not read.
     `{monaco-write}` shows an editor without saving and prints a warning; saving needs the dev server (phase 3).
+23. **Twoslash works, done while generating** with `@shikijs/twoslash` (dev dependency, `explicitTrigger`: only fences with the word `twoslash`
+    after the language, as in Slidev). TypeScript worked out the types at generation time, and the popups are CSS only (`style-rich.css` through
+    `features.css`), so no TypeScript reaches the browser. It starts a TypeScript program (about one second) only when the deck has a twoslash block.
+    A block that fails to compile is shown without types and a warning. Such blocks do not scroll (`overflow: visible`) so popups are not clipped.
+    Imports of packages the deck does not install (`import { ref } from 'vue'`) cannot be typed, as in a normal TypeScript program.

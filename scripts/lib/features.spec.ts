@@ -14,3 +14,11 @@ describe('detect magic move', () => {
     expect(hasMath('no math')).toBe(false);
   });
 });
+
+describe('detect twoslash', () => {
+  it('needs the word twoslash on the fence line', async () => {
+    const { hasTwoslash } = await import('./features.mjs');
+    expect(hasTwoslash('```ts twoslash\nx\n```')).toBe(true);
+    expect(hasTwoslash('```ts\nconst twoslash = 1\n```')).toBe(false);
+  });
+});

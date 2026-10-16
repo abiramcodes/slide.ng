@@ -26,9 +26,12 @@ export function hasMath(text) {
 // An editor: a `{monaco...}` fence (also a `<<<` line or magic-move step cannot be one) or the <monaco> tag.
 export const hasMonaco = (text) => /^`{3,}[^\n]*\{monaco[\w-]*\}/m.test(text) || /<monaco[\s>]/.test(text) || /^<<<.*\{monaco[\w-]*\}/m.test(text);
 
+// A fence with the word `twoslash` after the language.
+export const hasTwoslash = (text) => /^`{3,}[^\n]*\btwoslash\b/m.test(text);
+
 export const hasMagicMove = (text) => /^````+[ \t]*(md|markdown) magic-move/m.test(text);
 
 export function detectFeatures(slides) {
   const text = slides.map((s) => s.content).join('\n');
-  return { langs: detectLangs(text), math: hasMath(text), monaco: hasMonaco(text), magicMove: hasMagicMove(text) };
+  return { langs: detectLangs(text), math: hasMath(text), monaco: hasMonaco(text), magicMove: hasMagicMove(text), twoslash: hasTwoslash(text) };
 }

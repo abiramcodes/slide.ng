@@ -94,3 +94,15 @@ describe('toTemplate: highlighted code', () => {
     expect(html.match(/<code-block-wrapper/g)).toHaveLength(2);
   });
 });
+
+describe('toTemplate: twoslash', () => {
+  it('adds type popups only to a block marked twoslash, and the result is safe for Angular', async () => {
+    await initHighlighter({ langs: ['ts'], twoslash: true });
+    const html = toTemplate('```ts twoslash\nconst n = Math.max(1, 2)\n//    ^?\n```\n\n```ts\nconst m = 1\n```');
+    expect(html.match(/twoslash-hover/g)!.length).toBeGreaterThan(1);
+    expect(html.match(/<pre /g)).toHaveLength(2);
+    expect(html.split('<code-block-wrapper')[2]).not.toContain('twoslash-hover');
+    expect(html).not.toMatch(/[{}@]/);
+    await initHighlighter({ langs: ['ts', 'html', 'md'] }); // back to the plain setup for the other tests
+  });
+});

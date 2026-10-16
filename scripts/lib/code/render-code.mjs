@@ -1,20 +1,29 @@
 // A normal code fence -> highlighted HTML inside a <code-block-wrapper> component.
 // The wrapper (src/app/code/code-block-wrapper.ts) adds the copy button, the title bar, the
 // click-stepped line highlights and the maximum height.
-import { codeToHtml } from './highlighter.mjs';
+import { codeToHtml, twoslashTransformer } from './highlighter.mjs';
 import { cleanTitle, parseInfo } from './meta.mjs';
 import { attrs, protect } from '../protect.mjs';
 
+const slidevCode = {
+  pre(node) {
+    this.addClassToHast(node, 'slidev-code');
+    delete node.properties.tabindex;
+  },
+};
+
 // Shiki's <pre>, made safe for Angular: ngNonBindable and no `{` `}` `@` left in the text.
-export function highlightedPre(code, lang) {
-  const html = codeToHtml(code, lang, {
-    transformers: [{
-      pre(node) {
-        this.addClassToHast(node, 'slidev-code');
-        delete node.properties.tabindex;
-      },
-    }],
-  });
+// `info` is the whole fence info; a `twoslash` word in it turns on type popups (TypeScript decides the types).
+export function highlightedPre(code, lang, info = '') {
+  const twoslash = /\btwoslash\b/.test(info) ? twoslashTransformer() : null;
+  let html;
+  try {
+    html = codeToHtml(code, lang, twoslash ? { transformers: [twoslash, slidevCode], meta: { __raw: info } } : { transformers: [slidevCode] });
+  } catch (e) {
+    // A code error in a twoslash block must not stop the whole build.
+    console.warn(`[slides] twoslash failed for a ${lang} block (${e.message.split('\n')[0]}), showing it without types`);
+    html = codeToHtml(code, lang, { transformers: [slidevCode] });
+  }
   return protect(html).replace('<pre ', '<pre ngNonBindable ');
 }
 
@@ -32,5 +41,5 @@ export function renderCode(fence, ctx = {}) {
     finally: options.finally,
     noCopy: (head.codeCopy ?? true) === false || undefined,
   });
-  return `<code-block-wrapper${wrapperAttrs}>${highlightedPre(fence.code, lang)}</code-block-wrapper>`;
+  return `<code-block-wrapper${wrapperAttrs}>${highlightedPre(fence.code, lang, fence.info)}</code-block-wrapper>`;
 }

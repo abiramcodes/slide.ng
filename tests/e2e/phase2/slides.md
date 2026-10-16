@@ -181,3 +181,20 @@ throw new Error('boom')
 try { console.log(parent.document.title) } catch (e) { console.log(e.name) }
 console.log(typeof localStorage === 'undefined' ? 'no storage' : (() => { try { localStorage.length; return 'has storage' } catch (e) { return e.name } })())
 ```
+
+---
+
+# Twoslash
+
+```ts twoslash
+const count = Math.max(1, 2)
+//    ^?
+interface Point { x: number }
+const p: Point = { x: 1 }
+p.x
+//^?
+```
+
+```ts {1}
+const plain = 'no twoslash here'
+```

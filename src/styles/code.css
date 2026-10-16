@@ -85,3 +85,10 @@ html.dark .slidev-code-line-numbers .slidev-code code .line::before { color: #4b
 }
 .slidev-runner-run { background: none; border: 0; color: inherit; cursor: pointer; opacity: 0.6; }
 .slidev-runner-run:hover { opacity: 1; }
+
+/* Twoslash popups take the code block's colours */
+html.dark .shiki { --twoslash-popup-bg: var(--shiki-dark-bg, inherit); }
+html:not(.dark) .shiki { --twoslash-popup-bg: var(--shiki-light-bg, inherit); }
+.twoslash-meta-line.twoslash-popover-line { margin-top: -10px; }
+/* A popup would be cut off by the block's own scrolling, so Twoslash blocks do not scroll */
+.slidev-code.twoslash { overflow: visible; }

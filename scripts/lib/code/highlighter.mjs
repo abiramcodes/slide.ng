@@ -14,12 +14,13 @@ const PLAIN = ['text', 'plaintext', 'ansi'];
 let highlighter = null;
 let aliases = BUILTIN_ALIASES;
 let themes = DEFAULT_THEMES;
+let twoslash = null; // the Twoslash transformer, made only when the deck uses it (it starts a TypeScript program)
 
 const resolveAlias = (lang) => aliases[lang] ?? lang;
 
-/** @param {{ langs?: Iterable<string>, headmatter?: any }} [options] */
+/** @param {{ langs?: Iterable<string>, headmatter?: any, twoslash?: boolean }} [options] */
 // Load the themes and the languages the deck uses. Call once before highlighting.
-export async function initHighlighter({ langs = [], headmatter = {} } = {}) {
+export async function initHighlighter({ langs = [], headmatter = {}, twoslash: useTwoslash = false } = {}) {
   themes = headmatter.shiki?.themes ?? DEFAULT_THEMES;
   aliases = { ...BUILTIN_ALIASES, ...headmatter.codeAliases };
   const names = [...new Set([...langs, 'ts', 'js', 'html', 'css'].map(resolveAlias))];
@@ -27,7 +28,18 @@ export async function initHighlighter({ langs = [], headmatter = {} } = {}) {
     themes: Object.values(themes),
     langs: names.filter((n) => n in bundledLanguages),
   });
+  twoslash = null;
+  if (useTwoslash) {
+    const { transformerTwoslash } = await import('@shikijs/twoslash');
+    // Only blocks with `twoslash` after the language are processed (explicitTrigger), as in Slidev.
+    twoslash = transformerTwoslash({
+      explicitTrigger: true,
+      twoslashOptions: { compilerOptions: { ignoreDeprecations: '6.0' }, handbookOptions: { noErrorValidation: true } },
+    });
+  }
 }
+
+export const twoslashTransformer = () => twoslash;
 
 // The language to draw with, or 'text' (and a warning) when it is not loaded.
 function usableLang(lang) {

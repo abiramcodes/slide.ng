@@ -28,7 +28,7 @@ const browser = {
 const t = reporter();
 const ctx = makeContext(`http://localhost:${port}`, browser, t);
 
-const topics = process.argv.slice(2).length ? process.argv.slice(2) : ['code', 'magic', 'math', 'diagrams', 'monaco'];
+const topics = process.argv.slice(2).length ? process.argv.slice(2) : ['code', 'magic', 'math', 'diagrams', 'monaco', 'twoslash'];
 for (const topic of topics) {
   console.log(`\n== ${topic}`);
   await (await import(`./phase2/${topic}.mjs`)).run(ctx);
