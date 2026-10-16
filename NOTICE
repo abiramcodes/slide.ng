@@ -20,5 +20,15 @@ What we use from Slidev:
   and the small built-in components (src/app/ui, lib/shortcuts.ts, lib/toc-tree.ts, lib/transitions.ts, builtin/,
   lib/v-switch.ts, lib/v-click-gap.ts) are ports of the matching Slidev client code, rewritten for Angular.
 
+- The themes in themes/ (seriph, shibainu, bricks, apple-basic) rebuild the official Slidev themes (https://github.com/slidevjs/themes),
+  which are licensed under the MIT License:
+
+    Copyright (c) 2021 Slidev.js Team
+
+  Original designs: seriph by Anthony Fu, shibainu and bricks by iiiiiiinès, apple-basic by Jeremy Meissner. The layout names and slots, CSS values,
+  font settings and the eleven polygon shapes of bricks are ported to Angular; the components are new code. `theme: default` is the built-in look
+  (see above). The images and other assets of those themes are licensed CC BY-NC-SA 4.0 (non-commercial): none of them was copied or embedded.
+  Where an original draws a picture, the port uses its own CSS gradients. Each theme folder has a README that credits its author.
+
 The full text of the MIT License applies to the Slidev parts as it does to this project;
 see LICENSE.

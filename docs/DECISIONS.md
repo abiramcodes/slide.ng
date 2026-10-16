@@ -346,3 +346,20 @@ The owner decided "do it like Slidev" for every open choice. For each one, Slide
    from the provider, as Slidev, not copied into the build); the `contextMenu`, `presenter` and `editor` headmatter switches (`true`, `false`, `dev`, `build`; `lib/switches.ts`); touch swipes with Slidev's thresholds
    (`composables/useSwipeControls.ts`: 30% of the width or 75px for clicks, 40% of the height or 200px for slides, off while drawing). Left listed in PARITY.md: `selectable`, `themeConfig`, `TitleRenderer`, `notesAutoRuby`,
    MDC, slide hooks, custom transition objects, `clickAnimation`, `preloadImages`; `--tunnel` stays refused.
+10. **The official themes are folders in `themes/`, looked up before `node_modules`.** Options: (a) separate npm packages `slide-ng-theme-seriph` and so on, (b) a built-in table inside `src/app`,
+    (c) a `themes/` folder in this package. (c) won: a theme is already "a folder with the contract" (docs/THEMES.md), so the five themes need no new mechanism, `theme eject` and `--theme` work on them
+    unchanged, nothing is installed, and a deck built outside the repository finds them through the package root (`themes` is in `package.json#files`). The only code is in `scripts/lib/roots.mjs`:
+    for a `theme` (not an addon), a bare name is first looked for in `themes/<name>`, then in `node_modules` as before. A path, a name with a slash and a scoped name never use the built-in folder, and an
+    installed copy with the same name is still reachable by its full package name (`slide-ng-theme-seriph`). Tests: `builtin-themes.spec.ts`, `tests/export/theme.mjs`, `tests/e2e/themes.mjs`.
+    - **`default` is not a folder.** The built-in look (`src/app/layouts`, `src/styles/layouts.css`) already is the port of `@slidev/theme-default` (same six layouts, same sizes); `theme: default` and `none` add no root.
+      Slidev's default theme also sets web fonts (Avenir Next, Nunito Sans, Fira Code). They are not loaded for `default` on purpose: every existing deck would start asking a network for fonts, and the offline
+      tests and builds would depend on it. A deck that wants them writes `fonts:` itself.
+    - **Fonts come from `theme.json`.** The `fonts` object of a theme's headmatter is the same `fonts` option as Slidev's (docs/PARITY.md), loaded as an @import from the provider. A theme's `headmatter.fonts` is merged with the
+      deck's `fonts` key by key (Slidev's `resolveConfig` does the same for `fonts`, `drawings`, `htmlAttrs` and `themeConfig`; `mergeHeadmatter` now does this too). Slidev's `colorSchema` of a theme package is `colorSchema` in `theme.json`.
+    - **The production build no longer inlines web fonts** (`angular.json`: `optimization.fonts.inline: false`). Angular's default downloads the font style sheet while building and fails the whole build when it cannot (offline, a proxy,
+      a 403). With a theme that names web fonts that would make every build need the network. The style sheet is now an @import in the page that the browser loads when it shows the deck, as in Slidev.
+    - **Assets are never copied.** The images of the originals (vector illustrations in shibainu and bricks, a random cover photo in seriph) are CC BY-NC-SA 4.0 non-commercial; slide.ng is MIT. Where an original draws a picture
+      the port draws CSS gradients in the same palette (`.shibainu-bg-*`, `.bricks-bg-*`, `.seriph-cover-plain`), and each theme's README says so. The SVG paths of bricks' eleven `Polygon` components are MIT code in the original and are ported.
+    - **Naming:** a layout the original names (`default-2`, `3-images`) keeps its name; the Angular selector is new (`shibainu-default-2`, `apple-three-images`). The bricks shapes are `<polygon-1 />` to `<polygon-11 />` (kebab case: an Angular
+      selector cannot be matched case-insensitively from markdown), sized with classes instead of the original's `w="20"` attributes.
+    - **Simplified:** `themeConfig` (not in slide.ng yet), Prism style sheets (code colours come from Shiki), the original's random cover photo, and the exact shapes of the background illustrations.

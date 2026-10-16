@@ -15,13 +15,33 @@ addons:
 ```
 
 - `theme: default` (or `none`, or no `theme:`) is the built-in theme.
-- A name that is not a path is looked up in `node_modules` (from the deck's folder upwards) as `slide-ng-theme-<name>`, then as `<name>`.
+- `theme: seriph`, `shibainu`, `bricks` and `apple-basic` are the official themes that ship in this package's [`themes/`](../themes) folder (see below). Nothing is installed.
+- Any other name that is not a path is looked up in `node_modules` (from the deck's folder upwards) as `slide-ng-theme-<name>`, then as `<name>`.
+  The built-in `themes/` folder is searched before `node_modules`; to use an installed copy of the same name, write its full package name (`slide-ng-theme-seriph`).
   Addons use `slide-ng-addon-<name>`, then `<name>`.
 - A path that is not a folder is an error, and so is a package name that is not installed, as in Slidev: the build stops with
   `The theme "x" was not found. Install it with: npm install -D slide-ng-theme-x` (`pnpm add -D` or `yarn add -D` when the deck has that lock file).
   In a terminal, `dev` and `build` ask first whether to install it now. A name with a slash (`themes/mine`) is a path, `@/themes/mine` is relative to the deck's folder.
 - `SLIDE_NG_THEME=<name|path>` in the environment overrides the headmatter (the generator reads it).
 - `slide-ng theme eject` copies the theme in use into `./theme` and sets `theme: ./theme` (see below).
+
+## The official themes
+
+Rebuilt from the five official Slidev themes (MIT; the layouts, names, slots, CSS values and font settings are ported, the components are new Angular code).
+Each is a folder in `themes/` that follows the contract below, with a README that credits the original author and lists what is ported and what is simplified.
+`examples/themes/<name>.md` has a slide for every layout of each theme.
+
+| `theme:` | Original | Fonts (`fonts` in theme.json) | Layouts | Notes |
+| --- | --- | --- | --- | --- |
+| `default` | `@slidev/theme-default` | none (the built-in look) | `cover`, `intro`, `fact`, `statement`, `quote`, `section` | Not a folder: it is the built-in theme (`src/app/layouts`, `src/styles/layouts.css`), already a port of Slidev's default theme. Slidev's default web fonts (Avenir Next, Nunito Sans) are not loaded for it; set `fonts:` to get them. |
+| `seriph` | `@slidev/theme-seriph` | PT Serif, PT Mono, italic | `cover` | Blue-grey accent, serif text. The original's random cover photo is a CSS gradient here. |
+| `shibainu` | `@slidev/theme-shibainu` | Titillium Web, Fira Code; `colorSchema: dark` | `cover`, `default`, `center`, `section`, `section-2`, `section-3`, `default-2` to `default-7`, `right`, `quote` | Backgrounds are CSS gradients in the original palette. |
+| `bricks` | `@slidev/theme-bricks` | Signika Negative, Sigmar One, Fira Code; `colorSchema: light` | `cover`, `intro` (`::left::`), `default`, `section` (`::right::`), `items` (`cols`, `::items::`), `quote`, `fact`, `statement`, `blank`; components `<polygon-1 />` to `<polygon-11 />` | Backgrounds are CSS gradients in the original palette. |
+| `apple-basic` | `@slidev/theme-apple-basic` | Helvetica Neue (local) | `intro`, `intro-image`, `intro-image-right`, `image-right`, `bullets`, `section`, `statement`, `fact`, `quote`, `3-images` | Photo layouts take an address or a colour. |
+
+Fonts in a theme's `theme.json` are loaded from the provider like Slidev's `fonts` option (a Google Fonts style sheet). A deck's own `fonts` are merged over them key by key,
+so `fonts: { mono: 'Fira Code' }` keeps the theme's `sans`, and `fonts: { provider: none }` loads nothing.
+The images and other assets of the originals are CC BY-NC-SA and are not included; see [themes/README.md](../themes/README.md).
 
 ## The roots, and who wins
 
@@ -83,7 +103,8 @@ import { SHORTCUTS_SETUP } from 'slide-ng/lib/shortcuts';
 }
 ```
 
-- `headmatter`: defaults for the deck. The deck's own headmatter wins. `defaults:` (the frontmatter every slide starts from) is merged key by key.
+- `headmatter`: defaults for the deck. The deck's own headmatter wins. `defaults:` (the frontmatter every slide starts from) and the objects `fonts`, `drawings`, `htmlAttrs`
+  and `themeConfig` are merged key by key, as in Slidev.
 - `layouts.<name>`: `props` are the frontmatter keys that become inputs, `slots` are the names accepted after `::name::`,
   `classProp: true` sends the slide's `class` to the input `contentClass` instead of the tag.
 

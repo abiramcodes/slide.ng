@@ -53,7 +53,9 @@ export default { shortcuts: { 'my-muted': 'op60 text-sm' } };
 
 ## 5. Default settings
 
-`theme.json` can set headmatter defaults, such as `"colorSchema": "dark"`. Pictures go in `public/`.
+`theme.json` can set headmatter defaults, such as `"colorSchema": "dark"` or the fonts (`"fonts": { "sans": "Titillium Web", "mono": "Fira Code" }`,
+loaded from the provider, merged with the deck's own `fonts`). Pictures go in `public/`.
+The official themes in [`themes/`](../themes) are larger examples: `bricks` has components, `apple-basic` has layouts with props, `shibainu` has many layouts.
 
 ## Extra: setup hooks
 
