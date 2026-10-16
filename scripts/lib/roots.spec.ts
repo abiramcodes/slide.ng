@@ -198,6 +198,12 @@ describe('mergeHeadmatter', () => {
     );
     expect(merged).toEqual({ colorSchema: 'dark', transition: 'none', title: 'T' });
   });
+  it('merges the fonts of a theme with the deck key by key', () => {
+    const merged = mergeHeadmatter([root({ fonts: { sans: 'PT Serif', mono: 'PT Mono' } })], {
+      fonts: { mono: 'Fira Code' },
+    });
+    expect(merged.fonts).toEqual({ sans: 'PT Serif', mono: 'Fira Code' });
+  });
   it('merges defaults key by key', () => {
     const merged = mergeHeadmatter([root({ defaults: { layout: 'center', class: 'a' } })], {
       defaults: { class: 'b' },
