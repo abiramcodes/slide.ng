@@ -30,6 +30,8 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run format:check
+      # The agent skill must match the documents it was written from.
+      - run: npm run check:skills
       - run: npm run build
       - run: npm test
 
@@ -59,4 +61,4 @@ jobs:
 
       - run: npm run test:e2e
       - run: npm run test:dev
-      - run: npm run test:export
+      - run: npm run test:export # includes npm run test:skills, which builds the skill's code samples
