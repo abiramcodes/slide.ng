@@ -2,8 +2,10 @@
 export function makeContext(base, browser, t) {
   const problems = []; // console errors and warnings, must stay empty
   // `before(page)` can set up the page (routes, init scripts) before it loads.
-  async function open(url, size = { width: 1280, height: 720 }, before = async () => {}) {
-    const page = await browser.newPage({ viewport: size });
+  // `from` is a browser context: pages of one context share storage and BroadcastChannel (they are "windows of one browser").
+  async function open(url, size = { width: 1280, height: 720 }, before = async () => {}, from = null) {
+    const page = from ? await from.newPage() : await browser.newPage({ viewport: size });
+    if (from) await page.setViewportSize(size);
     page.on('console', (m) => { if (['error', 'warning'].includes(m.type())) problems.push(`${m.type()}: ${m.text()}`); });
     page.on('pageerror', (e) => problems.push(String(e)));
     await before(page);
@@ -18,5 +20,7 @@ export function makeContext(base, browser, t) {
   const clicksOf = (page) => new URL(page.url()).searchParams.get('clicks');
   // The element's computed style value.
   const style = (page, selector, prop) => page.locator(selector).first().evaluate((e, p) => getComputedStyle(e)[p], prop);
-  return { t, base, browser, problems, open, press, hud, pathOf, clicksOf, style };
+  // A fresh browser context for tests that need two windows of one browser.
+  const windowGroup = (options = {}) => browser.newContext({ viewport: { width: 1280, height: 720 }, ...options });
+  return { t, base, browser, problems, open, press, hud, pathOf, clicksOf, style, windowGroup };
 }

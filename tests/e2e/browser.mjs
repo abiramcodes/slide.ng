@@ -19,9 +19,10 @@ export function serve(root, extra = () => false) {
 }
 
 // Chromium location: set CHROME_PATH to use another one.
-export const launch = () => chromium.launch({
+// `args` adds Chromium flags (the camera and recording tests use fake devices).
+export const launch = (args = []) => chromium.launch({
   executablePath: process.env.CHROME_PATH ?? '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
-  args: ['--no-sandbox'],
+  args: ['--no-sandbox', ...args],
 });
 
 // Collects pass/fail lines and counts them.

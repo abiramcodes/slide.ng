@@ -1,6 +1,7 @@
 // Navigation: which slide is on screen and how to move. Port of the useNav.ts parts that
 // matter for playing a deck. It is provided by the Deck component, so it can read the route.
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { Location } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
@@ -19,6 +20,7 @@ export function findSlide(param: string, total: number, aliases: (string | null)
 export class Nav {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private location = inject(Location);
   readonly slides = SLIDES;
   readonly total = SLIDES.length;
 
@@ -26,6 +28,9 @@ export class Nav {
     initialValue: this.route.snapshot.paramMap.get('no') ?? '1',
   });
   private found = computed(() => findSlide(this.param(), this.total, SLIDES.map((s) => s.routeAlias)));
+  /** The presenter route (`/presenter/:no`) has the same navigation as the play route (`/:no`), under another base address. */
+  readonly isPresenter = this.route.snapshot.data['mode'] === 'presenter';
+  private base = this.isPresenter ? '/presenter' : '/';
   /** Slide on screen, 1-based. */
   readonly no = computed(() => this.found() ?? 1);
   /** The address matches no slide: the 404 layout is shown. */
@@ -64,8 +69,30 @@ export class Nav {
   prevSlide(lastClicks = false) { if (this.no() > 1) this.go(this.no() - 1, lastClicks ? CLICKS_MAX : 0); }
 
   /** Go to slide `no` at click `clicks` (the slide clamps it to its own range). */
-  go(no: number, clicks = 0) {
+  go(no: number, clicks = 0, replace = false) {
     const slide = SLIDES[no - 1];
-    return this.router.navigate(['/', slide?.routeAlias ?? no], { queryParams: { clicks } });
+    return this.router.navigate([this.base, slide?.routeAlias ?? no], { queryParams: { clicks }, replaceUrl: replace });
+  }
+
+  /**
+   * A move that came from another window: same slide means only the click changes,
+   * another slide replaces the current history entry (the back button is not filled with remote moves).
+   */
+  jump(no: number, clicks: number) {
+    if (no === this.no()) this.ctx()?.setCurrent(clicks);
+    else this.go(no, clicks, true);
+  }
+
+  /** `?clicks=` of the address, or null. `Location` also sees the part after `#` when the router uses hash addresses. */
+  clicksParam(): string | null {
+    return new URLSearchParams(this.location.path().split('?')[1] ?? '').get('clicks');
+  }
+
+  /** Keep `?clicks=` up to date without a navigation (no history entry, the router stays quiet). */
+  writeClicksParam(clicks: number) {
+    const [path, query = ''] = this.location.path().split('?');
+    const params = new URLSearchParams(query);
+    params.set('clicks', String(clicks));
+    this.location.replaceState(path, params.toString());
   }
 }

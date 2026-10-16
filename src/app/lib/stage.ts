@@ -1,5 +1,6 @@
 import { ComponentRef, ViewContainerRef } from '@angular/core';
 import { mountSlide } from './mount-slide';
+import { RenderContext } from './slide-context';
 import { SlideBase } from './slide-base';
 import { animationsFor, transitionDuration } from './transitions';
 
@@ -14,6 +15,7 @@ export class Stage {
   constructor(
     private host: ViewContainerRef,
     private canvas: HTMLElement,
+    private context: RenderContext = 'slide',
   ) {}
 
   /** Removes the slide on screen (the 404 page takes its place). */
@@ -28,7 +30,7 @@ export class Stage {
     this.finish(); // a transition still running is cut short
     const old = this.current;
     const make = () => {
-      this.current = mountSlide(this.host, no, 'slide');
+      this.current = mountSlide(this.host, no, this.context);
       this.current.changeDetectorRef.detectChanges(); // draw it now, so an animation can start on real content
     };
 

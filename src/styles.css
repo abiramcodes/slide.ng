@@ -11,6 +11,7 @@ html, body { height: 100%; margin: 0; overflow: hidden; background: var(--slidev
 
 /* The stage fills the window; the canvas is centred and scaled by the deck (see lib/canvas.ts). */
 .stage { position: fixed; inset: 0; background: var(--slidev-slide-container-background); }
+.slide-show { position: absolute; inset: 0; display: block; }
 .canvas { position: absolute; left: 50%; top: 50%; overflow: hidden; transform-origin: center; background: #fff; color: #181818; }
 html.dark .canvas { background: #121212; color: #ddd; }
 

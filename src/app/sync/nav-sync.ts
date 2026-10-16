@@ -1,0 +1,63 @@
+// Keeps this window's slide and click in step with the other windows.
+// The presenter drives and the audience follows. A viewer on this machine may also drive
+// (like Slidev); a viewer on another machine only follows.
+import { computed, effect, inject, untracked } from '@angular/core';
+import { Nav } from '../lib/nav';
+import { SyncState } from './sync-state';
+
+// Slidev's TRUST_ORIGINS: only these hosts may send navigation as a viewer.
+const LOCAL_HOSTS = ['localhost', '127.0.0.1', '[::1]'];
+
+/** Call once, in the constructor of a page that has a Nav (the deck or the presenter). */
+export function startNavSync(nav: Nav) {
+  const sync = inject(SyncState);
+  const type = nav.isPresenter ? 'presenter' : 'viewer';
+  const mayShare = nav.isPresenter || LOCAL_HOSTS.includes(location.hostname);
+  let applied = ''; // "page:clicks" of the last move that came from outside: it is not sent back
+  let first = true;
+
+  const send = () => {
+    const d = sync.directions();
+    if (!(nav.isPresenter ? d.presenterSend : d.viewerSend) || !mayShare) return;
+    sync.patchShared({
+      page: nav.no(), clicks: nav.clicks(), clicksTotal: nav.clicksTotal(),
+      lastUpdate: { id: sync.id, type, time: Date.now() },
+    });
+  };
+
+  // Our position changed: tell the others. The very first position of a viewer is not news
+  // (a viewer that just opened would drag the presenter back to its own slide).
+  effect(() => {
+    const page = nav.no(), clicks = nav.clicks(), mounted = !!nav.ctx()?.mounted();
+    nav.clicksTotal();
+    untracked(() => {
+      if (!mounted) return; // the slide is still being created
+      const fromOutside = applied === `${page}:${clicks}`;
+      applied = '';
+      const initial = first;
+      first = false;
+      if (fromOutside || (initial && !nav.isPresenter)) return;
+      send();
+    });
+  });
+
+  // Someone else moved: follow. Only a new position or a new update time counts, not a moving cursor or the timer.
+  const moved = computed(() => { const s = sync.shared(); return `${s.page}:${s.clicks}:${s.lastUpdate?.time}`; });
+  effect(() => {
+    moved();
+    untracked(() => {
+      const s = sync.shared();
+      const d = sync.directions();
+      if (!(nav.isPresenter ? d.presenterReceive : d.viewerReceive)) return;
+      if (!s.lastUpdate || s.lastUpdate.type === type || s.page < 1) return;
+      const page = Math.min(s.page, nav.total);
+      if (page === nav.no() && s.clicks === nav.clicks()) return;
+      applied = `${page}:${s.clicks}`;
+      nav.jump(page, s.clicks);
+    });
+  });
+
+  // A window that opens later asks where we are; presenters answer.
+  if (nav.isPresenter) sync.onHello(send);
+  else sync.sendHello();
+}

@@ -12,6 +12,8 @@ export class Ui {
   /** Slide scale: 0 = fit the window, 1 = real size (1:1). */
   readonly slideScale = signal(0);
   readonly hideIdleCursor = signal(false);
+  /** The scale the main slide is drawn at now (Slidev's `$scale`); the drawing layer and drag handles need it. */
+  readonly canvasScale = signal(1);
   /** Overview: the highlighted slide (1-based) and how many cards fit in a row (for up/down). */
   readonly overviewPage = signal(1);
   readonly overviewColumns = signal(1);

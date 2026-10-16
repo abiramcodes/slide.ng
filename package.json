@@ -7,7 +7,7 @@
     "start": "node scripts/dev.mjs",
     "build": "npm run generate && ng build",
     "test": "npm run generate && ng test --no-watch",
-    "test:e2e": "node tests/e2e/run.mjs && node tests/e2e/showcase.mjs && node tests/e2e/phase2.mjs",
+    "test:e2e": "node tests/e2e/run.mjs && node tests/e2e/showcase.mjs && node tests/e2e/phase2.mjs && node tests/e2e/phase3.mjs",
     "test:dev": "node tests/e2e/dev-hmr.mjs",
     "screenshots": "node tests/e2e/screenshots.mjs && node tests/e2e/screenshots-features.mjs"
   },
@@ -22,6 +22,7 @@
     "@angular/router": "^22.2.0",
     "@shikijs/magic-move": "^4.5.0",
     "@slidev/parser": "^53.0.0",
+    "drauu": "^1.0.0",
     "marked": "^18.1.1",
     "mermaid": "^12.2.0",
     "monaco-editor": "^0.57.0",
@@ -48,7 +49,8 @@
     "prettier": "^3.8.1",
     "shiki": "^4.5.0",
     "typescript": "~6.0.2",
-    "vitest": "^5.0.0"
+    "vitest": "^5.0.0",
+    "ws": "^8.22.0"
   },
   "description": "Slides written in markdown with Angular templates",
   "engines": {
