@@ -102,6 +102,13 @@ t.ok('--download wrote <exportFilename>.pdf into the build with one page per sli
 t.ok('the PDF is not in the offline list, the pictures are', !readFileSync(join(site, 'sw.js'), 'utf8').includes('talk.pdf') && readFileSync(join(site, 'sw.js'), 'utf8').includes('remote-assets/'));
 t.ok('manifest.webmanifest is there', JSON.parse(readFileSync(join(site, 'manifest.webmanifest'), 'utf8')).name === 'Build deck');
 
+// ---- install icons: generated from the title here (no public/icon.*), listed in the manifest and the offline list
+const pngSize = (name) => { const b = readFileSync(join(site, name)); return b.subarray(1, 4).toString() === 'PNG' ? `${b.readUInt32BE(16)}x${b.readUInt32BE(20)}` : 'not a png'; };
+const manifest = JSON.parse(readFileSync(join(site, 'manifest.webmanifest'), 'utf8'));
+t.ok('the manifest lists 192, 512 and maskable 512 icons', JSON.stringify(manifest.icons.map((i) => [i.src, i.sizes, i.type, i.purpose])) === JSON.stringify([['pwa-icon-192.png', '192x192', 'image/png', 'any'], ['pwa-icon-512.png', '512x512', 'image/png', 'any'], ['pwa-icon-maskable-512.png', '512x512', 'image/png', 'maskable']]), JSON.stringify(manifest.icons));
+t.ok('the icon files are real PNGs of the listed sizes', manifest.icons.every((i) => pngSize(i.src) === i.sizes), manifest.icons.map((i) => pngSize(i.src)).join());
+t.ok('the offline list contains the icons', manifest.icons.every((i) => readFileSync(join(site, 'sw.js'), 'utf8').includes(`"${i.src}"`)));
+
 // ---- in a browser, under /talk/
 const served = await serveDirectory(site, '/talk/');
 const browser = await launch();
@@ -133,6 +140,19 @@ t.ok('the service worker is registered with the base as scope', scope === `${ser
 await page.waitForFunction(() => caches.keys().then((k) => k.length > 0), null, { timeout: 20000 });
 const cached = await page.evaluate(async () => { const c = await caches.open((await caches.keys())[0]); return (await c.keys()).length; });
 t.ok('the cache holds the deck', cached >= 5, String(cached));
+const badge = page.locator('#offline-badge');
+await badge.waitFor({ timeout: 20000 });
+t.ok('the badge says "Available offline" once the worker has stored the deck', (await badge.innerText()) === 'Available offline', await badge.innerText());
+await context.setOffline(true);
+await page.waitForFunction(() => document.querySelector('#offline-badge')?.textContent?.trim() === 'Offline', null, { timeout: 5000 }).then(
+  () => t.ok('the badge says "Offline" when the browser goes offline', true),
+  async () => t.ok('the badge says "Offline" when the browser goes offline', false, await badge.innerText()),
+);
+await context.setOffline(false);
+await page.waitForFunction(() => document.querySelector('#offline-badge')?.textContent?.trim() === 'Available offline', null, { timeout: 5000 }).then(
+  () => t.ok('and goes back to "Available offline" when the network returns', true),
+  () => t.ok('and goes back to "Available offline" when the network returns', false),
+);
 await page.reload(); // now the worker controls the page
 await page.waitForFunction(() => navigator.serviceWorker.controller);
 const problemsBeforeStop = problems.length; // the PDF check fails once the server is gone, which is expected
@@ -143,6 +163,17 @@ await page.waitForFunction(() => /slide 2\/2/.test(document.querySelector('#hud'
   () => t.ok('with the server stopped the deck still opens from the cache, at the same slide', false, 'the page did not load'),
 );
 t.ok('no console errors or warnings while the server was up', problemsBeforeStop === 0, JSON.stringify(problems.slice(0, problemsBeforeStop)));
+
+// ---- deck C: pwa with the deck's own public/icon.svg, and no badge when pwa is off (deck B below)
+const dirC = join(scratch, 'deck-c');
+mkdirSync(join(dirC, 'public'), { recursive: true });
+writeFileSync(join(dirC, 'slides.md'), '---\ntitle: Deck C\npwa: true\n---\n\n# Only\n');
+writeFileSync(join(dirC, 'public', 'icon.svg'), '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10" fill="#d33"/></svg>');
+const siteC = join(scratch, 'site-c');
+const outC = await cli(['build', join(dirC, 'slides.md'), '--out', siteC], dirC);
+t.ok('a public/icon.svg is used as the icon source', outC.includes('icon.svg'), outC);
+const iconC = readFileSync(join(siteC, 'pwa-icon-192.png'));
+t.ok('its icons are PNGs of the right size', iconC.readUInt32BE(16) === 192 && readFileSync(join(siteC, 'pwa-icon-maskable-512.png')).readUInt32BE(16) === 512);
 
 // ---- deck B: hash routing under a nested base, built twice into the same folder
 const dirB = join(scratch, 'deck-b');
@@ -157,6 +188,7 @@ await pageB.goto(`${servedB.origin}/sub/dir/#/2`);
 await pageB.waitForFunction(() => /clicks \d+\/\d+/.test(document.querySelector('#hud')?.innerText ?? ''));
 t.ok('hash routing under /sub/dir/: #/2 opens slide 2 after a reload, and the base is normalised', (await pageB.locator('#hud').innerText()).startsWith('slide 2/2') && readFileSync(join(siteB, 'index.html'), 'utf8').includes('<base href="/sub/dir/">'));
 t.ok('a build without pwa, download or og image has none of those files', !existsSync(join(siteB, 'sw.js')) && !existsSync(join(siteB, 'og-image.png')) && !readdirSync(siteB).some((f) => f.endsWith('.pdf')), readdirSync(siteB).join());
+t.ok('without pwa there is no badge', (await pageB.locator('#offline-badge').count()) === 0);
 await pageB.close();
 await servedB.close();
 

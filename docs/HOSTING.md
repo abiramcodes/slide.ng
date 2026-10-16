@@ -148,7 +148,11 @@ addresses of its choice: build untrusted decks without `remoteAssets`.
 ## Offline use (PWA)
 
 `pwa: true` (or `pwa: build`) makes the build write `manifest.webmanifest` and `sw.js`, a small service worker that stores
-every file of the build the first time the deck is opened. After that the deck opens without a network, at any slide
+every file of the build the first time the deck is opened. It also draws install icons (192 and 512 pixels, plus a maskable 512) and lists them in
+the manifest, so the deck can be installed. The picture is `public/icon.png`, else `public/icon.svg`, else a local `favicon` file in `public/`,
+else a generated one (dark square, first letter of the title). Drawing needs Chromium, like `--download` (`CHROME_PATH` or `--executable-path`);
+without it the build warns and goes on without icons. A small label in the bottom right corner of the deck says "Available offline" once everything is stored,
+and "Offline" while the browser has no network (not in dev, not in the print route). After that the deck opens without a network, at any slide
 address. Open the deck once while online, before the talk. Serve it over HTTPS (or `localhost`): browsers only allow
 service workers there. A new build gets a new cache name, so visitors get the new version on their next visit.
 

@@ -83,7 +83,7 @@ The URL is the state: `/7?clicks=2` is slide 7 at click 2.
 - `v-drag`, `<v-drag>`, `<v-drag-arrow>` written back into slides.md in dev; `zoom`, `canvasWidth`, `aspectRatio`, `routerMode`, global and slide layers.
 - Dev companion server: side editor, `{monaco-write}`, drawing files, WebSocket sync for other devices.
 
-- Export to PDF (with outline), PNG, PPTX (pictures) and Markdown; speaker notes as PDF; `slide-ng build` with `--base`, 404 page, Open Graph picture, remote assets, download button and an offline worker.
+- Export to PDF (with outline), PNG, PPTX (pictures) and Markdown; speaker notes as PDF; `slide-ng build` with `--base`, 404 page, Open Graph picture, remote assets, download button, and an offline worker with install icons and an "Available offline" label (`pwa: true`).
 - Themes and addons (`theme:`, `addons:`), `theme eject`, an example theme, `slide-ng create`, `slide-ng format`, an MCP server.
 
 How it compares with Slidev, row by row: [docs/PARITY.md](docs/PARITY.md). What is missing or not checked: [docs/STATUS.md](docs/STATUS.md).

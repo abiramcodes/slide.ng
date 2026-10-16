@@ -203,7 +203,7 @@ Slidev is Vue and Vite; slide.ng is Angular. Anything that is about Vue, Vite pl
 | `favicon`, `htmlAttrs`, `lang` | HeadmatterConfig | done | test: the lang and attributes are on <html> |
 | `seoMeta` (Open Graph, Twitter) | features/seo-meta.md | done | test: index.html: ${label} |
 | Open Graph image `auto` (screenshot of slide 1) | features/og-image.md | done | test: og-image.png is a screenshot of slide 1 (1440x810) |
-| PWA: manifest and offline service worker (`pwa`) | features/pwa.md | partial | no install icons and no offline indicator in the UI; test: the service worker is registered with the base as scope |
+| PWA: manifest and offline service worker (`pwa`) | features/pwa.md | done | test: the service worker is registered with the base as scope; the manifest lists real 192, 512 and maskable PNG icons; the badge shows Available offline and Offline |
 
 ## Themes, addons, setup files
 
@@ -246,6 +246,6 @@ browser exporter page and `overviewSnapshots`. (They are also listed in the rows
 7. **UI switches**: `contextMenu`, `presenter`, `editor` headmatter switches, a custom context menu, `selectable`, `themeConfig`, `TitleRenderer`, `notesAutoRuby` are not there.
 8. **Syntax**: MDC/Comark syntax is not parsed.
 9. **CLI**: dev `--base`, `--tunnel`, build `--router-mode`, `--inspect`; the dev server's default port differs (4230).
-10. **Recording and PWA**: the webm has no duration field and no separate camera file; the PWA has no icons and no offline indicator.
+10. **Recording and PWA**: the webm has no duration field and no separate camera file; the PWA part is done.
 11. **Size**: the first load of a deck with Monaco and KaTeX is about 850 kB (budget raised to 1 MB warning, 2 MB error).
 12. **Unverified ground**: Firefox and Safari, real devices over a LAN, a real screen-share picker, wake lock behaviour and hosts that need hash routing were not tried (STATUS.md, NOT VERIFIED).

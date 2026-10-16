@@ -219,8 +219,8 @@ themselves until they are drawn, and the exporter waits for none to be left.
 File names pass `filename.mjs` (`exportFilename` becomes a plain name); `--output` can only name files in the current folder or a folder the exporter creates.
 
 **Build** (`cli/build.mjs`). `ng build --output-path .slide-ng/build --base-href <base>`, then `build/og-image.mjs`, the optional PDF, `404.html`, `_redirects` and
-`build/pwa.mjs` (`manifest.webmanifest`, `sw.js` with a cache name from a hash of the file list). The result is copied into `--out` by `cli/safe-dir.mjs`, which only replaces a
-folder that carries the marker file `.slide-ng-build`, and removes the work folder it made itself. `app/lib/offline-worker.ts` registers the worker in production builds.
+`build/pwa-icons.mjs` (install icons, drawn with Chromium) and `build/pwa.mjs` (`manifest.webmanifest`, `sw.js` with a cache name from a hash of the file list). The result is copied into `--out` by `cli/safe-dir.mjs`, which only replaces a
+folder that carries the marker file `.slide-ng-build`, and removes the work folder it made itself. `app/lib/offline-worker.ts` registers the worker in production builds and `app/ui/offline-badge.ts` shows its state.
 
 **Roots** (themes and addons; reference in THEMES.md). `generate.mjs` calls `parseDeck` with the roots (theme, addons, deck folder), `theme-files.mjs` copies them into
 `generated/roots/<id>/`, and the app picks up what they bring through generated files: `layers.ts`, `setup.ts` (providers added in `app.config.ts`), `theme.css` (last style in

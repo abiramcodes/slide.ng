@@ -11,7 +11,7 @@ command line as a package, themes and addons, an example theme, the MCP server a
    headmatter `exportFilename`, `export`, `download`. File names are sanitised and nothing is written outside the output place.
 3. **Static build** `slide-ng build`: `--base`, `--out`, `--download`, `--without-notes`, `--theme`; `404.html`, `_redirects`, hash or history routing, `remoteAssets`, size budgets, docs/HOSTING.md.
 4. **Head and SEO**: `title`, `titleTemplate`, `info`, `author`, `keywords`, `favicon`, `lang`, `htmlAttrs`, `seoMeta`, Open Graph picture (`auto` makes a screenshot of slide 1).
-5. **Offline mode** (`pwa: true`): manifest and service worker, tested in Chromium with the server stopped.
+5. **Offline mode** (`pwa: true`): manifest, install icons (192, 512, maskable 512), service worker and an "Available offline" / "Offline" label, tested in Chromium with the server stopped.
 6. **Command line as a package**: `bin/slide-ng.mjs` with `dev` (default), `build`, `export`, `export-notes`, `format`, `theme eject`, `mcp`, `create`; flags `--port --open --remote --bind --log --force --base (build) --theme`;
    `npm start` runs the same code. Single package with a `template/` folder (DECISIONS.md 11). `create my-deck` was run, and the new deck was formatted and built (the repository stands in for `npm install slide-ng`, see below).
 7. **Themes and addons**: `theme:`, `addons:`, `--theme`, folders in the deck, layouts, components, layers, styles, public, UnoCSS settings, default headmatter, setup providers (shortcuts, code runners), `theme eject`,
@@ -23,10 +23,10 @@ command line as a package, themes and addons, an example theme, the MCP server a
 ## Test results (last run, Node 22.23.3, Chromium from `/opt/pw-browsers`)
 
 - `npm run build`: succeeds.
-- `npm test`: 67 files, **530** tests passed.
+- `npm test`: 68 files, **540** tests passed.
 - `npm run test:e2e`: starter deck **45**, showcase **144**, code and content **125**, phase 3 decks **152**, print route **24**; 0 failed.
 - `npm run test:dev`: live update **6**, dev server **36**; 0 failed.
-- `npm run test:export`: export command **33**, build **37**, theme **18**, scaffold **13**, MCP **22**; 0 failed.
+- `npm run test:export`: export command **33**, build **46**, theme **18**, scaffold **13**, MCP **22**; 0 failed.
 - Hand-written code: scripts, CLI, exporter, dev server and MCP 3750 lines, app 6463 lines (largest file 152 lines, largest script 148), unit tests 3607, browser and export tests with their decks 3655, CSS 352, docs and README 2015, example theme and template 175.
 
 ## Not done
@@ -36,7 +36,7 @@ command line as a package, themes and addons, an example theme, the MCP server a
 - `dev --tunnel` (needs a tunnel service; refused with a message) and `dev --base` (refused with a message); `build --router-mode` (use `routerMode`).
 - VS Code extension, prettier plugin, Vue-syntax converter, community themes, browser exporter page, `overviewSnapshots` (out of scope).
 - Setup hooks for Shiki, KaTeX, Mermaid, Monaco and the markdown pipeline; Monaco type loading; `fonts`; MDC/Comark; `notesAutoRuby`; slide hooks; custom transition objects; touch controls. The full list is in docs/PARITY.md.
-- PWA: no install icons, no "available offline" indicator. Remote pictures are not cached in dev.
+- PWA: remote pictures are not cached in dev. Icons are drawn with Chromium at build time (a build without one warns and has no icons).
 - MCP: slide 1 cannot be removed or moved; insert, remove and move need all slides in the entry file.
 - The first load of a deck with Monaco and KaTeX is about 850 kB (budget raised to 1 MB / 2 MB).
 - Recording: no `fix-webm-duration`, no separate camera file, no cloud upload (as before). No HTTPS for `--remote` (as before).

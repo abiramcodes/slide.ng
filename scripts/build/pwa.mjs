@@ -7,6 +7,7 @@
 import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
+import { ICONS } from './pwa-icons.mjs';
 
 const SKIP = [/\.pdf$/i, /^og-image\./, /^\.slide-ng-build$/, /^sw\.js$/, /^manifest\.webmanifest$/, /\.map$/]; // downloads and helper files are not for the cache
 
@@ -23,10 +24,11 @@ function listFiles(dir, from = dir) {
   });
 }
 
-/** The web app manifest. No icons on purpose: they would be one more file that has to be there offline. */
-export function manifestJson(headmatter) {
+/** The web app manifest. `iconFiles` are the names of the icons that exist in the build (see pwa-icons.mjs). */
+export function manifestJson(headmatter, iconFiles = []) {
   const name = String(headmatter.title ?? 'slide.ng');
-  return { name, short_name: name.slice(0, 12), start_url: './', scope: './', display: 'fullscreen', theme_color: '#121212', background_color: '#121212' };
+  const icons = ICONS.filter((i) => iconFiles.includes(i.file)).map((i) => ({ src: i.file, sizes: `${i.size}x${i.size}`, type: 'image/png', purpose: i.purpose }));
+  return { name, short_name: name.slice(0, 12), start_url: './', scope: './', display: 'fullscreen', theme_color: '#121212', background_color: '#121212', ...(icons.length ? { icons } : {}) };
 }
 
 /** The text of the service worker. `files` are relative to the folder the worker sits in; `version` names the cache. */
@@ -64,11 +66,11 @@ self.addEventListener('fetch', (event) => {
 `;
 }
 
-/** Writes manifest.webmanifest and sw.js into the build folder. Returns how many files the worker stores. */
+/** Writes manifest.webmanifest and sw.js into the build folder (icons already written there are listed and cached). Returns how many files the worker stores. */
 export function writePwa(distDir, headmatter) {
   const files = listFiles(distDir).filter((f) => !SKIP.some((re) => re.test(f)));
   const manifest = 'manifest.webmanifest';
-  writeFileSync(join(distDir, manifest), JSON.stringify(manifestJson(headmatter), null, 2) + '\n');
+  writeFileSync(join(distDir, manifest), JSON.stringify(manifestJson(headmatter, files), null, 2) + '\n');
   files.push(manifest);
   // The version changes whenever a file changes, so a visitor with an old copy gets the new one.
   const version = createHash('sha256').update(files.map((f) => f + readFileSync(join(distDir, f)).length).join('|')).digest('hex').slice(0, 12);

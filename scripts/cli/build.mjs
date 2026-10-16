@@ -3,7 +3,9 @@
 import { copyFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { ogImagePlan, placeOgImage } from '../build/og-image.mjs';
+import { writeIcons } from '../build/pwa-icons.mjs';
 import { pwaEnabled, writePwa } from '../build/pwa.mjs';
+import { launchBrowser } from '../export/browser.mjs';
 import { exportSlides } from '../export/index.mjs';
 import { downloadTarget } from '../export/filename.mjs';
 import { resolveExportOptions } from '../export/options.mjs';
@@ -92,5 +94,22 @@ async function afterBuild({ dist, deck, entry, root, base, workDir, download, fl
   // GitHub Pages answers an unknown address with 404.html; Netlify reads _redirects. Both send it to the app.
   copyFileSync(join(dist, 'index.html'), join(dist, '404.html'));
   writeFileSync(join(dist, '_redirects'), `${base}*    ${base}index.html   200\n`);
-  if (pwaEnabled(head)) console.log(`Offline support: ${writePwa(dist, head)} files for the service worker.`);
+  if (pwaEnabled(head)) {
+    await makeIcons(head, root, dist, flags['executable-path'] ?? process.env.CHROME_PATH);
+    console.log(`Offline support: ${writePwa(dist, head)} files for the service worker.`);
+  }
+}
+
+// Install icons need a browser to draw them. Without one the deck still works offline, it just cannot be installed.
+async function makeIcons(head, root, dist, executablePath) {
+  let browser;
+  try {
+    browser = await launchBrowser(executablePath);
+    const source = await writeIcons(dist, head, root, browser);
+    console.log(`Install icons from ${source.kind === 'file' ? source.path : 'the title'}.`);
+  } catch (error) {
+    console.warn(`No install icons: ${String(error.message).split('\n')[0]}`);
+  } finally {
+    await browser?.close();
+  }
 }

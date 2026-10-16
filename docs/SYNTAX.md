@@ -615,7 +615,8 @@ export:                           # defaults for `slide-ng export`; command line
   withClicks: true
   dark: false
 remoteAssets: true                # a build downloads pictures with http(s) addresses and serves them itself
-pwa: true                         # a build adds a manifest and a service worker: the deck opens offline after one visit
+pwa: true                         # a build adds a manifest, install icons and a service worker: the deck opens offline after one visit
+                                  # (icon: public/icon.png, public/icon.svg or a local favicon, else a letter from the title)
 ---
 ```
 

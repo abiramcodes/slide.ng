@@ -17,12 +17,13 @@ import { ContextMenu } from './ui/context-menu';
 import { Goto } from './ui/goto';
 import { InfoDialog } from './ui/info-dialog';
 import { NavBar } from './ui/nav-bar';
+import { OfflineBadge } from './ui/offline-badge';
 import { Overview } from './ui/overview';
 
 // The route /:no, the audience's page. Shows one slide on a scaled canvas and hosts the controls around it.
 @Component({
   selector: 'app-deck',
-  imports: [SlideShow, PresenterCursor, DrawingLayer, DrawingControls, DragControls, WebCamera, SideEditor, NavBar, Overview, Goto, InfoDialog, ContextMenu],
+  imports: [SlideShow, PresenterCursor, DrawingLayer, DrawingControls, DragControls, WebCamera, SideEditor, NavBar, Overview, Goto, InfoDialog, ContextMenu, OfflineBadge],
   providers: [Nav, Ui, Drawings],
   host: { '(window:keydown)': 'key($event)' },
   template: `
@@ -37,6 +38,7 @@ import { Overview } from './ui/overview';
       <div class="absolute bottom-0 left-0 p-2 transition duration-300 opacity-0 hover:opacity-100 focus-within:opacity-100">
         <app-nav-bar />
       </div>
+      <app-offline-badge />
     </div>
     <app-drawing-controls />
     <app-web-camera />

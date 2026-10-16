@@ -15,12 +15,21 @@ describe('pwaEnabled', () => {
 });
 
 describe('manifestJson', () => {
-  it('names the app after the deck and has no icons', () => {
+  it('names the app after the deck and has no icons unless some exist', () => {
     const m = manifestJson({ title: 'My talk about everything' });
     expect(m.name).toBe('My talk about everything');
     expect(m.short_name.length).toBeLessThanOrEqual(12);
     expect(m.start_url).toBe('./');
     expect(m).not.toHaveProperty('icons');
+  });
+  it('lists the icons that exist, with size, type and purpose', () => {
+    const m = manifestJson({ title: 'T' }, ['pwa-icon-192.png', 'pwa-icon-512.png', 'pwa-icon-maskable-512.png', 'other.png']);
+    expect(m.icons).toEqual([
+      { src: 'pwa-icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+      { src: 'pwa-icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+      { src: 'pwa-icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+    ]);
+    expect(manifestJson({}, ['pwa-icon-192.png']).icons).toHaveLength(1);
   });
 });
 
@@ -44,6 +53,16 @@ describe('writePwa', () => {
     for (const f of ['index.html', 'main.js', 'remote-assets/a.png', 'manifest.webmanifest']) expect(sw).toContain(`"${f}"`);
     for (const f of ['talk.pdf', 'og-image.png', 'slide-ng-build']) expect(sw).not.toContain(f);
     expect(JSON.parse(readFileSync(join(dir, 'manifest.webmanifest'), 'utf8')).name).toBe('T');
+  });
+  it('lists icons found in the build in the manifest and the cache', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'slide-ng-pwa-'));
+    for (const f of ['index.html', 'pwa-icon-192.png', 'pwa-icon-512.png']) writeFileSync(join(dir, f), 'x');
+    writePwa(dir, { title: 'T' });
+    const manifest = JSON.parse(readFileSync(join(dir, 'manifest.webmanifest'), 'utf8'));
+    expect(manifest.icons.map((i: { src: string }) => i.src)).toEqual(['pwa-icon-192.png', 'pwa-icon-512.png']);
+    const sw = readFileSync(join(dir, 'sw.js'), 'utf8');
+    expect(sw).toContain('"pwa-icon-192.png"');
+    expect(sw).toContain('"pwa-icon-512.png"');
   });
   it('changes the cache name when a file changes', () => {
     const dir = mkdtempSync(join(tmpdir(), 'slide-ng-pwa-'));
