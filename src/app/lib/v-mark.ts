@@ -1,0 +1,64 @@
+// <span v-mark.red.circle="2">text</span>: draws a hand-made looking mark around the element
+// on a click. Uses rough-notation, loaded only when a slide has a v-mark.
+import { Directive, ElementRef, OnDestroy, OnInit, effect, inject, input, signal } from '@angular/core';
+import type { RoughAnnotation } from 'rough-notation/lib/model';
+import { ClickInfo, ClicksContext } from './clicks';
+import { markOptions } from './mark-options';
+
+@Directive({ selector: '[v-mark]' })
+export class VMark implements OnInit, OnDestroy {
+  value = input<unknown>(undefined, { alias: 'v-mark' });
+  // The generator moves `.red.circle` out of the attribute name into this one.
+  mods = input('', { alias: 'mark-mods' });
+
+  private ctx = inject(ClicksContext);
+  private el = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+  private annotation = signal<RoughAnnotation | null>(null);
+  private info = signal<ClickInfo | null>(null);
+  private options = markOptions(undefined, '');
+  private timer?: ReturnType<typeof setTimeout>;
+  private gone = false;
+
+  constructor() {
+    effect(() => {
+      const mark = this.annotation();
+      if (!mark) return;
+      const at = this.options.at;
+      const info = this.info();
+      const show = at === true || at === 'true' || (!!info && info.isActive(this.ctx.current()));
+      clearTimeout(this.timer);
+      if (!show) return mark.hide();
+      // rough-notation has no delay option, so we wait ourselves.
+      this.timer = setTimeout(() => { mark.show(); this.fade(); }, this.options.delay ?? 0);
+    });
+  }
+
+  async ngOnInit() {
+    this.options = markOptions(this.value(), this.mods());
+    const at = this.options.at;
+    if (at !== true && at !== 'true' && at !== false && at !== 'false') {
+      const info = this.ctx.calculate(at as never);
+      this.info.set(info);
+      this.ctx.register(this, info); // ngOnInit runs in template order, so "+1" works like v-click
+    }
+    const { annotate } = await import('rough-notation');
+    if (this.gone) return;
+    const { at: _at, delay: _d, opacity: _o, ...config } = this.options;
+    this.annotation.set(annotate(this.el, config as never));
+  }
+
+  ngOnDestroy() {
+    this.gone = true;
+    clearTimeout(this.timer);
+    this.annotation()?.remove();
+    this.ctx.unregister(this);
+  }
+
+  // The drawing is an <svg> next to the element; opacity from `.op50` goes on it.
+  private fade() {
+    const { opacity } = this.options;
+    if (opacity == null) return;
+    const svg = [this.el.nextElementSibling, this.el.previousElementSibling].find((n) => n?.matches('svg.rough-annotation'));
+    if (svg) (svg as SVGElement).style.opacity = String(opacity);
+  }
+}

@@ -31,5 +31,7 @@ export const COMPONENTS = [
   { className: 'SlideVideo', file: 'builtin/slide-video', test: /<slide-video/ },
   { className: 'Tweet', file: 'builtin/tweet', test: /<tweet[\s>/]/ },
   { className: 'BlueSky', file: 'builtin/blue-sky', test: /<blue-sky/ },
+  { className: 'VMark', file: 'lib/v-mark', test: /[\s[]v-mark[\s=>/.\]]/ },
+  { className: 'VMotion', file: 'lib/v-motion', test: /\[v-motion\]|\sv-motion[\s=>/]/ },
   { className: 'Counter', file: 'lib/counter', test: /<app-counter/ },
 ];

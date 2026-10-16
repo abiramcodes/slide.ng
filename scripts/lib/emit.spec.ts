@@ -146,6 +146,11 @@ describe('slideSource: built-in components are imported when the slide uses them
     expect(imports('<tweet id="20" />')).toContain('Tweet');
     expect(imports('<blue-sky uri="at://x" />')).toContain('BlueSky');
   });
+  it('finds v-mark (with modifiers, or as a binding) and v-motion', () => {
+    expect(imports('<span v-mark.red="1">x</span>')).toContain('VMark');
+    expect(imports('<span [v-mark]="{ at: 2 }">x</span>')).toContain('VMark');
+    expect(imports('<div v-motion :enter="{ x: 0 }">x</div>')).toContain('VMotion');
+  });
   it('does not mix <transform> up with the longer names or other words', () => {
     expect(imports('plain text about a transformation')).toBe('DefaultLayout');
   });

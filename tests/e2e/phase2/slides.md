@@ -229,3 +229,17 @@ const plain = 'no twoslash here'
 <tweet id="20" scale="0.5" />
 
 <blue-sky uri="at://did:plc:432mbsu2xucyvxl6sluohidu/app.bsky.feed.post/3lgwg2vy44s2q" />
+
+---
+
+# Marks and motion
+
+<span id="m1" v-mark.red.circle="1">circled</span>
+<span id="m2" v-mark="{ at: 2, type: 'box', color: '#00f' }">boxed</span>
+<span id="m3" v-mark.underline>always underlined after the next click</span>
+<span id="m4" [v-mark]="[3, 4]">only at click 3</span>
+<span id="m5" v-mark.highlight.op50="true">always</span>
+
+<div id="mo" class="w-20 h-10 bg-blue-300" v-motion :initial="{ x: -80, opacity: 0 }" :enter="{ x: 0, opacity: 1 }" :click-4="{ y: 40 }" :leave="{ x: 80 }">motion</div>
+
+<div id="mo2" class="w-20 h-10 bg-green-300" [v-click]="[5, 6]" v-motion :initial="{ x: -50 }" :enter="{ x: 0 }" :leave="{ x: 50 }">with v-click</div>

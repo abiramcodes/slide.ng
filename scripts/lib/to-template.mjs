@@ -8,6 +8,7 @@ import { extractFences } from './fences.mjs';
 import { renderFence } from './code/render-fence.mjs';
 import { escapeCode, protect } from './protect.mjs';
 import { extractMath, renderMath } from './math.mjs';
+import { rewriteDirectives } from './directives.mjs';
 
 export { escapeCode, protect };
 
@@ -30,7 +31,8 @@ export function toTemplate(markdown, ctx = {}) {
   const math = extractMath(md);
   md = math.markdown;
 
-  // 2. Hide Angular syntax.
+  // 2. Hide Angular syntax. Vue-style v-mark and v-motion are rewritten into Angular first.
+  md = rewriteDirectives(md);
   md = md.replace(/^[ \t]*(\}[ \t]*)?(@\w+.*\{|\})[ \t]*$/gm, hide); // @if (..) {   }   } @else {
   md = md.replace(/^[ \t]*@let\s.*;[ \t]*$/gm, hide); // @let x = 1;
   md = md.replace(new RegExp(`^[ \\t]*${ANGULAR_TAG}[ \\t]*$`, 'gm'), hide); // tag alone on a line
