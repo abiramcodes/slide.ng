@@ -80,7 +80,7 @@ describe('theme and addon names in node_modules (the rule of Slidev)', () => {
     expect(() => findRootDir('@me/theme-y', 'theme', base)).toThrow('npm install -D @me/theme-y');
   });
   it('has no built-in folder: an official name that is not installed fails with its scoped package to install', () => {
-    for (const name of ['seriph', 'shibainu', 'bricks', 'apple-basic']) {
+    for (const name of ['seriph', 'shibainu', 'bricks', 'apple-basic', 'adev']) {
       expect(() => resolveRoots({ deckRoot: folder(), headmatter: { theme: name } })).toThrow(
         `The theme "${name}" was not found. Install it with: npm install -D @slide-ng/theme-${name}`,
       );
