@@ -13,8 +13,12 @@ What we use from Slidev:
 - The click logic in src/app/lib/clicks.ts, v-click.ts and v-clicks.ts is a port of
   Slidev's packages/client/composables/useClicks.ts and its v-click / v-after / v-clicks
   modules, rewritten for Angular.
-- The layout names and structure (default, cover, center, two-cols), the first-slide-is-cover
-  rule, the 16:9 canvas scaling formula and the click CSS classes follow Slidev's design.
+- The layout names, structure and styles (src/app/layouts and src/styles/layouts.css, from Slidev's
+  client layouts and default theme), the first-slide-is-cover rule, the 16:9 canvas scaling formula and the
+  click CSS classes follow Slidev's design.
+- The navigation bar, context menu, overview, goto box, keyboard shortcuts, table of contents, slide transitions
+  and the small built-in components (src/app/ui, lib/shortcuts.ts, lib/toc-tree.ts, lib/transitions.ts, builtin/,
+  lib/v-switch.ts, lib/v-click-gap.ts) are ports of the matching Slidev client code, rewritten for Angular.
 
 The full text of the MIT License applies to the Slidev parts as it does to this project;
 see LICENSE.

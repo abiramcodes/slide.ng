@@ -47,3 +47,50 @@ Short notes on choices made, and why. Newest at the bottom.
 14. **Deck title** in the browser tab is the slide title plus the deck title (headmatter `title`).
 15. **Zoneless Angular** (the current CLI default): signals drive the click state.
 16. **Eager loading**: every slide is part of the main bundle. Lazy loading per slide is a later optimisation.
+
+## Made during phase 1
+
+1. **`src:` imports use `@slidev/parser/fs` (`load`) in the generator**, `parseDeck` is now async and reads files itself.
+   The unit tests still run without files through its `sources` map. The headmatter title falls back to the first slide's title (Slidev does too).
+2. **`defaults` from the headmatter are merged under every slide**, first slide included; a slide's own keys win.
+3. **A layout's host element is its `.slidev-layout` root**, with Slidev's class names. The DOM matches Slidev (so docs like
+   `.two-cols-header { ... }` work) and `class:` lands on the same element as in Slidev.
+4. **Layout CSS is plain CSS** (`src/styles/layouts.css`), ported from Slidev's `layouts-base.css` and the default theme with the
+   `@apply` lines written out. No UnoCSS transformer is needed and it reads like normal CSS. The Tailwind scale values are written as numbers.
+5. **Frontmatter reaches a layout through a table** (`scripts/lib/layouts.mjs`: `props`, `classProp`, `slots`) instead of "everything".
+   Layouts with a `class` prop in Slidev (`image-left`, `two-cols`, ...) get the frontmatter `class` as input `contentClass`, because an
+   Angular input cannot be called `class`. `layoutClass` is an input of the two-columns layouts.
+6. **Slot sugar becomes `<ng-container ngProjectAs="[name]">`**. A slot the layout does not have gives a generator warning and the text
+   stays visible in the normal flow (Slidev would drop it silently).
+7. **Per-slide `<style>`: Angular `styles` with `ViewEncapsulation.None`, wrapped in `slide-003 { ... }` (CSS nesting).** The slide's tag name is the
+   scope, no extra attribute. Unlike Vue's scoped CSS it also reaches inside the layout's own elements, which is what the Slidev docs example needs.
+   `--uno:` directives are not supported.
+8. **`center` no longer centres the text** (phase 0 did). Slidev's `center` only places the content in the middle; use `class: text-center`.
+9. **`full` has no padding.** Slidev's base style would give it the normal padding; the docs say "use all the space of the screen", so we follow the docs.
+   This is the one layout where the two disagree; to be checked against a real Slidev (see STATUS).
+10. **`<link>` is `<slide-link>`**: `link` is a void HTML element and cannot hold content in an Angular template. Other built-ins keep their Slidev
+    names in kebab case (`slide-toc`, `slide-current-no`, `slides-total`, `light-or-dark`, `render-when`). Where Slidev uses Vue slots, we use
+    attributes on children: `<div dark>` / `<div light>`, `<div fallback>`, `<div at="2">` inside `<v-switch>`.
+11. **`render-when` has no `visible` context** (needs an element visibility observer); `slide`, `presenter`, `print`, `overview`, `main` work.
+12. **`Nav` and `Ui` are provided by the Deck component**, not the root, so they can read the route and the slides created inside the deck inherit them.
+    Overview thumbnails are created inside the overview component, which is inside the deck, so they see the same services.
+13. **Shortcuts are a plain list**, with Slidev's names and keys (`next_space`, `prev_left`, ...), and a `SHORTCUTS_SETUP` injection token
+    that gets the default list. We skipped Slidev's key auto-repeat timer (the browser's own key repeat is used) and typing digits in the overview.
+14. **Transitions use the Web Animations API**, not CSS classes: no `*-enter-active` classes, so themes written for Vue's classes would not apply.
+    The result is easy to test (`getAnimations()`) and needs no CSS. The setting of the earlier slide of the pair is used, like Slidev. Default: none.
+15. **The bar at the bottom left shows on hover or focus** (CSS only, as in Slidev's play page). There is no idle timer: Slidev has none either.
+    The user's wish for "auto-hide when idle" is met by the bar being hidden until the mouse goes to that corner.
+16. **Dark mode** uses Slidev's storage key (`slidev-color-schema`) and values (`auto`, `light`, `dark`), the `dark` class on `<html>`, and hides the
+    toggle when `colorSchema` is fixed in the headmatter. There is no inline script against a flash of the wrong colour on load.
+17. **Overview thumbnails are real slide components** inside `@defer (on viewport)`, which is the lazy rendering. No image snapshots.
+18. **Goto searches with a plain "number starts with / title contains" test**, not Fuse.js (one less dependency).
+19. **Settings menu has only "Slide Scale" and "Hide Idle Cursor"** (Slidev also has CSS filters, wake lock and cursor style).
+20. **An address that is not a number and not a `routeAlias` shows the `404` layout**; numbers still clamp to the first and last slide (as in phase 0).
+    The `error` layout exists but nothing shows it yet.
+21. **Icons from `@iconify-json/carbon` through UnoCSS `preset-icons`**, built into the CSS file by the generator (only used icons are included).
+    `@unocss/reset` is imported like Slidev does, so layouts start from the same plain page.
+22. **Two browser test decks**: the starter deck (`slides.md`, phase 0 tests) and `tests/e2e/showcase/slides.md` (phase 1 tests), built with
+    `SLIDES_FILE` into separate folders. `npm run screenshots` writes `docs/screenshots/` from the second one.
+23. **The readout `#hud` stays** (tests read it) but is hidden from the eye.
+24. **`@types/node`** was added as a dev dependency so the unit tests can use `node:fs` for the `src:` tests.
+
