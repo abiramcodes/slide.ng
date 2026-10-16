@@ -27,3 +27,6 @@ html.print *::after {
   inset: 0;
   display: block;
 }
+#print-content > :last-child > .print-slide-container:last-child {
+  break-after: auto;
+}
