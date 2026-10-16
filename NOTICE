@@ -10,7 +10,7 @@ What we use from Slidev:
 
 - The published npm package `@slidev/parser` (MIT) splits slides.md into slides and
   reads frontmatter and notes. It is a dependency, not copied code.
-- The click logic in src/app/lib/clicks.ts, v-click.ts and v-clicks.ts is a port of
+- The click logic in src/app/lib/clicks.ts, slide-ng-click.ts and slide-ng-clicks.ts is a port of
   Slidev's packages/client/composables/useClicks.ts and its v-click / v-after / v-clicks
   modules, rewritten for Angular.
 - The layout names, structure and styles (src/app/layouts and src/styles/layouts.css, from Slidev's
@@ -18,7 +18,7 @@ What we use from Slidev:
   click CSS classes follow Slidev's design.
 - The navigation bar, context menu, overview, goto box, keyboard shortcuts, table of contents, slide transitions
   and the small built-in components (src/app/ui, lib/shortcuts.ts, lib/toc-tree.ts, lib/transitions.ts, builtin/,
-  lib/v-switch.ts, lib/v-click-gap.ts) are ports of the matching Slidev client code, rewritten for Angular.
+  lib/slide-ng-switch.ts, lib/slide-ng-click-gap.ts) are ports of the matching Slidev client code, rewritten for Angular.
 
 - The official themes (seriph, shibainu, bricks, apple-basic) are not in this repository: they live in the slide.ng-themes repository,
   which carries their MIT attribution to the Slidev themes and says that no CC BY-NC-SA asset was copied. `theme: default` is the built-in look

@@ -24,8 +24,8 @@ Short notes on choices made, and why. Newest at the bottom.
 4. **Imports are decided by looking at the slide's HTML** (`scripts/lib/registry.mjs`), outside code samples.
    A standalone component must import what it uses, and unused imports produce Angular warnings. Adding your own
    component is one line in that table. Trade-off: it is a manual list, not auto-discovery.
-5. **Click attribute spelling: `v-click`, `v-after`, `v-click-hide`** (Slidev's names), as inputs with aliases.
-   Plain attributes give text (`v-click="+2"`); ranges need a binding (`[v-click]="[2,4]"`). The prototype used
+5. **Click attribute spelling: `slide-ng-click`, `slide-ng-after`, `slide-ng-click-hide`** (first written as Slidev's `v-click`, `v-after`, `v-click-hide`; see the last section), as inputs with aliases.
+   Plain attributes give text (`slide-ng-click="+2"`); ranges need a binding (`[slide-ng-click]="[2,4]"`). The prototype used
    camelCase names; the dashed names are closer to Slidev and verified to work with Angular bindings.
 6. **Code is protected twice**: entities for `{ } @` plus `ngNonBindable`. Entities alone are not enough, because
    Angular decodes them before looking for `{{`.
@@ -68,10 +68,10 @@ Short notes on choices made, and why. Newest at the bottom.
 8. **`center` no longer centres the text** (phase 0 did). Slidev's `center` only places the content in the middle; use `class: text-center`.
 9. **`full` has no padding.** Slidev's base style would give it the normal padding; the docs say "use all the space of the screen", so we follow the docs.
    This is the one layout where the two disagree; to be checked against a real Slidev (see STATUS).
-10. **`<link>` is `<slide-link>`**: `link` is a void HTML element and cannot hold content in an Angular template. Other built-ins keep their Slidev
-    names in kebab case (`slide-toc`, `slide-current-no`, `slides-total`, `light-or-dark`, `render-when`). Where Slidev uses Vue slots, we use
-    attributes on children: `<div dark>` / `<div light>`, `<div fallback>`, `<div at="2">` inside `<v-switch>`.
-11. **`render-when` has no `visible` context** (needs an element visibility observer); `slide`, `presenter`, `print`, `overview`, `main` work.
+10. **`<link>` is `<slide-ng-link>`**: `link` is a void HTML element and cannot hold content in an Angular template. Other built-ins keep their Slidev
+    names in kebab case, with the `slide-ng-` prefix since the last section (`slide-ng-toc`, `slide-ng-current-no`, `slide-ng-total`, `slide-ng-light-or-dark`, `slide-ng-render-when`). Where Slidev uses Vue slots, we use
+    attributes on children: `<div dark>` / `<div light>`, `<div fallback>`, `<div at="2">` inside `<slide-ng-switch>`.
+11. **`slide-ng-render-when` has no `visible` context** (needs an element visibility observer); `slide`, `presenter`, `print`, `overview`, `main` work.
 12. **`Nav` and `Ui` are provided by the Deck component**, not the root, so they can read the route and the slides created inside the deck inherit them.
     Overview thumbnails are created inside the overview component, which is inside the deck, so they see the same services.
 13. **Shortcuts are a plain list**, with Slidev's names and keys (`next_space`, `prev_left`, ...), and a `SHORTCUTS_SETUP` injection token
@@ -99,7 +99,7 @@ Short notes on choices made, and why. Newest at the bottom.
 New dependencies, each with its reason (dev = only used while generating or testing, not in the browser bundle):
 `shiki` (dev, highlights code while generating), `katex` (dev, math to HTML while generating; its CSS is added only when used),
 `@iconify-json/mdi` and `@iconify-json/ph` (dev, icon data for the generator), `@shikijs/magic-move` (the animation of Magic Move; lazy),
-`mermaid` (diagrams; lazy), `monaco-editor` (editor; lazy), `rough-notation` (the `v-mark` drawings; lazy).
+`mermaid` (diagrams; lazy), `monaco-editor` (editor; lazy), `rough-notation` (the `slide-ng-mark` drawings; lazy).
 Nothing else was added: footnotes, alerts, the PlantUML encoding and the code runner are small hand-written pieces.
 
 1. **Code is highlighted while generating, and the browser gets finished HTML.** Shiki runs in `scripts/lib/code/highlighter.mjs` with both
@@ -108,7 +108,7 @@ Nothing else was added: footnotes, alerts, the PlantUML encoding and the code ru
 2. **The languages are found before generating** (`features.mjs` scans fences and `<<<` lines), so the highlighter can be synchronous and
    `toTemplate` stays a plain function. A language Shiki does not know is shown as plain text with a warning.
 3. **Line highlights are done in the browser, not in the HTML.** The generator writes the ranges as an attribute (`ranges="2-3|5|all"`) and
-   `<code-block-wrapper>` toggles `highlighted` / `dishonored` classes from the click number, which is Slidev's design. One code path serves
+   `<slide-ng-code-block-wrapper>` toggles `highlighted` / `dishonored` classes from the click number, which is Slidev's design. One code path serves
    static `{2,3}` and click-stepped ranges. A static highlight appears on the first rendered frame after the component starts, not in the HTML.
 4. **Fence options are written as plain attributes** (`lines="true" startLine="5" maxHeight="100px"`) and read with Angular's attribute
    transforms. The options text `{lines:true,maxHeight:'100px'}` is read by a small parser (numbers, booleans, quoted text and bare words),
@@ -136,7 +136,7 @@ Nothing else was added: footnotes, alerts, the PlantUML encoding and the code ru
 13. **Range handling shared by code and math** lives in `code/ranged-block.ts` (`ranges`, `at`, `finally`, `startLine`, `hide`); `CodeBlockWrapper`
     and `KatexBlockWrapper` extend it. `mhchem` (chemistry) is not loaded.
 14. **Mermaid is drawn in the browser with `import('mermaid')`**, one diagram at a time (a promise queue), with a cache so overview thumbnails
-    do not draw it again. The diagram text travels as a packed attribute (`packed`), because Mermaid syntax has `{{ }}`. `<mermaid code="...">`
+    do not draw it again. The diagram text travels as a packed attribute (`packed`), because Mermaid syntax has `{{ }}`. `<slide-ng-mermaid code="...">`
     takes plain text for direct use. Options: `scale`, `theme` (no theme means `dark` or `default` following the colour mode, as in Slidev) and any other
     key is passed to `mermaid.initialize` (`config`). The SVG is put in the page directly (not in a shadow root), which keeps CSS simple.
     Mermaid pulls in CommonJS packages; they are listed in `allowedCommonJsDependencies` in `angular.json` to keep the build output free of warnings.
@@ -169,20 +169,20 @@ Nothing else was added: footnotes, alerts, the PlantUML encoding and the code ru
     `features.css`), so no TypeScript reaches the browser. It starts a TypeScript program (about one second) only when the deck has a twoslash block.
     A block that fails to compile is shown without types and a warning. Such blocks do not scroll (`overflow: visible`) so popups are not clipped.
     Imports of packages the deck does not install (`import { ref } from 'vue'`) cannot be typed, as in a normal TypeScript program.
-24. **Built-in components keep Slidev's names in kebab case**: `<arrow>`, `<auto-fit-text>`, `<transform>`, `<youtube>`, `<tweet>`, `<blue-sky>`,
-    `<slide-video>` (Slidev: `SlidevVideo`; `slide-video` keeps clear of `<video>`), `<code-group>`, `<monaco>`, `<mermaid>`, `<plant-uml>`. Multi-word
-    inputs that people write in HTML are dashed, like `v-click`: `two-way`, `multi-line`.
-25. **`<auto-fit-text>` has no `fitty` dependency.** It tries font sizes between `min` and `max` by halving until the text fits the box's width (and its
+24. **Built-in components keep Slidev's names in kebab case** (with the `slide-ng-` prefix since the last section): `<slide-ng-arrow>`, `<slide-ng-auto-fit-text>`, `<slide-ng-transform>`, `<slide-ng-youtube>`, `<slide-ng-tweet>`, `<slide-ng-blue-sky>`,
+    `<slide-ng-video>` (Slidev: `SlidevVideo`; `slide-ng-video` keeps clear of `<video>`), `<slide-ng-code-group>`, `<slide-ng-monaco>`, `<slide-ng-mermaid>`, `<slide-ng-plant-uml>`. Multi-word
+    inputs that people write in HTML are dashed, like `slide-ng-click`: `two-way`, `multi-line`.
+25. **`<slide-ng-auto-fit-text>` has no `fitty` dependency.** It tries font sizes between `min` and `max` by halving until the text fits the box's width (and its
     height, when the box has one). A box with no height only limits the width. It fits again when the box is resized and when web fonts have loaded.
-26. **`<slide-video>` finds out when it is shown** from the slide number and from a `v-click` on the same element (it injects the `v-click` directive),
+26. **`<slide-ng-video>` finds out when it is shown** from the slide number and from a `slide-ng-click` on the same element (it injects the `slide-ng-click` directive),
     instead of Slidev's global map of click elements. `autoplay`, `autoreset`, `poster`, `timestamp` and `controls` work; the `print*` props do not (no print mode yet).
     In overview thumbnails it never plays.
-27. **`<tweet>` and `<blue-sky>` load the sites' own embed scripts** (`platform.twitter.com/widgets.js`, `embed.bsky.app/static/embed.js`) when the component starts,
+27. **`<slide-ng-tweet>` and `<slide-ng-blue-sky>` load the sites' own embed scripts** (`platform.twitter.com/widgets.js`, `embed.bsky.app/static/embed.js`) when the component starts,
     so these two need the network at presentation time. The tests answer both scripts with small stand-ins and check the markup and calls. A Bluesky post
     address is turned into an `at://` address with Bluesky's public API, as in Slidev. The Bluesky placeholder uses a Carbon icon (the `simple-icons` set is not installed).
-28. **`v-mark` modifiers are rewritten by the generator.** Angular cannot match `v-mark.red.circle` as a directive, so `scripts/lib/directives.mjs` turns it into `mark-mods="red.circle" v-mark="..."`. An object or range value (`v-mark="{ at: 2 }"`, `v-mark="[2, 4]"`) becomes a binding, so Slidev decks keep working. Colours are Tailwind 500 hex values set on rough-notation, not `text-*` classes. `.delay300` is done with a timer, because rough-notation 0.5 has no delay option (Slidev uses its own fork). The drawing is un-scaled by CSS (`--slidev-slide-scale`), because rough-notation measures in screen pixels; stroke width therefore does not follow the slide scale.
-29. **`v-motion` is a small CSS-transition directive**, not @vueuse/motion (no new dependency). `:initial`, `:enter`, `:leave` and `:click-N` / `:click-N-M` are collected by the generator into one `[v-motion]` object, since Angular has no dynamic input names. Variants may use x, y, scale, scaleX, scaleY, rotate, opacity, any other CSS property, and `transition: { duration, delay, ease }`. A `v-click` on the same element drives initial / enter / leave. Springs, `hovered`, `tapped`, keyframe arrays and `variants` are not supported (a warning is printed while generating).
-30. **Click numbers of `v-mark` follow `v-click`.** A bare `v-mark` is `+1`; `true` always shows, `false` never. In print and overview the end state is not yet special-cased for marks (NOT VERIFIED).
+28. **`slide-ng-mark` modifiers are rewritten by the generator.** Angular cannot match `slide-ng-mark.red.circle` as a directive, so `scripts/lib/directives.mjs` turns it into `mark-mods="red.circle" slide-ng-mark="..."`. An object or range value (`slide-ng-mark="{ at: 2 }"`, `slide-ng-mark="[2, 4]"`) becomes a binding, so Slidev decks keep working. Colours are Tailwind 500 hex values set on rough-notation, not `text-*` classes. `.delay300` is done with a timer, because rough-notation 0.5 has no delay option (Slidev uses its own fork). The drawing is un-scaled by CSS (`--slidev-slide-scale`), because rough-notation measures in screen pixels; stroke width therefore does not follow the slide scale.
+29. **`slide-ng-motion` is a small CSS-transition directive**, not @vueuse/motion (no new dependency). `:initial`, `:enter`, `:leave` and `:click-N` / `:click-N-M` are collected by the generator into one `[slide-ng-motion]` object, since Angular has no dynamic input names. Variants may use x, y, scale, scaleX, scaleY, rotate, opacity, any other CSS property, and `transition: { duration, delay, ease }`. A `slide-ng-click` on the same element drives initial / enter / leave. Springs, `hovered`, `tapped`, keyframe arrays and `variants` are not supported (a warning is printed while generating).
+30. **Click numbers of `slide-ng-mark` follow `slide-ng-click`.** A bare `slide-ng-mark` is `+1`; `true` always shows, `false` never. In print and overview the end state is not yet special-cased for marks (NOT VERIFIED).
 31. **GitHub alerts, footnotes and task lists have no markdown plugin.** Alerts are found in the HTML that `marked` makes (`alerts.mjs`, handles nested quotes), with Carbon icons; footnotes are cut out and written back by `footnotes.mjs` (numbers are plain superscripts, not links, because a `#fragment` link would make the router leave the slide). Task lists are `marked`'s own checkboxes, styled in `src/styles/markdown.css`. The one limit: footnote notes are inline markdown only (no paragraphs or lists inside a note).
 32. **Icon tags are rewritten for every installed `@iconify-json/*` set** (`icons.mjs`; the longest set name wins), so adding a set is `npm i -D @iconify-json/<set>` and nothing else. UnoCSS only makes CSS for class names it can see, so the generator now also scans the generated slide files.
 33. **Alert colours are GitHub's**, set as CSS variables per kind in `markdown.css`, with a dark variant.
@@ -207,8 +207,8 @@ Nothing else: recording uses the browser's MediaRecorder, the wake lock uses the
    `record: true | false | dev | build` (default `dev`, like Slidev) decides whether the camera, record buttons and device options exist at all.
 8. **The camera bubble and the screen mirror are small components** (`WebCamera`, `ScreenMirror`); the mirror hides the slide with `display: none`, never removes it, so the click state survives. Device choices are remembered under `slidev-camera`, `slidev-mic`.
 9. **Settings menu:** dark mode, slide scale, idle cursor, wake lock, presenter cursor and style, five colour filters (applied to the main slide only, not to thumbnails), camera options, and a **disabled** "Download as PDF" entry (export is not done). The wake lock follows headmatter `wakeLock: true` until the user chooses; the choice wins.
-10. **`v-drag` numbers each site in the generator.** `scripts/lib/drag-sites.mjs` finds `v-drag` tags outside code and the generator adds `drag-site="N"`; the dev server uses the same function on the same text, so "site 3" means the same thing on both sides.
-    Forms: `v-drag="[x,y,w,h]"`, `v-drag="name"` (numbers in frontmatter `dragPos`), bare `v-drag` (starts where the layout put it, becomes absolute on the first move), `<v-drag pos="x,y,w,h">`, `<v-drag-arrow pos="x1,y1,x2,y2">`.
+10. **`slide-ng-drag` numbers each site in the generator.** `scripts/lib/drag-sites.mjs` finds `slide-ng-drag` tags outside code and the generator adds `drag-site="N"`; the dev server uses the same function on the same text, so "site 3" means the same thing on both sides.
+    Forms: `slide-ng-drag="[x,y,w,h]"`, `slide-ng-drag="name"` (numbers in frontmatter `dragPos`), bare `slide-ng-drag` (starts where the layout put it, becomes absolute on the first move), `<slide-ng-drag pos="x,y,w,h">`, `<slide-ng-drag-arrow pos="x1,y1,x2,y2">`.
     Written back as `[x,y,w,NaN]` in the attribute form and `x,y,w,_` in `pos` and frontmatter (`NaN` / `_` = height follows the content), whole numbers only. Resizing ignores the rotation (it works in the unrotated frame). Arrow keys nudge 1 px, with Shift 10 px, and the arrows stop moving slides while an element is selected.
     A static build keeps a move only while the page stays open; it never writes.
 11. **`zoom`** scales the layout from the top left corner (width and height divided by the zoom, then `transform: scale`), frontmatter over headmatter. **The default canvas stays 960x540** (phase 1 choice; Slidev's is 980x552; replaced by owner decision 1); `canvasWidth` and `aspectRatio` change it.
@@ -280,7 +280,7 @@ plain Node.
     The dev server's side editor gets the fix too.
 23. **The side editor looks at the file every two seconds** while it is open and nothing typed is waiting to be saved, and takes over a change made elsewhere (another editor, git, the MCP server). A poll, because the dev server has no file
     watcher channel to the page; the cost is one small request per two seconds while the editor is open.
-24. **Two phase 3 limits were smaller than written:** `v-drag` boxes are drawn in the right place in overview thumbnails (they are only not editable there), and the presenter's next-step preview now draws the global layers. Slidev does not draw global
+24. **Two phase 3 limits were smaller than written:** `slide-ng-drag` boxes are drawn in the right place in overview thumbnails (they are only not editable there), and the presenter's next-step preview now draws the global layers. Slidev does not draw global
     layers in overview thumbnails either, so they were left out there.
 25. **The four layer files of the layout test deck live in its own folder** (`tests/e2e/phase3/layout/layers/`) instead of being copied into `src/app/layers` during the build; that is the deck-folder feature doing the job.
 26. **Left out on purpose:** editable PPTX, the VS Code extension, the prettier plugin, the Vue-syntax converter, community themes, the browser exporter page and `overviewSnapshots` (as asked). Also left out because they would not fit: `--tunnel`,
@@ -403,7 +403,7 @@ Verified by running the built decks in Chromium; the tests are `tests/export/off
    - `globals`: the lists of Node and browser global names, so `console` or `document` are not reported as undefined.
    - Nothing was added for hooks (no husky, no lint-staged): `.githooks/` and `scripts/prepare.mjs` use git's own `core.hooksPath`.
 4. **Lint rules turned off or narrowed, and why:**
-   - `@angular-eslint/no-input-rename` is off in `src`: directives such as `v-click`, `v-drag` and `v-mark` need a dashed attribute that differs from the input name, which is Slidev's spelling.
+   - `@angular-eslint/no-input-rename` is off in `src`: directives such as `slide-ng-click`, `slide-ng-drag` and `slide-ng-mark` need a dashed attribute that differs from the input name.
    - `@angular-eslint/no-output-native` is disabled on one line in `src/app/presenter/clicks-slider.ts`: the slider's output is called `change` like the event of a range input. Renaming it would change how templates use it.
    - `no-control-regex` is disabled on one line in `scripts/export/filename.mjs`: the pattern removes control characters from file names on purpose.
    - `@typescript-eslint/no-explicit-any` is off in `*.spec.ts` only (loose test doubles). It stays on in `src`.
@@ -415,3 +415,10 @@ Verified by running the built decks in Chromium; the tests are `tests/export/off
 8. **The package stays `private: true`.** `repository`, `bugs` and `homepage` point to `https://github.com/slide-ng/slide.ng`. **The owner must confirm that organization and name** (CONTRIBUTING.md, SECURITY.md, the issue template configuration and CHANGELOG use the same address). `engines.node` is `>=22.22.3`, which the Angular CLI needs, and `.nvmrc` pins 22.23.3 for CI. `files` lists what a later publish would include.
 9. **`scripts/resign-history.sh` is written but not run on this repository**, because no signing key was available. Only its refusal path was tested, in a temporary repository. See `docs/SIGNING.md`.
 10. **The default branch is `main`.** The workflows and `commit-message.mjs` assume it.
+
+## Built-in names get the `slide-ng-` prefix
+
+1. **Every built-in element and attribute that an author writes in markdown starts with `slide-ng-`** (library prefix, kebab case, the Angular way). The Vue-style `v-click`, `v-drag` and the rest are gone, and so are the short names (`<arrow>`, `<youtube>`, `<slide-toc>`): a name without the prefix could collide with HTML or with a component of the deck or a theme, and `v-` made decks look like Vue. The full table and the rule are in `RENAMES.md`.
+2. **Clean break, no aliases.** Nothing was published, so there is no shim and no deprecation period. The generator refuses a slide that still uses an old name and says what to write instead (`scripts/lib/renamed.mjs`, tested in `renamed.spec.ts`). That is an error message, not an alias: the old name never works. The check skips an old name that the deck's own components declare as a selector, and it does not look into code samples.
+3. **What did not change:** layout names and the `sn-*` tags they use, headmatter and frontmatter keys, CSS classes (`slidev-*`), `$clicks`-style variables, the `::code-group` markdown block, the `drag-site` and `mark-mods` attributes that the generator writes for the runtime, and the internal `app-*` components. `<slide-ng-total>` replaces `<slides-total>`, and `slide-ng-magic-move` replaces `shiki-magic-move`, because the prefix goes in front of the name without a repeated word.
+4. **Hyphenated attribute selectors such as `[slide-ng-click]` are legal in Angular** and compile under AOT (checked with `ng build`). The class names follow the files: `SlideNgClick`, `SlideNgMark`, `SlideNgDrag` and so on.
