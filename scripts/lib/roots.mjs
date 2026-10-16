@@ -4,17 +4,10 @@
 //   layouts/  components/  layers/  styles/  public/  setup/  uno.config.mjs  theme.json
 import { existsSync, readFileSync, realpathSync, statSync } from 'node:fs';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { installCommand } from './install-root.mjs';
 
 /** What a theme can bring, as folders. `public` is merged, the others are copied under their root. */
 export const ROOT_FOLDERS = ['layouts', 'components', 'layers', 'styles', 'public', 'setup'];
-
-/** The themes that ship with slide.ng (`themes/<name>/`), looked up before `node_modules`. `default` is not one of them: it is the built-in look. */
-export function builtinThemesDir() {
-  // In a bundled unit test this file has no file address; the folder of the working directory is then the repository's.
-  try { return fileURLToPath(new URL('../../themes', import.meta.url)); } catch { return resolve('themes'); }
-}
 
 const isDir = (path) => existsSync(path) && statSync(path).isDirectory();
 
@@ -33,18 +26,36 @@ export class RootNotFoundError extends Error {
   }
 }
 
+// The official themes are packages in the separate slide.ng-themes repository (`@slide-ng/theme-<name>`).
+const OFFICIAL_THEMES = ['seriph', 'shibainu', 'bricks', 'apple-basic'];
+
 // A scoped package name such as @scope/slide-ng-theme-x (the same rule as Slidev's resolver for the name).
 const SAFE_SCOPED = /^@[a-z0-9~-][a-z0-9._~-]*\/[a-z0-9~-][a-z0-9._~-]*$/;
 const SAFE_NAME = /^[a-z0-9~-][a-z0-9._~-]*$/;
 
 /**
- * Finds the folder of a theme or addon. `kind` is `theme` or `addon`: a package called `ocean` is looked for as
- * `slide-ng-theme-ocean` and then as `ocean`, in the `node_modules` folders from the deck's folder upwards.
- * Like Slidev: `@/x` is relative to the deck's folder, a name with a slash that does not start with @ is a path,
- * and a package that cannot be found throws a `RootNotFoundError` that carries the install command.
- * A theme name is first looked for in `builtinDir` (the `themes/` folder of slide.ng), then in `node_modules`.
+ * The package names tried for a name, in order (Slidev's rule with slide.ng's prefixes):
+ * `ocean` as a theme is `@slide-ng/theme-ocean`, `slide-ng-theme-ocean`, then `ocean`. A scoped name is used as it is.
  */
-export function findRootDir(spec, kind, deckRoot, builtinDir = builtinThemesDir()) {
+export function candidateNames(spec, kind) {
+  if (spec.startsWith('@')) return [spec];
+  return [`@slide-ng/${kind}-${spec}`, `slide-ng-${kind}-${spec}`, spec];
+}
+
+/** What to install when a name is not found: the official scoped package, a scoped name itself, else `slide-ng-<kind>-<name>`. */
+export function packageToInstall(spec, kind) {
+  if (spec.startsWith('@')) return spec;
+  if (kind === 'theme' && OFFICIAL_THEMES.includes(spec)) return `@slide-ng/theme-${spec}`;
+  return `slide-ng-${kind}-${spec}`;
+}
+
+/**
+ * Finds the folder of a theme or addon. `kind` is `theme` or `addon`; a name is looked for in the `node_modules` folders
+ * from the deck's folder upwards (see `candidateNames`). Like Slidev: `@/x` is relative to the deck's folder, a name with a
+ * slash that does not start with @ is a path, and a package that cannot be found throws a `RootNotFoundError` that carries
+ * the install command. The official themes are packages like any other.
+ */
+export function findRootDir(spec, kind, deckRoot) {
   if (typeof spec !== 'string' || !spec.trim()) throw new Error(`${kind}: expected a name or a path, got ${JSON.stringify(spec)}`);
   if (spec.startsWith('@/')) spec = `./${spec.slice(2)}`;
   else if (!spec.startsWith('@') && spec.includes('/') && !isAbsolute(spec)) spec = `./${spec.replace(/^\.\//, '')}`;
@@ -54,13 +65,13 @@ export function findRootDir(spec, kind, deckRoot, builtinDir = builtinThemesDir(
     return realpathSync(dir);
   }
   if (!(spec.startsWith('@') ? SAFE_SCOPED : SAFE_NAME).test(spec)) throw new Error(`Invalid ${kind} name "${spec}". Only valid npm package names are allowed.`);
-  if (kind === 'theme' && isDir(join(builtinDir, spec))) return realpathSync(join(builtinDir, spec));
-  const names = spec.startsWith('slide-ng-') || spec.startsWith('@') ? [spec] : [`slide-ng-${kind}-${spec}`, spec];
+  const names = candidateNames(spec, kind);
   for (let dir = resolve(deckRoot); ; dir = dirname(dir)) {
     for (const name of names) if (isDir(join(dir, 'node_modules', name))) return realpathSync(join(dir, 'node_modules', name));
     if (dirname(dir) === dir) break;
   }
-  throw new RootNotFoundError(kind, spec, names[0], installCommand(deckRoot, names[0]).command);
+  const pkg = packageToInstall(spec, kind);
+  throw new RootNotFoundError(kind, spec, pkg, installCommand(deckRoot, pkg).command);
 }
 
 /**
@@ -87,13 +98,13 @@ const safeId = (text) => String(text).toLowerCase().replace(/[^a-z0-9]+/g, '-').
  * The roots of a deck, in order: theme, addons, deck. Built-in theme is not listed (it is the base everything sits on).
  * `themeOverride` is the `--theme` flag. `theme: default` (or `none`) means no extra theme.
  * A theme or addon that is not installed is an error (`RootNotFoundError`, with the install command), like in Slidev.
- * @param {{ deckRoot: string, headmatter: any, themeOverride?: string, builtinDir?: string }} options
+ * @param {{ deckRoot: string, headmatter: any, themeOverride?: string }} options
  */
-export function resolveRoots({ deckRoot, headmatter, themeOverride, builtinDir }) {
+export function resolveRoots({ deckRoot, headmatter, themeOverride }) {
   const roots = [];
   const theme = themeOverride ?? headmatter.theme;
   if (theme && theme !== 'default' && theme !== 'none') {
-    const dir = findRootDir(theme, 'theme', deckRoot, builtinDir);
+    const dir = findRootDir(theme, 'theme', deckRoot);
     roots.push({ id: `theme-${safeId(theme)}`, kind: 'theme', spec: theme, dir, manifest: readManifest(dir) });
   }
   const addons = Array.isArray(headmatter.addons) ? headmatter.addons : [];

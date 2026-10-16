@@ -31,7 +31,8 @@ function ejectFolder(source, target) {
   cpSync(source, target, {
     recursive: true,
     // Never follow links out of the theme, and leave dependencies and git data behind.
-    filter: (path) => !/(^|[\\/])(node_modules|\.git)([\\/]|$)/.test(path) && !lstatSync(path).isSymbolicLink(),
+    // Only the part below the theme's folder is tested: an installed theme itself lives inside node_modules.
+    filter: (path) => !/(^|[\\/])(node_modules|\.git)([\\/]|$)/.test(relative(source, path)) && !lstatSync(path).isSymbolicLink(),
   });
 }
 

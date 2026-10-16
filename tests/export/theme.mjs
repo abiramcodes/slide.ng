@@ -3,7 +3,7 @@
 // Part of `npm run test:export`.
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { launch, reporter } from '../e2e/browser.mjs';
@@ -110,19 +110,24 @@ await cli(['build', join(flagged, 'slides.md'), '--theme', themeDir, '--out', jo
 const flaggedJs = readdirSync(join(flagged, 'site')).filter((f) => f.endsWith('.js')).map((f) => readFileSync(join(flagged, 'site', f), 'utf8')).join('\n');
 t.ok('--theme <path> uses that theme although the headmatter names none', flaggedJs.includes('minimal-cover') && !readFileSync(join(flagged, 'slides.md'), 'utf8').includes('theme:'));
 
-// ---- an official theme by name, from a deck outside the repository (nothing is installed), and its eject
-const named = deck('named', 'theme: seriph\n');
+// ---- a theme by name from node_modules: a copy of the example theme stands in for the package @slide-ng/theme-demo
+// (the way the official themes of the slide.ng-themes repository are found), and its eject
+const named = deck('named', 'theme: demo\n', true);
+cpSync(themeDir, join(named, 'node_modules/@slide-ng/theme-demo'), { recursive: true });
 const namedSite = await build(named);
 const namedJs = readdirSync(namedSite).filter((f) => f.endsWith('.js')).map((f) => readFileSync(join(namedSite, f), 'utf8')).join('\n');
-t.ok('theme: seriph works without installing anything (built-in themes folder)', namedJs.includes('seriph-cover') && !existsSync(join(named, 'node_modules')));
+t.ok('theme: demo is found as @slide-ng/theme-demo in node_modules and its layouts and component are built', namedJs.includes('minimal-cover') && namedJs.includes('minimal-callout'));
 const namedEject = await cli(['theme', 'eject'], named);
-t.ok('theme eject of a built-in theme name copies its folder', existsSync(join(named, 'theme/layouts/cover.ts')) && existsSync(join(named, 'theme/theme.json')) && /^theme: \.\/theme$/m.test(readFileSync(join(named, 'slides.md'), 'utf8')), namedEject.trim());
+t.ok('theme eject of a package name copies the package folder', existsSync(join(named, 'theme/layouts/cover.ts')) && existsSync(join(named, 'theme/theme.json')) && /^theme: \.\/theme$/m.test(readFileSync(join(named, 'slides.md'), 'utf8')), namedEject.trim());
 
 // ---- a theme that does not exist
 const missing = deck('missing', 'theme: ./nope\n');
 const failure = await cli(['build', join(missing, 'slides.md'), '--out', join(missing, 'site')], missing).then(() => '', (e) => e.stderr);
 t.ok('a theme path that is not a folder fails with a message', /is not a folder/.test(failure), failure.trim());
 const unknown = deck('unknown', 'theme: ocean\n');
+const official = deck('official', 'theme: seriph\n');
+const officialFailure = await cli(['build', join(official, 'slides.md'), '--out', join(official, 'site')], official).then(() => '', (e) => e.stderr);
+t.ok('an official theme name that is not installed names the scoped package', /Install it with: npm install -D @slide-ng\/theme-seriph/.test(officialFailure), officialFailure.trim().slice(-200));
 const warned = await run(process.execPath, [bin, 'build', join(unknown, 'slides.md'), '--out', join(unknown, 'site')], { cwd: unknown, encoding: 'utf8' })
   .then((r) => ({ ...r, status: 0 }), (e) => ({ stdout: e.stdout, stderr: e.stderr, status: e.code }));
 const unknownOutput = warned.stdout + warned.stderr;

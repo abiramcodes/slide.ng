@@ -55,7 +55,7 @@ export default { shortcuts: { 'my-muted': 'op60 text-sm' } };
 
 `theme.json` can set headmatter defaults, such as `"colorSchema": "dark"` or the fonts (`"fonts": { "sans": "Titillium Web", "mono": "Fira Code" }`,
 loaded from the provider, merged with the deck's own `fonts`). Pictures go in `public/`.
-The official themes in [`themes/`](../themes) are larger examples: `bricks` has components, `apple-basic` has layouts with props, `shibainu` has many layouts.
+The official themes (the slide.ng-themes repository, `packages/theme-*`) are larger examples: `bricks` has components, `apple-basic` has layouts with props, `shibainu` has many layouts.
 
 ## Extra: setup hooks
 
@@ -68,10 +68,25 @@ export default [{ provide: SHORTCUTS_SETUP, useValue: (actions, list) => [...lis
 
 ## Sharing it
 
-A theme is a folder, so publish it as a package named `slide-ng-theme-<name>` with these folders at the top of the package. Users install it
-and write `theme: <name>`. Start from the built-in look instead of from nothing with `slide-ng theme eject`.
+A theme is a folder, so publish it as an npm package with these folders at the top of the package. Users install it and write `theme: <name>`.
+slide.ng looks for the name in `node_modules` as `@slide-ng/theme-<name>`, then `slide-ng-theme-<name>`, then `<name>`, so name your package
+`slide-ng-theme-<name>` (or `@your-scope/...`, used as `theme: @your-scope/theme-x`). The package needs nothing slide.ng reads except the folders:
+
+```json
+{
+  "name": "slide-ng-theme-ocean",
+  "version": "1.0.0",
+  "license": "MIT",
+  "keywords": ["slide-ng-theme", "slide-ng"],
+  "files": ["layouts", "components", "styles", "public", "setup", "theme.json"],
+  "peerDependencies": { "slide-ng": "*" }
+}
+```
+
+The official packages follow this layout; see the slide.ng-themes repository and its CONTRIBUTING.md for adding one. Start from the built-in look
+instead of from nothing with `slide-ng theme eject`.
 
 ## Checking your theme
 
 Run the deck with `slide-ng` and edit the theme: the folders are watched. Run `slide-ng build` to see the real build (it fails on
-a template error in a layout). The repository's own test for the example theme is `tests/export/theme.mjs`.
+a template error in a layout). The repository's own test for the example theme, also installed as a fake `@slide-ng/theme-demo` package to prove the lookup in `node_modules`, is `tests/export/theme.mjs`.

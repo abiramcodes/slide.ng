@@ -54,7 +54,7 @@ node bin/slide-ng.mjs mcp [slides.md]          # MCP server on stdio: read and e
 | `create` | `<folder>`, `--force` (add the missing files to a folder that has files) |
 
 The export needs a Chromium: set `CHROME_PATH` or pass `--executable-path`. It never downloads one. The headmatter can set `exportFilename`, `export: { ... }` (the same names as the flags) and `download`.
-Hosting, `--base`, the PDF button, the offline mode and the head tags are in [docs/HOSTING.md](docs/HOSTING.md). Setup files (`setup/shiki.ts`, `katex.ts`, `mermaid.ts`, `monaco.ts`, `shortcuts.ts`, ...) are in [docs/SETUP.md](docs/SETUP.md). Themes and addons are in [docs/THEMES.md](docs/THEMES.md) and [docs/WRITING-A-THEME.md](docs/WRITING-A-THEME.md); the official themes are in [`themes/`](themes), shown in [`examples/themes/`](examples/themes).
+Hosting, `--base`, the PDF button, the offline mode and the head tags are in [docs/HOSTING.md](docs/HOSTING.md). Setup files (`setup/shiki.ts`, `katex.ts`, `mermaid.ts`, `monaco.ts`, `shortcuts.ts`, ...) are in [docs/SETUP.md](docs/SETUP.md). Themes and addons are in [docs/THEMES.md](docs/THEMES.md) and [docs/WRITING-A-THEME.md](docs/WRITING-A-THEME.md); the official themes are packages `@slide-ng/theme-<name>` in the separate slide.ng-themes repository.
 
 Keys: right arrow / space = next click or slide, left arrow = back, `o` overview, `g` go to slide, `d` dark mode, `f` fullscreen.
 Move the mouse to the bottom left for the bar, right click for the menu. All keys are in [docs/SYNTAX.md](docs/SYNTAX.md).
@@ -85,7 +85,7 @@ The URL is the state: `/7?clicks=2` is slide 7 at click 2.
 
 - Export to PDF (with outline), PNG, PPTX (pictures) and Markdown; speaker notes as PDF; `slide-ng build` with `--base`, 404 page, Open Graph picture, remote assets, download button, and an offline worker with install icons and an "Available offline" label (`pwa: true`).
 - Themes and addons (`theme:`, `addons:`), `theme eject`, an example theme, `slide-ng create`, `slide-ng format`, an MCP server.
-- The official themes `seriph`, `shibainu`, `bricks` and `apple-basic` (and `default`, the built-in look) with their layouts, components and fonts: `theme: seriph`, nothing to install.
+- The official themes `seriph`, `shibainu`, `bricks` and `apple-basic` (and `default`, the built-in look) are packages of the separate slide.ng-themes repository: `npm i -D @slide-ng/theme-seriph`, then `theme: seriph`.
 
 How it compares with Slidev, row by row: [docs/PARITY.md](docs/PARITY.md). What is missing or not checked: [docs/STATUS.md](docs/STATUS.md).
 Pictures of the layouts and of every feature slide (light and dark) are in `docs/screenshots/`; `npm run screenshots` makes them again.

@@ -209,17 +209,17 @@ Slidev is Vue and Vite; slide.ng is Angular. Anything that is about Vue, Vite pl
 
 | Feature | Slidev reference | slide.ng status | Notes or test |
 | --- | --- | --- | --- |
-| `theme:` by name, path, or `default` | guide/theme-addon.md | partial | the five official themes by name (see the rows below), other slide.ng themes (folders or packages `slide-ng-theme-*`); community Slidev themes are Vue and cannot be used. An uninstalled name warns and uses the built-in theme; test: the theme replaces the cover layout |
+| `theme:` by name, path, or `default` | guide/theme-addon.md | partial | the official themes by name (see the rows below), other slide.ng themes (folders or packages `@slide-ng/theme-*`, `slide-ng-theme-*`); community Slidev themes are Vue and cannot be used. An uninstalled name stops the build with the install command (Slidev asks to install); test: the theme replaces the cover layout |
 | Official themes: `default` | themes/theme-default | done | the built-in look is the port (no folder); Slidev's default web fonts are not loaded for it; test: plain deck: the built-in cover layout, and a unit test that `default` resolves to no root |
-| Official theme `seriph` | themes/theme-seriph | done | `themes/seriph`: PT Serif and PT Mono from the provider, accent colour, `cover` with the `background` input; the random cover photo is a CSS gradient; tests: `tests/e2e/themes.mjs` (7 layouts, fonts, png export) |
-| Official theme `shibainu` | themes/theme-shibainu | partial | all 14 layouts, fonts, dark schema and colours; the vector backgrounds are CSS gradients in the same palette, not the illustrations (CC BY-NC-SA); tests: `tests/e2e/themes.mjs` |
-| Official theme `bricks` | themes/theme-bricks | partial | 9 layouts with slots and `cols`, 11 polygon components (`<polygon-N />`, sized with classes); the page backgrounds are CSS gradients, not the SVG illustrations (CC BY-NC-SA); tests: `tests/e2e/themes.mjs` |
-| Official theme `apple-basic` | themes/theme-apple-basic | done | 10 layouts with the original props (`image`, `imageLeft`, ...), Helvetica Neue as a local font; no pictures of its own; tests: `tests/e2e/themes.mjs` |
-| Built-in theme names resolve without installing | guide/theme-addon.md | done (slide.ng only) | `themes/` is searched before `node_modules`; test: finds a theme name in the built-in themes folder, and theme: seriph works without installing anything |
+| Official theme `seriph` | themes/theme-seriph | done | `@slide-ng/theme-seriph` (slide.ng-themes repository): PT Serif and PT Mono from the provider, accent colour, `cover` with the `background` input; the random cover photo is a CSS gradient; tests: `tests/themes.mjs` of the themes repository (7 layouts, fonts, png export) |
+| Official theme `shibainu` | themes/theme-shibainu | partial | all 14 layouts, fonts, dark schema and colours; the vector backgrounds are CSS gradients in the same palette, not the illustrations (CC BY-NC-SA); tests: the themes repository |
+| Official theme `bricks` | themes/theme-bricks | partial | 9 layouts with slots and `cols`, 11 polygon components (`<polygon-N />`, sized with classes); the page backgrounds are CSS gradients, not the SVG illustrations (CC BY-NC-SA); tests: the themes repository |
+| Official theme `apple-basic` | themes/theme-apple-basic | done | 10 layouts with the original props (`image`, `imageLeft`, ...), Helvetica Neue as a local font; no pictures of its own; tests: the themes repository |
+| Theme names resolve from `node_modules` like Slidev (`@slidev/theme-x`, `slidev-theme-x`, `x`) | guide/theme-addon.md | done | `@slide-ng/theme-<name>`, `slide-ng-theme-<name>`, `<name>`; official names are packages of the slide.ng-themes repository, not built in; test: tries @slide-ng/theme-<name>, then slide-ng-theme-<name>, then <name>, and theme: demo is found as @slide-ng/theme-demo in node_modules |
 | Theme `fonts` merged with the deck's `fonts` key by key | custom/config-fonts.md | done | test: merges the fonts of a theme with the deck key by key |
 | `addons: []` | guide/write-addon.md | partial | resolution and merge order are unit-tested; no end-to-end addon build yet; test: orders theme, addons, deck |
 | Theme layouts, components, layers, styles, public, UnoCSS, defaults, setup hooks | guide/write-theme.md | done | see docs/THEMES.md; test: a slide can use the component of the theme |
-| Theme eject | features/eject-theme.md | done | test: ejected built-in theme: the cover layout still renders |
+| Theme eject | features/eject-theme.md | done | test: ejected built-in theme: the cover layout still renders; theme eject of a package name copies the package folder |
 | Directory structure: `components/`, `layouts/`, `layers/`, `styles/`, `public/`, `setup/`, `snippets/` | custom/directory-structure.md | partial | all but `snippets/` (a snippet path is written out), `setup/routes.ts` and the Vue and Vite files; test: writes the template into a new folder |
 | `theme.json` manifest (slide.ng only) | - | different by design | declares layout inputs and default headmatter instead of `package.json#slidev`; test: reads name, headmatter and layouts and drops bad entries |
 | `setup/main.ts`, `setup/root.ts`, `setup/vite.config.ts`, `vite.config.ts`, `vue.ts` | custom/config-vite.md, config-vue.md | partial | `main` (Angular providers) and `root` (runs at start) exist, see docs/SETUP.md; Vite and Vue files are different by design; test: main and root ran |
@@ -244,7 +244,7 @@ browser exporter page and `overviewSnapshots`. (They are also listed in the rows
 
 ## The biggest gaps, ranked
 
-1. **Community Slidev themes and addons cannot be used.** They are Vue packages. slide.ng has its own contract (docs/THEMES.md), the five official themes rebuilt on it (`themes/`) and one example theme; there is no ecosystem.
+1. **Community Slidev themes and addons cannot be used.** They are Vue packages. slide.ng has its own contract (docs/THEMES.md), the four official themes rebuilt on it (separate slide.ng-themes repository) and one example theme; there is no ecosystem.
 2. **Setup hooks are there (docs/SETUP.md)**, with these gaps: Monaco type loading (`monacoTypes*`, so Monaco does not know package types), markdown-it plugins in transformers, and a run context for code runners.
 3. **`fonts`** is read (names, local, weights, italic, fallbacks, provider) but the fonts are loaded from the provider at run time, not copied into the build.
 4. **Export**: editable PPTX is not made, `export` takes one entry, PDF/PNG need a local Chromium (`--executable-path` or `CHROME_PATH`).

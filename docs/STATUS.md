@@ -18,17 +18,18 @@ command line as a package, themes and addons, an example theme, the MCP server a
    `examples/theme-minimal` (docs/THEMES.md, docs/WRITING-A-THEME.md). The example theme changes the rendered output and its component is used from slides (browser test).
 8. **MCP server** `slide-ng mcp`: seven tools, tested with a scripted client over stdio (initialize, tools/list, get, update, insert, move, remove, refusals, path confinement).
 9. **Polish**: the PDF button in the bar (enabled only when the PDF exists), `dev --open`, `--theme`, the side editor takes over outside edits, the next-step preview draws global layers, v-drag boxes were already drawn in thumbnails.
-10. **Official themes**: `seriph`, `shibainu`, `bricks` and `apple-basic` rebuilt in `themes/` (layouts with the same names and slots, components, fonts from the provider, colours, defaults); `default` is the built-in look. `theme: <name>` finds them
-    before `node_modules` (DECISIONS.md 10), `examples/themes/*.md` show every layout, the READMEs credit the original authors, and NOTICE records the MIT attribution and that no asset was copied (the originals' backgrounds are CC BY-NC-SA and are CSS gradients here).
+10. **Official themes**: `seriph`, `shibainu`, `bricks` and `apple-basic` are npm packages `@slide-ng/theme-<name>` in the separate slide.ng-themes repository (DECISIONS.md 10), with the layouts, components, fonts,
+    READMEs, showcase decks, NOTICE and tests. This package resolves `theme: <name>` from `node_modules` like Slidev (`@slide-ng/theme-<name>`, `slide-ng-theme-<name>`, `<name>`); `default` is the built-in look.
+    A missing official theme stops the build with `npm install -D @slide-ng/theme-<name>`. A fake `@slide-ng/theme-demo` package (a copy of `examples/theme-minimal`) is built end to end in `tests/export/theme.mjs`.
 11. **docs/PARITY.md**: 162 rows, a test found for each `done` row, and a ranked list of gaps.
 
 ## Test results (last run, Node 22.23.3, Chromium from `/opt/pw-browsers`)
 
 - `npm run build`: succeeds.
-- `npm test`: 82 files, **648** tests passed (the theme names and fonts: `builtin-themes.spec.ts`).
-- `npm run test:e2e`: starter deck **45**, showcase **144**, code and content **125**, phase 3 decks **154**, print route **24**, setup hooks **24**, official themes **140** (every layout of four themes, fonts, PNG export of one slide each); 0 failed.
+- `npm test`: 81 files, **647** tests passed (theme and addon names: `roots.spec.ts`).
+- `npm run test:e2e`: starter deck **45**, showcase **144**, code and content **125**, phase 3 decks **154**, print route **24**, setup hooks **24**, 0 failed. The official theme tests (every layout of four themes, fonts, PNG export) moved to the slide.ng-themes repository.
 - `npm run test:dev`: live update **6**, dev server **46**; 0 failed (one timing check of the dev server failed in two earlier runs, a different one each time, and passed on the third).
-- `npm run test:export`: export command **33**, build **46**, theme **20**, scaffold **13**, MCP **22**; 0 failed.
+- `npm run test:export`: export command **33**, build **46**, theme **21**, scaffold **13**, MCP **22**; 0 failed.
 
 ## Not done
 
@@ -50,16 +51,17 @@ command line as a package, themes and addons, an example theme, the MCP server a
 - The notes PDF is 594.96 pt wide, not 595 (A4 rounding); the test accepts both.
 - The "outline destination" test was vacuous; it now checks real page numbers, also with clicks.
 - The scaffold's create step failed inside the unit test bundle (the file cannot tell where it lives); it now takes the package folder as a parameter.
-- An unknown theme package used to be a hard error; it is now a warning with the built-in theme.
+- `theme eject` of an installed package copied nothing, because the copy filter skipped every path that contains `node_modules` and the package itself sits in one; it now tests only the part below the theme's folder (covered by the fake `@slide-ng/theme-demo` in `tests/export/theme.mjs`).
 - The build test blocked its own "remote" server with a synchronous call; now asynchronous.
 - A flaky "a click elsewhere closes the menu" check waited too little for the menu to open; it waits now.
 - Running the unit tests and a build at the same time breaks both (they share `src/slides/generated`); tests are run one after the other.
 
 ## Not done: official themes
 
-- The original background illustrations (shibainu, bricks) and the random cover photo (seriph) are not used (CC BY-NC-SA, non-commercial): CSS gradients in the same palette stand in, so those layouts match in colour and structure, not in shape.
-- `themeConfig` (for example seriph's `primary`) is not read; Prism style sheets are not ported (code colours come from Shiki); Slidev's default theme fonts are not loaded for `theme: default`.
-- The decks in `examples/themes/` are one per theme (a deck has one theme); the test stubs the font style sheet, so the fonts themselves were not seen rendered (the request and the CSS font names are checked).
+- The themes are not published to npm and the themes repository has no remote yet; the packages are used from a checkout (`npm install` links them, or `file:` paths).
+- The original background illustrations (shibainu, bricks) and the random cover photo (seriph) are not used (CC BY-NC-SA, non-commercial): CSS gradients in the same palette stand in.
+- `themeConfig` (for example seriph's `primary`) is not read; Prism style sheets are not ported; Slidev's default theme fonts are not loaded for `theme: default`.
+- The themes tests stub the font style sheet, so the fonts themselves were not seen rendered (the request and the CSS font names are checked).
 
 ## NOT VERIFIED
 
@@ -67,7 +69,7 @@ command line as a package, themes and addons, an example theme, the MCP server a
 - `dev --open` opening a real browser window: the flag is passed to `ng serve --open` and parsed in a unit test only.
 - `CODE_RUNNERS` (a theme replacing how `{monaco-run}` runs code): written, documented, no test.
 - Addons end to end: resolution and merge order are unit-tested, but no deck was built with an addon.
-- `theme eject` of a theme that is an npm package (a folder copy is tested through the built-in theme only).
+- `theme eject` of a package is tested with the fake `@slide-ng/theme-demo`, not with a package from a registry.
 - Export and build with Firefox or WebKit: only Chromium is used. PDF text, page sizes and outlines were checked with the poppler tools and the PPTX through its file structure; none was opened in PowerPoint, Keynote or Acrobat.
 - The Open Graph picture and the tags in a real crawler or chat application.
 - Hosting on GitHub Pages or Netlify (the files they read are written and the local static server was used).

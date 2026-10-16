@@ -628,7 +628,7 @@ In an exported PDF a slide that has clicks shows its last state, unless `--with-
 
 ```md
 ---
-theme: ./my-theme       # a folder next to the deck, or a package: `ocean` means slide-ng-theme-ocean
+theme: ./my-theme       # a folder next to the deck, or a package: `ocean` means @slide-ng/theme-ocean or slide-ng-theme-ocean
 addons: [./charts]
 ---
 ```
