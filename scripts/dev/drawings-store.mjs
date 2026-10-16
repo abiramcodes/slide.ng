@@ -1,35 +1,16 @@
 // Saves a slide's drawing as `.slide-ng/drawings/<number>.svg` (only with `drawings: { persist: true }`).
 // The file name is built here from a number that was checked; the page never supplies a name.
-// The markup is checked too: only the shapes drauu draws, no scripts, no links.
+// The markup is parsed too: only the shapes and attributes drauu writes are kept, no scripts, no links.
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { cleanDrawing } from '../lib/drawing-markup.mjs';
 import { DRAWINGS_DIR, svgDocument } from '../lib/drawings.mjs';
 import { HttpError } from './http-error.mjs';
 
 export const MAX_DRAWING = 500_000;
-const SHAPES = new Set([
-  'path',
-  'line',
-  'rect',
-  'ellipse',
-  'circle',
-  'polygon',
-  'polyline',
-  'g',
-  'defs',
-  'marker',
-]);
 
-/** True for markup made of drawing shapes only. */
-export function isSafeMarkup(markup) {
-  if (typeof markup !== 'string' || markup.length > MAX_DRAWING) return false;
-  for (const tag of markup.matchAll(/<\/?\s*([^\s>/]*)/g))
-    if (!SHAPES.has(tag[1].toLowerCase())) return false; // also `<!--`, `<?`, `<script`
-  if (/\son\w+\s*=/i.test(markup)) return false; // event handlers
-  if (/javascript:|data:|href\s*=|<\s*!|&#|expression\s*\(|@import/i.test(markup)) return false;
-  // url(#id) is how a marker is used; any other url() could load something.
-  return !/url\(\s*(?!['"]?#)/i.test(markup);
-}
+/** True for markup made of drawing shapes only (see lib/drawing-markup.mjs, a strict parser). */
+export const isSafeMarkup = (markup) => cleanDrawing(markup, MAX_DRAWING) !== null;
 
 /** Write (or, for an empty drawing, delete) the file of slide `no`. */
 export function writeDrawing(ctx, no, markup, slideCount, size) {
@@ -41,8 +22,10 @@ export function writeDrawing(ctx, no, markup, slideCount, size) {
     rmSync(file, { force: true });
     return;
   }
-  if (!isSafeMarkup(markup))
+  // What is written is built again from the parsed shapes, not the text that arrived.
+  const clean = cleanDrawing(markup, MAX_DRAWING);
+  if (clean === null)
     throw new HttpError(422, 'the drawing contains something that is not a drawing shape');
   mkdirSync(dir, { recursive: true });
-  writeFileSync(file, svgDocument(markup, size));
+  writeFileSync(file, svgDocument(clean, size));
 }

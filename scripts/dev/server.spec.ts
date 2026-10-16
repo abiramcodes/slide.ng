@@ -230,6 +230,8 @@ describe('drawings', () => {
       '<path style="fill:url(http://evil/x)"/>',
       '<image href="x"/>',
       '<!-- x -->',
+      '<path/onclick=alert(1) d="M0 0"/>',
+      '<path d="M0 0"onmouseover=alert(1)/>',
     ]) {
       expect((await drawing(1, bad)).status).toBe(422);
     }
