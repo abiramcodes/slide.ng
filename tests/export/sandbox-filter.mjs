@@ -31,10 +31,13 @@ const ownOrigin = `http://127.0.0.1:${own.port}`;
 // The sandbox: as root Chromium cannot use it, so it must refuse and say how to go on.
 if (process.getuid?.() === 0) {
   let message = '';
+  const optIn = process.env.SLIDE_NG_NO_SANDBOX; // the opt-in would switch the sandbox off here
+  delete process.env.SLIDE_NG_NO_SANDBOX;
   await launchBrowser(executablePath, { noSandbox: false }).then(
     (b) => b.close(),
     (e) => (message = e.message),
   );
+  if (optIn !== undefined) process.env.SLIDE_NG_NO_SANDBOX = optIn;
   t.ok(
     'as root, Chromium is not started without its sandbox, and the error names --no-sandbox',
     message.includes('--no-sandbox'),
