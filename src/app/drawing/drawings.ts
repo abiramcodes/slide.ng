@@ -8,6 +8,7 @@ import { storedSignal } from '../lib/stored-signal';
 import { SyncState } from '../sync/sync-state';
 import { cleanSvg } from './clean-svg';
 import { drawingsConfig } from './config';
+import { coordinateScale } from './coordinate-scale';
 import { startPersistence } from './persistence';
 
 export type ToolMode = DrawingMode | 'arrow';
@@ -45,6 +46,7 @@ export class Drawings {
   private drauu: Drauu | null = null;
   private loading = false; // true while drauu.load() runs: its 'changed' event is not a drawing action
   private lastMode: ToolMode = 'stylus';
+  private scale = 1;
 
   /** May this window draw at all? (`enabled: false` and `presenterOnly` switch it off.) */
   readonly available = this.config.enabled && (!this.config.presenterOnly || this.nav.isPresenter);
@@ -90,6 +92,7 @@ export class Drawings {
     drauu.on('end', () => this.isDrawing.set(false));
     drauu.on('changed', () => this.changed());
     this.drauu = drauu;
+    this.setScale(this.scale);
     this.setInputTypes(this.enabled());
     this.setMode(this.mode());
     this.show(this.nav.no());
@@ -102,7 +105,8 @@ export class Drawings {
 
   /** The slide is drawn at this scale; drauu needs it to turn mouse positions into slide positions. */
   setScale(scale: number) {
-    if (this.drauu) this.drauu.options.coordinateScale = 1 / scale;
+    this.scale = scale;
+    if (this.drauu) this.drauu.options.coordinateScale = coordinateScale(scale);
   }
 
   setMode(mode: ToolMode) {
