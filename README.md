@@ -51,15 +51,30 @@ The URL is the state: `/7?clicks=2` is slide 7 at click 2.
 - `v-mark` (rough-notation marks on clicks) and a small `v-motion`.
 - GitHub alerts, task lists, footnotes, and icons as tags (`<carbon-apps />`, `<mdi-account-circle />`, `<ph-star />`; any installed Iconify set).
 
-Not yet: presenter view, drawing, recording, `{monaco-write}`, export. See [docs/STATUS.md](docs/STATUS.md).
+- Presenter view (three layouts, notes with click markers, timer, next-step preview), notes page, laser pointer and presenter cursor, synced between windows.
+- Drawing with a toolbar (drauu), synced, kept in the browser and, with `drawings.persist`, in `.slide-ng/drawings/`.
+- Camera bubble, screen and camera recording (native MediaRecorder, webm), screen mirror, settings menu (filters, wake lock, devices).
+- `v-drag`, `<v-drag>`, `<v-drag-arrow>` written back into slides.md in dev; `zoom`, `canvasWidth`, `aspectRatio`, `routerMode`, global and slide layers.
+- Dev companion server: side editor, `{monaco-write}`, drawing files, WebSocket sync for other devices.
+
+Not yet: export / PDF, PWA, touch controls. See [docs/STATUS.md](docs/STATUS.md).
 Pictures of the layouts and of every feature slide (light and dark) are in `docs/screenshots/`; `npm run screenshots` makes them again.
+
+## Remote use
+
+```sh
+npm start -- --remote=secret
+```
+
+Others on your network can open the deck and follow the presenter. It prints the addresses; the presenter's is `/presenter/1?password=secret`.
+Without `=secret` a random password is made and printed. There is no HTTPS: use it on a network you trust. Details and the security rules are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Tests
 
 ```sh
 npm test             # unit tests (generator, code and math handling, click engine, table of contents, shortcuts, transitions)
-npm run test:e2e     # builds the starter deck, the layout showcase and the code and content showcase, and checks all three in a real browser
-npm run test:dev     # starts the dev server and edits slides.md to check live updates
+npm run test:e2e     # builds the starter deck and the showcase, code and interaction decks, and checks them in a real browser
+npm run test:dev     # starts the dev server: live updates, v-drag write-back, drawings, side editor, {monaco-write}, --remote password
 ```
 
 The browser tests use Chromium through `playwright-core`. Set `CHROME_PATH` if

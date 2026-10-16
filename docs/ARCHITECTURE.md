@@ -97,7 +97,7 @@ The `<style>` text goes into the slide component's `styles`, wrapped in `slide-0
 | `lib/dark.ts`, `lib/fullscreen.ts`, `lib/idle-cursor.ts` | dark mode, fullscreen, hide idle cursor |
 | `lib/mount-slide.ts`, `lib/slide-context.ts` | create a slide component and tell it its number and where it is drawn |
 | `lib/toc-tree.ts` | pure functions: table of contents tree and its filters |
-| `lib/canvas.ts` | fixed 960x540 canvas and the scale formula `min(w/960, h/540)` |
+| `lib/canvas.ts` | canvas size (960x540, or headmatter `canvasWidth` / `aspectRatio`), `zoom`, the scale formula `min(w/width, h/height)` |
 | `lib/clicks.ts` | `ClicksContext`: per-slide click state (current, total, relative/absolute/range maths) |
 | `lib/v-click.ts`, `v-clicks.ts`, `v-click-gap.ts`, `v-switch.ts` | click directives and components |
 | `lib/slide-base.ts`, `slide-meta.ts` | base class of generated slides; type of an index entry |
@@ -139,6 +139,56 @@ Web Animation (`translate` / `opacity`, from Slidev's `transitions.css`) and the
 `view-transition` calls `document.startViewTransition` around the swap. A new navigation during an animation finishes
 the running one at once.
 
+## Presenter, sync and interaction (phase 3)
+
+| folder | job |
+| ------ | --- |
+| `sync/` | `SyncState` (signals `shared` and `drawings`), the `SyncTransport` interface, `BroadcastTransport`, `nav-sync.ts` (presenter drives, viewers follow), `shared-state.ts` (cleaning of everything received) |
+| `presenter/` | `/presenter/:no` and `/notes` pages, timer, notes with click markers, next-step preview, clicks slider, presenter cursor and laser, `PresenterPrefs` |
+| `drawing/` | drauu wrapper `Drawings`, toolbar, layer, sanitiser, persistence (localStorage, dev files) |
+| `record/` | `Devices`, `Recorder` (MediaRecorder), camera bubble, recording buttons, screen mirror |
+| `drag/` | `v-drag` directive, `<v-drag>`, `<v-drag-arrow>`, the handles (`drag-controls.ts`), pure math (`drag-math.ts`) |
+| `dev/` | only active in a dev build: `DevApi`, WebSocket transport, side editor, drawing upload |
+| `scripts/dev/` | the companion server (below) |
+
+### Sync
+
+`SyncState` owns two signals and sends changes through every provided `SYNC_TRANSPORTS` entry; it never knows how messages travel.
+Three channels exist: `shared` (page, clicks, timer, cursor), `drawings` and `hello`. Everything received passes `cleanShared` / `cleanDrawings` first.
+`startNavSync(nav)` runs on the deck and presenter pages: the presenter's page and clicks are sent, a viewer applies what arrives (an effect keyed on page, clicks and a `lastUpdate` stamp, so an echo is ignored).
+`Nav.ready` and `setContext(no, clicks)` make sure the click count sent belongs to the slide that is really on screen. Adding a transport means one more provider; the dev build adds the WebSocket one.
+
+### Dev companion server and its security
+
+`npm start` runs three processes: the generator in watch mode, `scripts/dev/server.mjs` and `ng serve`. The companion binds to 127.0.0.1 and `ng serve` proxies `/__slide-ng/*` to it (`proxy.conf.mjs`, WebSockets too).
+`npm start -- --remote[=password]` makes only `ng serve` listen on 0.0.0.0 and prints the LAN and presenter addresses.
+
+```
+browser --/__slide-ng/*--> ng serve (0.0.0.0 with --remote) --proxy--> companion (127.0.0.1)
+                                                                        check: Host, Origin, cookie, token
+```
+
+| file | job |
+| ---- | --- |
+| `auth.mjs` | `check` (Host, Origin, password cookie, token), `confine` (path inside the deck folder), `readBody` (size limit), constant-time compare |
+| `routes.mjs` | the HTTP routes: `/session`, `/login`, `/slides/:n/drag`, `/slides/:n/source`, `/drawings/:n`, `/monaco/:id` |
+| `slide-source.mjs` | pure text edits of one slide inside its file (drag positions, frontmatter `dragPos`, whole-slide replace) |
+| `slides-write.mjs` | finds the slide and its file with the parser, then writes |
+| `drawings-store.mjs`, `monaco-write.mjs` | drawing files (`<integer>.svg`), listed `{monaco-write}` files |
+| `ws-hub.mjs` | passes `{channel, data}` between connected pages |
+
+Rules, each covered by tests (`server.spec.ts`, `auth.spec.ts`, `tests/e2e/dev-server.mjs`):
+the server listens on loopback only; `Host` and `Origin` are checked for every request and every WebSocket upgrade; writes need the random session token and a JSON content type;
+with a password the cookie is needed too; a request never names a file (slide number through the parser, `<integer>.svg`, a generator-written id list) and every path is confined to the deck folder
+(`..`, absolute paths and symlinks out are refused); bodies and WebSocket messages have size limits; drawing markup is checked against a shape whitelist.
+Writes run one after another so two quick edits cannot overwrite each other. The generator watches the markdown, so a written change comes back as a rebuild.
+
+### v-drag, layers and canvas
+
+The generator numbers every `v-drag` (`drag-sites.mjs`) and adds `drag-site="N"`. In the browser the directive reads the place (inline text, or a name looked up in the slide's frontmatter `dragPos`),
+puts the element at it and, on a move, tells `DragState`, which keeps the place for this visit and hands it to the dev server's saver. `generated/layers.ts` imports the layer files that exist;
+`app-slide-layer` shows one. `zoom` is a CSS variable on the slide element and one rule in `styles.css`.
+
 ## Styling
 
 UnoCSS, with `@unocss/core`, the `wind3` preset (dark variant by class) and `preset-icons` with the Carbon set
@@ -155,5 +205,6 @@ reset and `src/styles/` (variables, the layouts' typography ported from Slidev's
 - `tests/e2e/phase2.mjs` + `phase2/`: builds `tests/e2e/phase2/slides.md` (every code and content feature) into `dist/phase2` and runs one file per topic
   (`code`, `magic`, `math`, `diagrams`, `monaco`, `twoslash`, `components`, `mark`, `markdown`). `node tests/e2e/phase2.mjs mark` runs one topic.
   It answers the PlantUML server and the tweet / Bluesky scripts with stand-ins, so no network is needed.
-- `tests/e2e/dev-hmr.mjs`: dev server live-update check.
+- `tests/e2e/phase3.mjs` + `phase3/`: builds `tests/e2e/phase3/slides.md` and `layout-deck.md`, one file per topic (`sync`, `presenter`, `laser`, `drawing`, `camera`, `settings`, `drag`, `layout`), with Chromium's fake camera and microphone.
+- `tests/e2e/dev-hmr.mjs`: dev server live-update check. `tests/e2e/dev-server.mjs`: starts the real dev server on a small deck: v-drag write-back, drawings, side editor, `{monaco-write}`, refused requests, and `--remote` with a password (HTTP, WebSocket, two browsers).
 - `tests/e2e/screenshots.mjs` and `screenshots-features.mjs`: not tests; write `docs/screenshots/` (layouts, controls, and every feature slide).

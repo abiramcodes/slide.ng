@@ -365,7 +365,7 @@ console.log('runs on a click and the result appears')
 - `{monaco-diff}`: two texts side by side, split by a line with `~~~`.
 - `{monaco-run}`: an editor and a **Run** result below it. `autorun` is `true`, `false` or `'once'`; `showOutputAt:'+1'` shows the output after a click.
   The code runs in a sandboxed frame with no access to the slides, and stops after 5 seconds. TypeScript is turned into JavaScript for you. `import` is not supported.
-- `{monaco-write}`: **not supported yet** (saving the file needs the dev server, phase 3). It shows a normal editor and prints a warning.
+- `{monaco-write}`: use it on a snippet line, `<<< ./snippets/demo.ts {monaco-write}` (a whole file inside the deck's folder). While you run `npm start`, edits are saved into that file about half a second after you stop typing. A region, a plain code block or a static build gets a normal editor (the generator warns for the first two).
 
 Keys typed in an editor do not trigger slide shortcuts.
 
@@ -496,6 +496,97 @@ its tag). The generator then imports it into every slide that uses it. See
 Use [UnoCSS](https://unocss.dev) utility classes (Tailwind-like names) in HTML and in `class:`
 frontmatter. The CSS for the classes you use is built automatically.
 
+## Presenter, notes and timer
+
+Open `/presenter` (or press the presenter button) for the presenter page: current slide, next step, notes with click markers, a clicks slider and the timer.
+The audience page (`/3`) in another window or on another device follows it; `/notes` shows only the notes and follows too.
+In notes, `[click]` and `[click:3]` mark where a click starts; double click a marker to jump there. The layout button cycles three arrangements.
+Windows of one browser follow each other with no server; other devices need the dev server (see Remote below).
+
+```md
+---
+duration: 30min     # 30min, 1h30min, 90s, or a number of minutes
+timer: countdown    # or stopwatch (default)
+---
+```
+
+The presenter's mouse is shown on the audience page as a pointer or a red laser dot (settings menu, or the bar button).
+
+## Drawing
+
+The pen button in the bar (or the right-click menu) opens a toolbar: pen, line, arrow, ellipse, rectangle, eraser, colours, width, undo, redo, clear, pin.
+Keys while it is open: `L` line, `A` arrow, `S` stylus, `R` rectangle, `E` eraser, `C` clear, digits for colours, Ctrl+Z undo, Escape closes.
+Drawings are per slide, shared between windows, and kept in the browser. Headmatter:
+
+```md
+---
+drawings:
+  enabled: true       # false, or dev / build to allow it only while developing / only in the built deck
+  persist: true       # while `npm start` runs, save .slide-ng/drawings/<slide>.svg; builds show those files
+  presenterOnly: false
+  syncAll: true       # false: viewers' drawings stay on their own screen
+---
+```
+
+## Camera and recording
+
+`record: true` (headmatter; default `dev`, so only while developing; `false`, `build` also work) adds a camera button and a record button to the bar, and camera, microphone and "record screen / camera" to the settings.
+The camera is a round, draggable picture over the slides. Recording uses the browser's recorder and downloads a `.webm` when you stop (pause and resume work). Screen recording asks which tab or screen to share.
+The presenter page has a **Screen Mirror** switch that shows a shared window instead of the slide. The file has no duration field, so some players show the length only after a seek.
+
+## Settings menu
+
+Dark mode, slide scale, hide idle cursor, keep the screen awake (headmatter `wakeLock: true` starts it on), presenter cursor and its style, colour filters for the slide, camera options.
+"Download as PDF" is a disabled placeholder: export is not done.
+
+## Moving things: `v-drag`
+
+```md
+<img v-drag="[100, 200, 300, 150]" src="/pic.png">   <!-- x, y, width, height, in slide pixels -->
+<div v-drag="square">named: numbers in the frontmatter</div>
+<div v-drag>starts where it is and can be moved</div>
+<v-drag pos="100,200,300,_">height follows the content</v-drag>
+<v-drag-arrow pos="100,100,300,200" color="red" [width]="3" />
+```
+
+```md
+---
+dragPos:
+  square: 600,300,100,100
+---
+```
+
+Click an element to select it: corner handles resize (Shift keeps the shape), the round handle above rotates (Shift snaps to 15 degrees), arrow keys move it 1 px (Shift: 10 px).
+While `npm start` runs, the new place is written back into slides.md (a name is written to `dragPos`). A built deck keeps a move only until the page closes.
+Put the element directly in the slide (not inside a positioned wrapper), as in Slidev.
+
+## Size, zoom, layers and routing
+
+```md
+---
+canvasWidth: 960       # default 960
+aspectRatio: 16/9      # or 4/3, 1.6 ...
+zoom: 0.8              # all slides; a slide's own `zoom:` wins
+routerMode: hash       # addresses look like /#/3 (default: history)
+---
+```
+
+Layers: add any of `src/app/layers/global-top.ts`, `global-bottom.ts`, `slide-top.ts`, `slide-bottom.ts`, each `export default` of a standalone component.
+`global-*` appear once over or under all slides, `slide-*` inside every slide (inject `SLIDE_NO` to know which). They let clicks through; give your own elements `pointer-events: auto` if they need the mouse.
+
+## Dev-only extras and remote use
+
+While `npm start` runs: the **edit** button in the bar opens a side editor with the current slide's markdown (saved as you type), v-drag and drawings are written to files, and `{monaco-write}` saves.
+A static build has none of this and makes no requests.
+
+```sh
+npm start -- --remote=secret     # others on your network can open the deck and follow the presenter
+npm start -- --remote            # same, with a random password that is printed
+```
+
+It prints the deck address and the presenter address (`/presenter/1?password=secret`). Use that address on the presenter's device; a viewer opens `http://<your address>:4200/1?password=secret`.
+The password lets a device sync and write; it is sent without encryption, so use it on a network you trust.
+
 ## Keys, mouse and the interface
 
 | key | action |
@@ -511,7 +602,7 @@ frontmatter. The CSS for the classes you use is built automatically.
 | Escape | close the overview, dialogs and menus |
 
 The bar at the bottom left (fullscreen, previous, next, overview, dark mode, drawing, presenter mode, info, settings, counter)
-shows when the mouse is there. Drawing and presenter mode are disabled placeholders for now. Right click opens a menu with the same actions;
+shows when the mouse is there. Drawing, presenter mode, camera and recording (when `record` is on) and the dev-only editor button are live. Right click opens a menu with the same actions;
 hold Shift while right clicking for the browser's own menu. Click the dark area beside the slide: right half = next, left half = previous.
 
 Change the keys by providing `SHORTCUTS_SETUP` in `src/app/app.config.ts`. It gets the default list and returns the list to use:

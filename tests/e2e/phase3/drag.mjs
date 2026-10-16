@@ -39,6 +39,7 @@ export async function run({ t, open, press, hud }) {
   t.ok('arrow keys nudge by 1px', Math.abs(l2 - left - 2) < 0.01 && Math.abs(t2 - top - 1) < 0.01, `${l2 - left},${t2 - top}`);
   t.ok('and the deck stays on this slide', (await hud(page)).startsWith('slide 4/4'));
   await page.keyboard.press('Shift+ArrowLeft');
+  await page.waitForTimeout(200);
   t.ok('shift + arrow nudges by 10px', Math.abs(parseFloat(await style('#d1', 'left')) - (l2 - 10)) < 0.01);
 
   // ---- resizing and rotating
