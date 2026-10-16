@@ -18,16 +18,17 @@ command line as a package, themes and addons, an example theme, the MCP server a
    `examples/theme-minimal` (docs/THEMES.md, docs/WRITING-A-THEME.md). The example theme changes the rendered output and its component is used from slides (browser test).
 8. **MCP server** `slide-ng mcp`: seven tools, tested with a scripted client over stdio (initialize, tools/list, get, update, insert, move, remove, refusals, path confinement).
 9. **Polish**: the PDF button in the bar (enabled only when the PDF exists), `dev --open`, `--theme`, the side editor takes over outside edits, the next-step preview draws global layers, v-drag boxes were already drawn in thumbnails.
-10. **docs/PARITY.md**: 162 rows, a test found for each `done` row, and a ranked list of gaps.
+10. **Official themes**: `seriph`, `shibainu`, `bricks` and `apple-basic` rebuilt in `themes/` (layouts with the same names and slots, components, fonts from the provider, colours, defaults); `default` is the built-in look. `theme: <name>` finds them
+    before `node_modules` (DECISIONS.md 10), `examples/themes/*.md` show every layout, the READMEs credit the original authors, and NOTICE records the MIT attribution and that no asset was copied (the originals' backgrounds are CC BY-NC-SA and are CSS gradients here).
+11. **docs/PARITY.md**: 162 rows, a test found for each `done` row, and a ranked list of gaps.
 
 ## Test results (last run, Node 22.23.3, Chromium from `/opt/pw-browsers`)
 
 - `npm run build`: succeeds.
-- `npm test`: 68 files, **540** tests passed.
-- `npm run test:e2e`: starter deck **45**, showcase **144**, code and content **125**, phase 3 decks **152**, print route **24**; 0 failed.
-- `npm run test:dev`: live update **6**, dev server **36**; 0 failed.
-- `npm run test:export`: export command **33**, build **46**, theme **18**, scaffold **13**, MCP **22**; 0 failed.
-- Tests at the last full run: 629 unit tests; browser tests 45, 144, 125, 154, 24 and 24 checks (run, showcase, phase 2 to 5); dev server tests 6 and 46; export tests 123.
+- `npm test`: 82 files, **648** tests passed (the theme names and fonts: `builtin-themes.spec.ts`).
+- `npm run test:e2e`: starter deck **45**, showcase **144**, code and content **125**, phase 3 decks **154**, print route **24**, setup hooks **24**, official themes **140** (every layout of four themes, fonts, PNG export of one slide each); 0 failed.
+- `npm run test:dev`: live update **6**, dev server **46**; 0 failed (one timing check of the dev server failed in two earlier runs, a different one each time, and passed on the third).
+- `npm run test:export`: export command **33**, build **46**, theme **20**, scaffold **13**, MCP **22**; 0 failed.
 
 ## Not done
 
@@ -53,6 +54,12 @@ command line as a package, themes and addons, an example theme, the MCP server a
 - The build test blocked its own "remote" server with a synchronous call; now asynchronous.
 - A flaky "a click elsewhere closes the menu" check waited too little for the menu to open; it waits now.
 - Running the unit tests and a build at the same time breaks both (they share `src/slides/generated`); tests are run one after the other.
+
+## Not done: official themes
+
+- The original background illustrations (shibainu, bricks) and the random cover photo (seriph) are not used (CC BY-NC-SA, non-commercial): CSS gradients in the same palette stand in, so those layouts match in colour and structure, not in shape.
+- `themeConfig` (for example seriph's `primary`) is not read; Prism style sheets are not ported (code colours come from Shiki); Slidev's default theme fonts are not loaded for `theme: default`.
+- The decks in `examples/themes/` are one per theme (a deck has one theme); the test stubs the font style sheet, so the fonts themselves were not seen rendered (the request and the CSS font names are checked).
 
 ## NOT VERIFIED
 
