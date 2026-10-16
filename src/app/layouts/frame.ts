@@ -11,6 +11,7 @@ export class Frame {
   url = input.required<string>();
   scale = input(undefined, { transform: numberAttribute });
   size = computed(() => `${(1 / (this.scale() || 1)) * 100}%`);
+  private sanitizer = inject(DomSanitizer);
   // Angular refuses plain strings in an iframe src. The address comes from the deck author, so we trust it.
-  src = computed(() => inject(DomSanitizer).bypassSecurityTrustResourceUrl(this.url()));
+  src = computed(() => this.sanitizer.bypassSecurityTrustResourceUrl(this.url()));
 }

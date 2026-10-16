@@ -10,6 +10,7 @@ import { Component, input } from '@angular/core';
     '[class.disabled]': 'disabled()',
     '[class.active]': 'active()',
     '[attr.aria-disabled]': 'disabled()',
+    '[attr.title]': 'label()',
   },
   template: '<span class="sr-only">{{ label() }}</span><ng-content />',
 })

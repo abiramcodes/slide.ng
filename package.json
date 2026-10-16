@@ -7,7 +7,7 @@
     "start": "node scripts/dev.mjs",
     "build": "npm run generate && ng build",
     "test": "npm run generate && ng test --no-watch",
-    "test:e2e": "node tests/e2e/run.mjs",
+    "test:e2e": "node tests/e2e/run.mjs && node tests/e2e/showcase.mjs",
     "test:dev": "node tests/e2e/dev-hmr.mjs"
   },
   "private": true,

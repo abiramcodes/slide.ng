@@ -57,9 +57,10 @@ export class Stage {
     if (!pair) { old.destroy(); return; }
     this.canvas.dataset['transition'] = name; // visible to tests and to CSS
     this.leaving.push(old);
-    const options = { duration: ms, easing: 'ease', fill: 'both' } as const;
-    const enter = entering.location.nativeElement.animate(pair.enter, { ...options, ...pair.enterOptions });
-    const leave = old.location.nativeElement.animate(pair.leave, { ...options, ...pair.leaveOptions });
+    const options = { duration: ms, easing: 'ease' } as const;
+    // The entering slide holds its first frame during a delay; the leaving one holds its last frame until removed.
+    const enter = entering.location.nativeElement.animate(pair.enter, { ...options, fill: 'backwards', ...pair.enterOptions });
+    const leave = old.location.nativeElement.animate(pair.leave, { ...options, fill: 'forwards', ...pair.leaveOptions });
     // Both are done (fade-out delays the entering one): the old slide can go.
     Promise.all([enter.finished, leave.finished]).then(() => this.cleanUp(old), () => {}); // cancelled: finish() cleans
   }

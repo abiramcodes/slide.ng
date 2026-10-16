@@ -47,7 +47,7 @@ const isTyping = (t: EventTarget | null) => t instanceof HTMLElement && (t.isCon
     <app-goto />
     <app-info-dialog />
     <app-context-menu />
-    <div id="hud">slide {{ nav.no() }}/{{ nav.total }} clicks {{ nav.ctx()?.current() }}/{{ nav.ctx()?.total() }}</div>
+    <div id="hud">slide {{ nav.no() }}/{{ nav.total }} clicks {{ nav.clicks() }}/{{ nav.clicksTotal() }}</div>
   `,
 })
 export class Deck {
