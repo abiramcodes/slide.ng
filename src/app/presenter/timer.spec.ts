@@ -1,0 +1,41 @@
+import { clockParts, parseDuration, passedMs } from './timer';
+
+describe('parseDuration', () => {
+  it('reads minutes, hours and seconds', () => {
+    expect(parseDuration('30min')).toBe(1800);
+    expect(parseDuration('1h30min')).toBe(5400);
+    expect(parseDuration('90s')).toBe(90);
+    expect(parseDuration('1.5h')).toBe(5400);
+    expect(parseDuration(45)).toBe(2700);
+    expect(parseDuration('20')).toBe(1200);
+  });
+  it('falls back to 30 minutes', () => {
+    expect(parseDuration(undefined)).toBe(1800);
+    expect(parseDuration('soon')).toBe(1800);
+    expect(parseDuration('0min')).toBe(1800);
+  });
+});
+
+describe('passedMs', () => {
+  it('is 0 when stopped, grows while running and stays still while paused', () => {
+    expect(passedMs({ status: 'stopped', startedAt: 0, pausedAt: 0 }, 5000)).toBe(0);
+    expect(passedMs({ status: 'running', startedAt: 1000, pausedAt: 0 }, 5000)).toBe(4000);
+    expect(passedMs({ status: 'paused', startedAt: 1000, pausedAt: 3000 }, 9000)).toBe(2000);
+  });
+});
+
+describe('clockParts', () => {
+  const running = { status: 'running' as const, startedAt: 1000, pausedAt: 0 };
+  it('a stopwatch that has not started shows dashes', () => {
+    expect(clockParts('stopwatch', 600, { status: 'stopped', startedAt: 0, pausedAt: 0 }, 5000)).toEqual({ h: '', m: '-', s: '--' });
+  });
+  it('a stopwatch counts up', () => {
+    expect(clockParts('stopwatch', 600, running, 1000 + 65_000)).toEqual({ h: '', m: '1', s: '05' });
+    expect(clockParts('stopwatch', 600, running, 1000 + 3_725_000)).toEqual({ h: '1', m: '02', s: '05' });
+  });
+  it('a countdown counts down from the duration, also before it starts, and goes negative at the end', () => {
+    expect(clockParts('countdown', 600, { status: 'stopped', startedAt: 0, pausedAt: 0 }, 0)).toEqual({ h: '', m: '10', s: '00' });
+    expect(clockParts('countdown', 600, running, 1000 + 60_000)).toEqual({ h: '', m: '9', s: '00' });
+    expect(clockParts('countdown', 60, running, 1000 + 90_000)).toEqual({ h: '', m: '-0', s: '30' });
+  });
+});

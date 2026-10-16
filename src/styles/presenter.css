@@ -1,0 +1,56 @@
+/* The presenter page: a grid with three layouts (ported from Slidev's presenter.vue). */
+.slidev-presenter { --slidev-controls-foreground: currentColor; }
+.slidev-presenter .grid-container {
+  --slidev-presenter-notes-width: 360px;
+  --slidev-presenter-notes-row-size: 280px;
+  position: relative; display: grid; gap: 1px; flex: 1; overflow: hidden; background: rgba(156, 163, 175, 0.2);
+}
+.slidev-presenter .grid-section { background: var(--slidev-bg, #fff); min-height: 0; min-width: 0; }
+html.dark .slidev-presenter .grid-section { --slidev-bg: #121212; }
+.grid-section.main { grid-area: main; }
+.grid-section.next { grid-area: next; }
+.grid-section.note { grid-area: note; }
+.grid-section.bottom { grid-area: bottom; }
+
+.grid-container.layout1 {
+  grid-template-columns: var(--slidev-presenter-notes-width) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 2fr) minmax(0, var(--slidev-presenter-notes-row-size)) min-content;
+  grid-template-areas: 'main main' 'note next' 'bottom bottom';
+}
+@media (max-aspect-ratio: 3/5) {
+  .grid-container.layout1 {
+    grid-template-columns: 1fr; grid-template-rows: 2fr 1fr 1fr min-content;
+    grid-template-areas: 'main' 'note' 'next' 'bottom';
+  }
+}
+@media (min-aspect-ratio: 1/1) {
+  .grid-container.layout1 {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) var(--slidev-presenter-notes-width);
+    grid-template-rows: minmax(0, 1fr) minmax(0, var(--slidev-presenter-notes-row-size)) min-content;
+    grid-template-areas: 'main main next' 'main main note' 'bottom bottom bottom';
+  }
+}
+.grid-container.layout2 {
+  grid-template-columns: var(--slidev-presenter-notes-width) minmax(0, 1fr);
+  grid-template-rows: minmax(0, var(--slidev-presenter-notes-row-size)) minmax(0, 1fr) min-content;
+  grid-template-areas: 'note main' 'note next' 'bottom bottom';
+}
+.grid-container.layout3 {
+  grid-template-columns: var(--slidev-presenter-notes-width) minmax(0, 1fr);
+  grid-template-rows: minmax(0, var(--slidev-presenter-notes-row-size)) minmax(0, 1fr) min-content;
+  grid-template-areas: 'note next' 'main next' 'bottom bottom';
+}
+
+/* Speaker notes: click markers and the dimming of the parts that are not current. */
+.slidev-note :first-child { margin-top: 0; }
+.slidev-note { overflow-wrap: anywhere; word-break: break-word; padding: 0.5rem 1rem; max-width: none; }
+.slidev-note p, .slidev-note ul, .slidev-note ol { margin: 0.5em 0; }
+.slidev-note ul { list-style: disc; padding-left: 1.5em; }
+.slidev-note ol { list-style: decimal; padding-left: 1.5em; }
+.slidev-note-with-clicks * { transition: opacity 0.2s; }
+.slidev-note-with-clicks .slidev-note-fade { opacity: 0.4; }
+.slidev-note-click-mark { display: inline-block; width: 0.7em; height: 0.7em; margin: 0 0.3em 0 0; border-radius: 50%; background: currentColor; opacity: 0.3; cursor: pointer; }
+.slidev-note-click-mark-active { opacity: 1; background: var(--slidev-theme-primary); }
+.slidev-note-click-mark-past { opacity: 0.6; }
+
+.slidev-presenter .note-section { overflow: auto; }

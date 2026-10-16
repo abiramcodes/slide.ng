@@ -7,6 +7,7 @@ export interface SlideMeta {
   level: number | null; // heading level of the title (or `level:` frontmatter), used by the table of contents
   layout: string;
   note: string | null;
+  noteHtml: string | null; // the note as HTML, with `[click]` markers turned into spans
   routeAlias: string | null; // /alias works like /3
   hideInToc: boolean;
   transition: string | { name: string } | null;

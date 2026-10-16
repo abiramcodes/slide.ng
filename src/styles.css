@@ -6,6 +6,7 @@
 @import './styles/code.css';
 @import './styles/markdown.css';
 @import './styles/controls.css';
+@import './styles/presenter.css';
 
 html, body { height: 100%; margin: 0; overflow: hidden; background: var(--slidev-slide-container-background); font-family: ui-sans-serif, system-ui, sans-serif; }
 

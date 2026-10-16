@@ -2,6 +2,7 @@
 import { marked } from 'marked';
 import { layoutName } from './layouts.mjs';
 import { slideClass, slideName } from './emit.mjs';
+import { noteToHtml } from './note-html.mjs';
 
 // What the app needs to know about one slide, besides its component.
 function metaOf(slide, index) {
@@ -11,6 +12,7 @@ function metaOf(slide, index) {
     level: slide.level ?? null,
     layout: slide.layout ?? layoutName(f, index),
     note: slide.note ?? null,
+    noteHtml: noteToHtml(slide.note),
     routeAlias: f.routeAlias != null ? String(f.routeAlias) : null,
     hideInToc: Boolean(f.hideInToc),
     transition: f.transition ?? null,

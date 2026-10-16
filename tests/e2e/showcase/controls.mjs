@@ -10,11 +10,11 @@ export async function run({ t, open, press, hud, pathOf, style, base, browser, p
   const titles = await page.locator('nav button').evaluateAll((els) => els.map((e) => e.title));
   t.ok('bar buttons are in Slidev order', titles.join('|') === [
     'Enter fullscreen', 'Go to previous slide', 'Go to next slide', 'Show slide overview', 'Switch to dark mode theme',
-    'Show drawing toolbar (coming in phase 3)', 'Presenter Mode (coming in a later phase)', 'Show info', 'More Options',
+    'Show drawing toolbar (coming in phase 3)', 'Presenter Mode', 'Show info', 'More Options',
   ].join('|'), titles.join('|'));
   t.ok('counter reads 1 / 37', (await page.locator('#nav-counter').innerText()).replace(/\s+/g, ' ').trim() === '1 / 37');
   t.ok('previous is disabled on the first slide', await page.locator('#nav-prev').evaluate((e) => e.classList.contains('disabled')));
-  t.ok('drawing and presenter buttons are disabled placeholders', await page.locator('#nav-drawing, #nav-presenter').evaluateAll((l) => l.every((e) => e.classList.contains('disabled'))));
+  t.ok('the presenter button is live (the drawing button is still a placeholder)', await page.locator('#nav-presenter').evaluate((e) => !e.classList.contains('disabled')));
   t.ok('icons come from the carbon set', (await style(page, '#nav-next div', 'maskImage')).startsWith('url("data:image/svg+xml'));
 
   await page.locator('#nav-next').click();
@@ -85,7 +85,7 @@ export async function run({ t, open, press, hud, pathOf, style, base, browser, p
   t.ok('menu starts with four arrows', arrows.join('|') === 'Previous Click|Next Click|Previous Slide|Next Slide', arrows.join('|'));
   const labels = await page.locator('#context-menu .slidev-menu-item').allInnerTexts();
   t.ok('menu entries match Slidev', labels.map((l) => l.trim()).join('|') === 'Show drawing toolbar|Show slide overview|Enter Presenter Mode|Enter fullscreen', labels.join('|'));
-  t.ok('drawing and presenter entries are disabled placeholders', await page.locator('#context-menu .slidev-menu-item.disabled').count() === 2);
+  t.ok('only the drawing entry is a placeholder', await page.locator('#context-menu .slidev-menu-item.disabled').count() === 1);
   t.ok('menu has the native-menu hint', (await page.locator('#context-menu').innerText()).includes('Hold Shift and right click to open the native context menu'));
   await page.locator('#context-menu [title="Next Slide"]').click();
   await page.waitForTimeout(200);

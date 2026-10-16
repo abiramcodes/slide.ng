@@ -39,6 +39,15 @@ export class Nav {
 
   /** Clicks of the slide on screen (set by the deck when it creates the slide). */
   readonly ctx = signal<ClicksContext | null>(null);
+  private ctxNo = signal(0);
+  /** The clicks of the slide on screen are known: its component exists, is drawn, and is the slide of `no()` (not the one that is leaving). */
+  readonly ready = computed(() => !!this.ctx()?.mounted() && this.ctxNo() === this.no());
+  /** Tell Nav which slide `ctx` belongs to (the slide show calls this when it creates a slide). */
+  setContext(no: number, ctx: ClicksContext | null) {
+    this.ctxNo.set(no);
+    this.ctx.set(ctx);
+  }
+
   /** 1 while moving forward, -1 backward (for transitions and `forward:` / `backward:` classes). */
   readonly direction = signal(0);
 
@@ -72,6 +81,14 @@ export class Nav {
   go(no: number, clicks = 0, replace = false) {
     const slide = SLIDES[no - 1];
     return this.router.navigate([this.base, slide?.routeAlias ?? no], { queryParams: { clicks }, replaceUrl: replace });
+  }
+
+  /** Open the presenter page / the play page at this slide and click. */
+  enterPresenter() { return this.switchTo('/presenter'); }
+  exitPresenter() { return this.switchTo('/'); }
+  private switchTo(base: string) {
+    const slide = SLIDES[this.no() - 1];
+    return this.router.navigate([base, slide?.routeAlias ?? this.no()], { queryParams: { clicks: this.clicks() } });
   }
 
   /**

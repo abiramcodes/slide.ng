@@ -28,7 +28,7 @@ export function startNavSync(nav: Nav) {
   // Our position changed: tell the others. The very first position of a viewer is not news
   // (a viewer that just opened would drag the presenter back to its own slide).
   effect(() => {
-    const page = nav.no(), clicks = nav.clicks(), mounted = !!nav.ctx()?.mounted();
+    const page = nav.no(), clicks = nav.clicks(), mounted = nav.ready();
     nav.clicksTotal();
     untracked(() => {
       if (!mounted) return; // the slide is still being created

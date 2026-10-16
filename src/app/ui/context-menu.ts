@@ -4,7 +4,7 @@ import { Nav } from '../lib/nav';
 import { Ui } from '../lib/ui-state';
 
 // The right-click menu (Slidev's ContextMenu): four arrows, then a list of actions.
-// Drawing and presenter mode are placeholders until those phases exist.
+// The drawing entry is still a placeholder (see the drawing phase).
 @Component({
   selector: 'app-context-menu',
   host: {
@@ -64,7 +64,9 @@ export class ContextMenu {
   protected items = computed(() => [
     { icon: 'i-carbon:pen', label: 'Show drawing toolbar', run: () => {}, disabled: true }, // phase 3
     { icon: 'i-carbon:apps', label: 'Show slide overview', run: () => this.ui.toggleOverview(), disabled: false },
-    { icon: 'i-carbon:user-speaker', label: 'Enter Presenter Mode', run: () => {}, disabled: true },
+    this.nav.isPresenter
+      ? { icon: 'i-carbon:presentation-file', label: 'Exit Presenter Mode', run: () => this.nav.exitPresenter(), disabled: false }
+      : { icon: 'i-carbon:user-speaker', label: 'Enter Presenter Mode', run: () => this.nav.enterPresenter(), disabled: false },
     {
       icon: this.fullscreen.isFullscreen() ? 'i-carbon:minimize' : 'i-carbon:maximize',
       label: this.fullscreen.isFullscreen() ? 'Close fullscreen' : 'Enter fullscreen',

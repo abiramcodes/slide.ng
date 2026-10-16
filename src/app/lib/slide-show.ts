@@ -67,7 +67,7 @@ export class SlideShow {
     const slide = this.stage!.show(no, transition);
     const wanted = this.nav.clicksParam();
     if (wanted != null) slide.clicks.setCurrent(+wanted || 0); // clamped once the slide is mounted
-    this.nav.ctx.set(slide.clicks);
+    this.nav.setContext(no, slide.clicks);
     if (this.context() === 'slide') {
       const meta = this.nav.meta();
       const deckTitle = HEADMATTER['title'];
@@ -78,7 +78,7 @@ export class SlideShow {
   private clear() {
     this.stage!.clear();
     this.shown = 0;
-    this.nav.ctx.set(null);
+    this.nav.setContext(0, null);
   }
 
   // Clicking the dark area beside the slide goes forward (right half) or back (left half), like Slidev.

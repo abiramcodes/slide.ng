@@ -1,20 +1,21 @@
-import { Component, ElementRef, inject } from '@angular/core';
+import { Component, ElementRef, inject, input } from '@angular/core';
 import { Dark } from '../lib/dark';
 import { Fullscreen } from '../lib/fullscreen';
 import { Nav } from '../lib/nav';
+import { PresenterPrefs } from '../presenter/prefs';
 import { Ui } from '../lib/ui-state';
 import { IconBtn } from './icon-btn';
 import { Settings } from './settings';
 
 // The bar at the bottom left (Slidev's NavControls). The deck shows it only while the mouse is
-// over that corner. Drawing and presenter mode come in later phases, so those buttons are placeholders.
+// over that corner; the presenter page always shows it (`persist`, no frame around it).
 @Component({
   selector: 'app-nav-bar',
   imports: [IconBtn, Settings],
   host: { '(document:click)': 'closeSettingsOutside($event)' },
   template: `
     <nav class="flex flex-col" [attr.data-fullscreen]="fullscreen.isFullscreen()">
-      <div class="flex flex-wrap-reverse text-xl gap-0.5 p-1 lg:p-2 rounded-md bg-main text-main shadow-xl border border-main">
+      <div class="flex flex-wrap-reverse text-xl gap-0.5 p-1 lg:p-2 text-main" [class]="persist() ? 'bg-transparent' : 'rounded-md bg-main shadow-xl border border-main'">
         <button icon-btn id="nav-fullscreen" [title]="fullscreen.isFullscreen() ? 'Close fullscreen' : 'Enter fullscreen'" (click)="fullscreen.toggle()">
           <div [class]="fullscreen.isFullscreen() ? 'i-carbon:minimize' : 'i-carbon:maximize'"></div>
         </button>
@@ -41,14 +42,28 @@ import { Settings } from './settings';
 
         <div class="w-1px opacity-10 bg-current m-1 lg:m-2"></div>
 
-        <button icon-btn id="nav-presenter" title="Presenter Mode (coming in a later phase)" [disabled]="true">
-          <div class="i-carbon:user-speaker"></div>
-        </button>
-        <button icon-btn id="nav-info" title="Show info" (click)="ui.info.set(!ui.info())">
-          <div class="i-carbon:information"></div>
-        </button>
+        @if (nav.isPresenter) {
+          <button icon-btn id="nav-play" title="Play Mode" (click)="nav.exitPresenter()">
+            <div class="i-carbon:presentation-file"></div>
+          </button>
+        } @else {
+          <button icon-btn id="nav-presenter" title="Presenter Mode" (click)="nav.enterPresenter()">
+            <div class="i-carbon:user-speaker"></div>
+          </button>
+          <button icon-btn id="nav-info" title="Show info" (click)="ui.info.set(!ui.info())">
+            <div class="i-carbon:information"></div>
+          </button>
+        }
 
         <div class="w-1px opacity-10 bg-current m-1 lg:m-2"></div>
+
+        @if (nav.isPresenter) {
+          <button icon-btn id="nav-layout" title="Toggle Presenter Layout" class="aspect-ratio-initial flex items-center" (click)="prefs.nextLayout()">
+            <div class="i-carbon:template"></div>
+            <span id="nav-layout-no">{{ prefs.layout() }}</span>
+          </button>
+          <div class="w-1px opacity-10 bg-current m-1 lg:m-2"></div>
+        }
 
         <div class="flex relative" #menu>
           <button icon-btn id="nav-settings" title="More Options" [active]="ui.settings()" (click)="ui.settings.set(!ui.settings())">
@@ -72,7 +87,10 @@ import { Settings } from './settings';
   `,
 })
 export class NavBar {
+  /** The presenter page keeps the bar open and drops its frame. */
+  persist = input(false);
   protected nav = inject(Nav);
+  protected prefs = inject(PresenterPrefs);
   protected ui = inject(Ui);
   protected dark = inject(Dark);
   protected fullscreen = inject(Fullscreen);
