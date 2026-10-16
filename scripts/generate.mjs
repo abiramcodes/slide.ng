@@ -91,7 +91,7 @@ async function generate() {
   deck.assetBase = build.building ? build.base : '/';
   mkdirSync(OUT, { recursive: true });
   // Remote pictures are fetched into the build only for a production build with `remoteAssets: true`.
-  if (wantsRemoteAssets(deck.headmatter, build.building)) {
+  if (wantsRemoteAssets(deck.headmatter, build.building, build.offline)) {
     const n = await bundleRemoteAssets(deck.slides, `${OUT}remote-assets`, (m) => console.warn(`[slides] ${m}`));
     console.log(`[slides] bundled ${n} remote images`);
   } else emptyFolder(`${OUT}remote-assets`);

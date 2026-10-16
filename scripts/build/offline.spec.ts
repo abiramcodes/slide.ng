@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { runInNewContext } from 'node:vm';
 import { describe, expect, it } from 'vitest';
-import { applyOffline, buildOptions } from '../lib/build-options.mjs';
+import { applyOffline, buildOptions, wantsRemoteAssets } from '../lib/build-options.mjs';
 import { classicPage, makeOffline } from './offline.mjs';
 import { WORKER_SHIM, workerFiles } from './offline-workers.mjs';
 
@@ -75,6 +75,12 @@ describe('makeOffline', () => {
 describe('offline build settings', () => {
   it('forces hash routing and no service worker', () => {
     expect(applyOffline({ routerMode: 'history', pwa: true, title: 'x' })).toEqual({ routerMode: 'hash', pwa: false, title: 'x' });
+  });
+  it('an offline folder takes remote pictures along unless the deck says false', () => {
+    expect(wantsRemoteAssets({}, true, true)).toBe(true);
+    expect(wantsRemoteAssets({ remoteAssets: false }, true, true)).toBe(false);
+    expect(wantsRemoteAssets({}, true, false)).toBe(false);
+    expect(wantsRemoteAssets({ remoteAssets: true }, false, true)).toBe(false); // never outside a build
   });
   it('reads the offline switch from the environment', () => {
     expect(buildOptions({ SLIDE_NG_OFFLINE: '1' }).offline).toBe(true);

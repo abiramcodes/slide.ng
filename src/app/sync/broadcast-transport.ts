@@ -1,9 +1,11 @@
+import { diskScope } from '../lib/disk-scope';
 import { SyncTransport } from './transport';
 
 // Windows of the same browser (same address) talk through a BroadcastChannel.
 // It needs no server, so it also works in a static build.
 export class BroadcastTransport implements SyncTransport {
-  private channel = new BroadcastChannel('slide-ng-sync');
+  // A folder opened from disk shares channels with every other one, so it adds its path to the name (disk-scope.ts).
+  private channel = new BroadcastChannel(`slide-ng-sync${diskScope()}`);
 
   send(channel: string, data: unknown) {
     this.channel.postMessage({ channel, data });

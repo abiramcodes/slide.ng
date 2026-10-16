@@ -3,7 +3,7 @@
 // stopped before the folder is opened. Part of `npm run test:export`. The server side (service worker, network off) is in offline-net.mjs.
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -29,7 +29,6 @@ writeFileSync(join(deckDir, 'slides.md'), `---
 title: Offline test
 routerMode: history
 pwa: true
-remoteAssets: true
 download: true
 exportFilename: talk
 fonts:
@@ -180,6 +179,28 @@ t.ok('the presenter moves and the other window follows (BroadcastChannel between
 await popup.bringToFront(); await popup.keyboard.press('ArrowRight'); await popup.waitForTimeout(900);
 t.ok('the audience window can drive the presenter too (it is on this machine)', hash(page).startsWith('#/presenter/3'), hash(page));
 await popup.close();
+
+// ---- two offline decks in one browser: file:// pages share storage and channels, the deck keeps its own
+const copy = join(scratch, 'site-copy');
+cpSync(site, copy, { recursive: true });
+const copyUrl = pathToFileURL(join(copy, 'index.html')).href;
+await page.goto(url + '#/1'); await ready(page);
+const other = await context.newPage(); watch(other, 'copy'); await other.goto(copyUrl + '#/1'); await ready(other);
+await page.mouse.move(40, 700);
+await page.locator('#nav-drawing').click(); await page.waitForTimeout(300);
+const box = await page.locator('#slide-content').boundingBox();
+await page.mouse.move(box.x + box.width * 0.2, box.y + box.height * 0.3); await page.mouse.down();
+await page.mouse.move(box.x + box.width * 0.4, box.y + box.height * 0.5, { steps: 6 }); await page.mouse.up();
+await page.waitForTimeout(800);
+const strokes = (p) => p.locator('#drawing-layer > *').count();
+t.ok('a drawing is made on slide 1 of the folder', (await strokes(page)) > 0);
+await page.reload(); await ready(page); await page.waitForTimeout(600);
+t.ok('a reload from disk keeps the drawing', (await strokes(page)) > 0);
+await other.reload(); await ready(other); await other.waitForTimeout(600);
+t.ok('the same deck in another folder does not get that drawing', (await strokes(other)) === 0, String(await strokes(other)));
+await page.bringToFront(); await page.keyboard.press('ArrowRight'); await page.waitForTimeout(500); await page.keyboard.press('ArrowRight'); await page.waitForTimeout(900);
+t.ok('and does not follow its slides (the sync channel is per folder)', hash(page).startsWith('#/2') && hash(other).startsWith('#/1'), `${hash(page)} ${hash(other)}`);
+await other.close();
 
 // ---- the PDF button
 await page.goto(url + '#/1'); await ready(page);

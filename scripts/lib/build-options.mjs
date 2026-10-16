@@ -21,8 +21,11 @@ export function applyOffline(headmatter) {
   return headmatter;
 }
 
-/** `remoteAssets` in the headmatter: true (always), `build` or `dev`. Downloading happens only in a build. */
-export function wantsRemoteAssets(headmatter, building) {
+/**
+ * `remoteAssets` in the headmatter: true (always), `build` or `dev`. Downloading happens only in a build.
+ * An offline folder takes the pictures along even when the headmatter does not ask (`remoteAssets: false` still says no).
+ */
+export function wantsRemoteAssets(headmatter, building, offline = false) {
   const v = headmatter.remoteAssets;
-  return building && (v === true || v === 'build');
+  return building && v !== false && (v === true || v === 'build' || offline);
 }
