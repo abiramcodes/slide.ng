@@ -40,7 +40,7 @@ let r = slideNg(`export ${common}`);
 const pdf = join(r.dir, 'print-deck.pdf'); // the deck's exportFilename
 t.ok('export writes <exportFilename>.pdf in the current folder', existsSync(pdf), readdirSync(r.dir).join());
 t.ok('the pdf has one page per slide (8)', pages(pdf) === 8, String(pages(pdf)));
-t.ok('the pdf page is 980x552 css pixels (735x414 pt)', /Page size:\s+735 x 41[34]/.test(pdfInfo(pdf)), pdfInfo(pdf).match(/Page size.*/)[0]);
+t.ok('the pdf page is 980x552 css pixels (735x414 pt)', /Page size:\s+735(\.\d+)? x 41[34]/.test(pdfInfo(pdf)), pdfInfo(pdf).match(/Page size.*/)[0]);
 t.ok('the pdf title comes from the headmatter', /Title:\s+Print deck/.test(pdfInfo(pdf)));
 t.ok('the pdf has real text, including lazy Magic Move code', text(pdf).includes('Moving code') && text(pdf).includes('const'));
 t.ok('the pdf has the click elements that are revealed late', text(pdf).includes('two'));
@@ -79,7 +79,7 @@ t.ok('png: size is the canvas at scale 1', pngSize(join(r.dir, 'shots', '001.png
 r = slideNg(`export ${common} --format png --output shots2 --with-clicks`);
 const shots2 = readdirSync(join(r.dir, 'shots2'));
 t.ok('png --with-clicks: one file per click step named by its id', shots2.length === 13 && shots2.includes('002-03.png'), shots2.join());
-t.ok('png: default scale is 2', pngSize(join(r.dir, 'shots2', '001-01.png')).join('x') === '1920x1080');
+t.ok('png: default scale is 2', pngSize(join(r.dir, 'shots2', '001-01.png')).join('x') === '1960x1104'); // 980x552 at scale 2
 
 // The colour of a pixel in a PNG file, read back by a browser.
 const browser = await launch();

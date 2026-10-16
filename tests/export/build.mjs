@@ -87,7 +87,7 @@ has('<meta name="twitter:card" content="summary_large_image">', 'twitter:card');
 has('<link rel="icon" href="favicon.ico" type="image/x-icon">', 'favicon');
 has('<link rel="manifest" href="manifest.webmanifest">', 'manifest link');
 const ogSize = readFileSync(join(site, 'og-image.png'));
-t.ok('og-image.png is a screenshot of slide 1 (1440x810)', ogSize.readUInt32BE(16) === 1440 && ogSize.readUInt32BE(20) === 810, `${ogSize.readUInt32BE(16)}x${ogSize.readUInt32BE(20)}`);
+t.ok('og-image.png is a screenshot of slide 1 (1470x828)', ogSize.readUInt32BE(16) === 1470 && ogSize.readUInt32BE(20) === 828, `${ogSize.readUInt32BE(16)}x${ogSize.readUInt32BE(20)}`);
 
 // ---- remote assets
 const assets = readdirSync(join(site, 'remote-assets'));

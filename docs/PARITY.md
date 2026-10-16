@@ -202,7 +202,7 @@ Slidev is Vue and Vite; slide.ng is Angular. Anything that is about Vue, Vite pl
 | `title`, `titleTemplate`, `info`/description, `author`, `keywords` | guide/hosting.md | done | test: the document title uses the template |
 | `favicon`, `htmlAttrs`, `lang` | HeadmatterConfig | done | test: the lang and attributes are on <html> |
 | `seoMeta` (Open Graph, Twitter) | features/seo-meta.md | done | test: index.html: ${label} |
-| Open Graph image `auto` (screenshot of slide 1) | features/og-image.md | done | test: og-image.png is a screenshot of slide 1 (1440x810) |
+| Open Graph image `auto` (screenshot of slide 1) | features/og-image.md | done | test: og-image.png is a screenshot of slide 1 (1470x828) |
 | PWA: manifest and offline service worker (`pwa`) | features/pwa.md | partial | no install icons and no offline indicator in the UI; test: the service worker is registered with the base as scope |
 
 ## Themes, addons, setup files

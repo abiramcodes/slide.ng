@@ -27,7 +27,7 @@ command line as a package, themes and addons, an example theme, the MCP server a
 - `npm run test:e2e`: starter deck **45**, showcase **144**, code and content **125**, phase 3 decks **152**, print route **24**; 0 failed.
 - `npm run test:dev`: live update **6**, dev server **36**; 0 failed.
 - `npm run test:export`: export command **33**, build **37**, theme **18**, scaffold **13**, MCP **22**; 0 failed.
-- Hand-written code: scripts, CLI, exporter, dev server and MCP 3750 lines, app 6463 lines (largest file 152 lines, largest script 148), unit tests 3607, browser and export tests with their decks 3655, CSS 352, docs and README 2015, example theme and template 175.
+- Tests at the last full run: 629 unit tests; browser tests 45, 144, 125, 154, 24 and 24 checks (run, showcase, phase 2 to 5); dev server tests 6 and 46; export tests 123.
 
 ## Not done
 

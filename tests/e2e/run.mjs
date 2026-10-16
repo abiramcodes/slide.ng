@@ -94,7 +94,8 @@ await page.close();
 
 const wide = await open('/2', { width: 1920, height: 1080 });
 const box = await wide.locator('.canvas').boundingBox();
-t.ok('canvas scales to 1920x1080 window', Math.abs(box.width - 1920) < 2 && Math.abs(box.height - 1080) < 2, `${box.width}x${box.height}`);
+// The canvas is 980x552 (height rounded up, as Slidev), so in a 16:9 window it is 0.2% narrower than the window.
+t.ok('canvas scales to 1920x1080 window', Math.abs(box.width - 1920) < 4 && Math.abs(box.height - 1080) < 2, `${box.width}x${box.height}`);
 await wide.close();
 const square = await open('/2', { width: 800, height: 800 });
 const sbox = await square.locator('.canvas').boundingBox();

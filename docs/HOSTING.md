@@ -133,7 +133,7 @@ file somewhere else, and no PDF is made.
 ## Link previews (Open Graph)
 
 The headmatter's `seoMeta` becomes `og:` and `twitter:` tags. `seoMeta.ogImage` can be a web address, `auto` (a screenshot
-of slide 1 is made during the build, 1440 x 810, and written as `og-image.png`), or left out: an `og-image.png` in the
+of slide 1 is made during the build, 1470 x 828, and written as `og-image.png`), or left out: an `og-image.png` in the
 deck's folder is copied and used automatically. Crawlers need a full address, so set `seoMeta.ogUrl` to the public address
 of the deck; without it the tag points at `<base>og-image.png`.
 
