@@ -53,13 +53,14 @@ export class PresenterCursor {
 
   // What to draw: on the presenter page the laser follows our own mouse; elsewhere, what the presenter shares.
   protected point = computed(() => {
-    if (this.nav.isPresenter) {
-      const m = this.mouse();
-      return m && this.prefs.showCursor() && this.prefs.cursorStyle() === 'laser'
+    const m = this.mouse();
+    const own =
+      m &&
+      this.prefs.cursorStyle() === 'laser' &&
+      (!this.nav.isPresenter || this.prefs.showCursor())
         ? { ...m, style: 'laser' as const }
         : null;
-    }
-    return this.sync.shared().cursor;
+    return this.nav.isPresenter ? own : (own ?? this.sync.shared().cursor);
   });
 
   constructor() {
@@ -84,9 +85,8 @@ export class PresenterCursor {
     effect(() =>
       document.body.classList.toggle(
         'slidev-self-laser-active',
-        this.nav.isPresenter &&
-          this.prefs.cursorStyle() === 'laser' &&
-          this.prefs.showCursor() &&
+        this.prefs.cursorStyle() === 'laser' &&
+          (!this.nav.isPresenter || this.prefs.showCursor()) &&
           !!this.mouse(),
       ),
     );
@@ -94,7 +94,6 @@ export class PresenterCursor {
 
   // Once per frame is enough, and it keeps the message rate low. The frame uses the newest position.
   protected move(e: PointerEvent) {
-    if (!this.nav.isPresenter) return;
     this.last = { x: e.clientX, y: e.clientY };
     if (this.frame) return;
     this.frame = requestAnimationFrame(() => {
