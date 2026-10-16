@@ -1,5 +1,5 @@
 // Drawing: toolbar, tools, colours, undo, clear, sync between windows and persistence in the browser.
-export async function run({ t, open, hud, windowGroup }) {
+export async function run({ t, open, hud, windowGroup, browser }) {
   const group = await windowGroup();
   const presenter = await open('/presenter/1', undefined, undefined, group);
   const viewer = await open('/1', undefined, undefined, group);
@@ -216,6 +216,77 @@ export async function run({ t, open, hud, windowGroup }) {
     (await presenter.locator('#drawing-toolbar').count()) === 1 &&
       (await presenter.locator('#draw-close').count()) === 0,
   );
+
+  // ---- the shape lands under the pointer (letterboxed windows, pixel ratio 2, after a resize)
+  const lands = async (page, key, size) => {
+    await page.keyboard.press(key);
+    const b = await page.locator('#slide-content').boundingBox();
+    const from = [b.x + b.width * 0.3, b.y + b.height * 0.3],
+      to = [b.x + b.width * 0.6, b.y + b.height * 0.6];
+    await page.mouse.move(...from);
+    await page.mouse.down();
+    await page.mouse.move(...to, { steps: 6 });
+    await page.mouse.up();
+    await page.waitForTimeout(300);
+    const r = await page.evaluate(() => {
+      const e = document.querySelector('#drawing-layer > *').getBoundingClientRect();
+      return [e.left, e.top, e.right, e.bottom];
+    });
+    const pad = 6; // the stroke width
+    const off =
+      key === 'r'
+        ? Math.max(
+            Math.abs(r[0] - from[0]),
+            Math.abs(r[1] - from[1]),
+            Math.abs(r[2] - to[0]),
+            Math.abs(r[3] - to[1]),
+          )
+        : Math.max(
+            Math.abs((r[0] + r[2]) / 2 - (from[0] + to[0]) / 2),
+            Math.abs((r[1] + r[3]) / 2 - (from[1] + to[1]) / 2),
+          );
+    t.ok(
+      `${key === 'r' ? 'rectangle' : 'pen'} ends where the pointer did, ${size}`,
+      off <= (key === 'r' ? pad : 40),
+      `off by ${off.toFixed(1)}px`,
+    );
+  };
+  for (const [w, h, dpr, resize, oneToOne] of [
+    [1280, 720, 1],
+    [1440, 900, 1],
+    [1920, 1080, 2],
+    [800, 900, 2],
+    [1000, 700, 2, [1440, 900]],
+    [1440, 900, 2, null, true],
+    [1920, 1080, 1, null, true],
+  ]) {
+    for (const key of ['r', 's']) {
+      const ctx = await browser.newContext({
+        viewport: { width: w, height: h },
+        deviceScaleFactor: dpr,
+      });
+      const page = await open('/1', { width: w, height: h }, undefined, ctx);
+      if (resize) {
+        await page.setViewportSize({ width: resize[0], height: resize[1] });
+        await page.waitForTimeout(300);
+      }
+      if (oneToOne) {
+        await page.locator('#nav-settings').click();
+        await page.locator('#scale-1').click();
+        await page.locator('#nav-settings').click();
+        await page.waitForTimeout(300);
+      }
+      await page.locator('#nav-drawing').click();
+      await page.waitForTimeout(300);
+      await lands(
+        page,
+        key,
+        `${resize ? resize.join('x') : w + 'x' + h} at ratio ${dpr}${oneToOne ? ', 1:1' : ''}`,
+      );
+      await page.evaluate(() => localStorage.clear());
+      await ctx.close();
+    }
+  }
   await presenter.evaluate(() => localStorage.clear());
   await group.close();
 }
