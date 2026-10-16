@@ -209,3 +209,6 @@ slide.ng is free and open source. If it helps your work, please consider sponsor
 slide.ng is not a fork of Slidev, but it uses Slidev's published parser
 and ports its click logic. See [NOTICE](NOTICE). Licensed under the MIT
 license, see [LICENSE](LICENSE).
+
+slide.ng is an independent community project. It is not affiliated with, or endorsed by, Google, the Angular team or the Slidev team.
+Angular is a trademark of Google LLC. Slidev is a project of its own maintainers.

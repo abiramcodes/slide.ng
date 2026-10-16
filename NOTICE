@@ -20,9 +20,58 @@ What we use from Slidev:
   and the small built-in components (src/app/ui, lib/shortcuts.ts, lib/toc-tree.ts, lib/transitions.ts, builtin/,
   lib/slide-ng-switch.ts, lib/slide-ng-click-gap.ts) are ports of the matching Slidev client code, rewritten for Angular.
 
+- The styles in src/styles/code.css and src/styles/presenter.css, a few shortcut rules in uno.config.mjs, and the
+  presenter page and drawing tools (src/app/presenter, src/app/drawing) follow Slidev's client code and are rewritten for Angular.
+- The agent skill in skills/slide-ng follows the structure of Slidev's own agent skill: the topic table in SKILL.md, the
+  category prefixes of the reference files (core-, diagram-, animation-, ...) and many of the file names. The text is
+  our own and describes slide.ng; the structure and topic list are adapted from Slidev's skill (MIT).
 - The official themes (seriph, shibainu, bricks, apple-basic) are not in this repository: they live in the slide.ng-themes repository,
   which carries their MIT attribution to the Slidev themes and says that no CC BY-NC-SA asset was copied. `theme: default` is the built-in look
   (see above).
 
-The full text of the MIT License applies to the Slidev parts as it does to this project;
-see LICENSE.
+The permission notice of Slidev, as required by its license:
+
+  MIT License
+
+  Copyright (c) 2020-PRESENT Anthony Fu
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+
+The same license text applies to the published package @slidev/parser, which this project depends on
+(Copyright (c) 2020-PRESENT Anthony Fu). It is installed from npm, not copied into this repository.
+
+Third-party packages
+--------------------
+
+Built decks contain parts of other open source packages. Each package carries its own license text
+in node_modules and in the built output. The ones that need a word here:
+
+- Icon sets @iconify-json/carbon and @iconify-json/mdi (Apache-2.0) and @iconify-json/ph (MIT): icons are inlined into built decks.
+- elkjs (EPL-2.0, through Mermaid): bundled into decks that use diagrams.
+- dompurify (MPL-2.0 OR Apache-2.0, used here under Apache-2.0) and jszip (MIT OR GPL-3.0-or-later, used here under MIT).
+- lightningcss (MPL-2.0) and caniuse-lite (CC-BY-4.0) are build tools; they are not part of the output.
+- Monaco Editor (MIT) with its codicon font (CC-BY-4.0), KaTeX (MIT) with its fonts (OFL-1.1), Shiki, Mermaid, UnoCSS,
+  drauu and rough-notation (MIT).
+
+Trademarks and affiliation
+--------------------------
+
+slide.ng is an independent community project. It is not affiliated with, endorsed by or sponsored by Google, the Angular
+team or the Slidev team. Angular is a trademark of Google LLC. Slidev is a project of its own maintainers. The names are
+used only to say what slide.ng works with and what it is inspired by.
