@@ -76,6 +76,9 @@ jobs:
       - name: Find Chromium
         run: echo "CHROME_PATH=$(node -p "require('playwright-core').chromium.executablePath()")" >> "$GITHUB_ENV"
 
+      - name: Install the PDF tools
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils qpdf
+
       - run: npm run test:e2e
       - run: npm run test:dev
       - run: npm run test:export # includes npm run test:skills, which builds the skill's code samples
