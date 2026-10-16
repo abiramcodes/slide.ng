@@ -85,7 +85,7 @@ Short notes on choices made, and why. Newest at the bottom.
     toggle when `colorSchema` is fixed in the headmatter. There is no inline script against a flash of the wrong colour on load.
 17. **Overview thumbnails are real slide components** inside `@defer (on viewport)`, which is the lazy rendering. No image snapshots.
 18. **Goto searches with a plain "number starts with / title contains" test**, not Fuse.js (one less dependency).
-19. **Settings menu has only "Slide Scale" and "Hide Idle Cursor"** (Slidev also has CSS filters, wake lock and cursor style).
+19. **The settings menu has Slidev's controls in Slidev's order** (filters, cursor style, slide scale, wake lock, hide idle cursor); the dark mode switch, camera options and PDF entry stay below a divider.
 20. **An address that is not a number and not a `routeAlias` shows the `404` layout**; numbers still clamp to the first and last slide (as in phase 0).
     The `error` layout exists but nothing shows it yet.
 21. **Icons from `@iconify-json/carbon` through UnoCSS `preset-icons`**, built into the CSS file by the generator (only used icons are included).

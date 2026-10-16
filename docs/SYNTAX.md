@@ -565,7 +565,7 @@ The presenter page has a **Screen Mirror** switch that shows a shared window ins
 
 ## Settings menu
 
-Dark mode, slide scale, hide idle cursor, keep the screen awake (headmatter `wakeLock: true` starts it on), presenter cursor and its style, colour filters for the slide, camera options.
+The same controls as Slidev, in the same order: Invert, Brightness, Contrast, Saturation, Sepia and Hue Rotate (slider and number box, Slidev's ranges and defaults; remembered under `slidev-viewer-css-filter`), Cursor Style (Cursor or Laser, `slidev-cursor-style`), Slide Scale (Fit or 1:1, not on the presenter page), Wake Lock (headmatter `wakeLock: true` starts it on; only where the browser supports it) and Hide Idle Cursor (not on the presenter page). The laser dot follows the pointer on the main page too. Below a divider: Show Presenter Cursor (presenter page), Dark Mode (only when `colorSchema` is `auto`), camera options and "Download as PDF".
 "Download as PDF" appears with `download: true` and is enabled only when the build made the PDF (`build --download`, see HOSTING.md).
 
 ## Moving things: `slide-ng-drag`
