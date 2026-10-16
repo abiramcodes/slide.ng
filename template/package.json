@@ -10,6 +10,6 @@
     "format": "slide-ng format"
   },
   "dependencies": {
-    "slide-ng": "{{version}}"
+    "@slide-ng/core": "{{version}}"
   }
 }

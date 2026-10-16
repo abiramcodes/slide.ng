@@ -24,7 +24,7 @@ describe('createCommand', () => {
     await createCommand([dir], process.cwd());
     const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'));
     expect(pkg.name).toBe('my-deck');
-    expect(pkg.dependencies['slide-ng']).toMatch(/^\^\d/);
+    expect(pkg.dependencies['@slide-ng/core']).toMatch(/^\^\d/);
     expect(readdirSync(dir)).toEqual(
       expect.arrayContaining(['slides.md', 'package.json', '.gitignore', 'README.md']),
     );

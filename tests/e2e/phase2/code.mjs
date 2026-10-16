@@ -132,12 +132,16 @@ export async function run({ t, open, press, hud }) {
           )
           .join('|'),
       );
-  t.ok('first tab is shown first', (await visible()).startsWith('npm i slide-ng'), await visible());
+  t.ok(
+    'first tab is shown first',
+    (await visible()).startsWith('npm i @slide-ng/core'),
+    await visible(),
+  );
   await page.locator('.slidev-code-tab', { hasText: 'yarn' }).click();
   await page.waitForTimeout(150);
   t.ok(
     'clicking a tab shows its block',
-    (await visible()).endsWith('yarn add slide-ng'),
+    (await visible()).endsWith('yarn add @slide-ng/core'),
     await visible(),
   );
   await page.close();

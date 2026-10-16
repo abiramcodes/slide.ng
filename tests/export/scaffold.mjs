@@ -26,8 +26,8 @@ t.ok(
   ['slides.md', 'package.json', 'README.md', '.gitignore'].every((f) => existsSync(join(deck, f))),
 );
 t.ok(
-  'package.json is named after the folder and depends on slide-ng',
-  pkg.name === 'my-deck' && /^\^\d/.test(pkg.dependencies['slide-ng']),
+  'package.json is named after the folder and depends on @slide-ng/core',
+  pkg.name === 'my-deck' && /^\^\d/.test(pkg.dependencies['@slide-ng/core']),
   JSON.stringify(pkg.dependencies),
 );
 t.ok(
@@ -50,11 +50,11 @@ const again = await run(process.execPath, [join(repo, 'bin/slide-ng.mjs'), 'crea
 );
 t.ok('create refuses a folder that has files', /is not empty/.test(again));
 
-// ---- stand in for `npm install`: node_modules/slide-ng points at this repository
-mkdirSync(join(deck, 'node_modules'));
-symlinkSync(repo, join(deck, 'node_modules/slide-ng'), 'dir');
+// ---- stand in for `npm install`: node_modules/@slide-ng/core points at this repository
+mkdirSync(join(deck, 'node_modules/@slide-ng'), { recursive: true });
+symlinkSync(repo, join(deck, 'node_modules/@slide-ng/core'), 'dir');
 const generatedBefore = statSync(join(repo, 'src/slides/generated/index.ts')).mtimeMs;
-const bin = join(deck, 'node_modules/slide-ng/bin/slide-ng.mjs');
+const bin = join(deck, 'node_modules/@slide-ng/core/bin/slide-ng.mjs');
 
 // ---- format leaves the generated file alone (it is already tidy), then build
 const formatted = await run(process.execPath, [bin, 'format'], { cwd: deck, encoding: 'utf8' });

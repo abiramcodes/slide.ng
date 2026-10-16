@@ -84,7 +84,7 @@ slide.ng looks for the name in `node_modules` as `@slide-ng/theme-<name>`, then 
   "license": "MIT",
   "keywords": ["slide-ng-theme", "slide-ng"],
   "files": ["layouts", "components", "styles", "public", "setup", "theme.json"],
-  "peerDependencies": { "slide-ng": "*" }
+  "peerDependencies": { "@slide-ng/core": "*" }
 }
 ```
 
