@@ -13,6 +13,9 @@ export const slideClass = (no) => `Slide${pad(no)}`;
 export { layoutName };
 
 
+// What a transformer in setup/transformers.ts is told about the slide.
+export const slideInfo = (slide, no) => ({ no, index: no - 1, title: slide.title, frontmatter: slide.frontmatter, source: slide.source });
+
 // The layout's opening tag: frontmatter keys the layout knows become attributes (= inputs).
 function openTag(def, frontmatter) {
   const attrs = def.props.filter((p) => frontmatter[p] != null).map((p) => ` ${p}="${attr(frontmatter[p])}"`);
@@ -45,7 +48,7 @@ export function slideSource(slide, no, deck = {}) {
   const def = layouts[layoutKey];
   const { markdown, css } = extractStyles(tagDragSites(slide.content));
   const layer = (name) => (deck.layers?.includes(name) ? `<app-slide-layer name="${name}"></app-slide-layer>` : '');
-  const layout = `${openTag(def, slide.frontmatter)}${body(markdown, def, no, { file: slide.file, root: deck.root, headmatter: deck.headmatter }, layoutKey)}</${def.tag}>`;
+  const layout = `${openTag(def, slide.frontmatter)}${body(markdown, def, no, { file: slide.file, root: deck.root, headmatter: deck.headmatter, codeblocks: deck.transformers?.codeblocks, slide: slideInfo(slide, no) }, layoutKey)}</${def.tag}>`;
   const html = layer('slide-bottom') + layout + layer('slide-top');
 
   // Look for components outside code samples only (code is just text).

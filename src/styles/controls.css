@@ -15,3 +15,6 @@ html.dark .slidev-icon-btn:focus-visible { outline-color: white; }
 .slidev-menu-item { display: grid; grid-template-columns: 35px 1fr; padding: 0.5rem 0.5rem 0.5rem 0; cursor: pointer; border-radius: 0.25rem; }
 .slidev-menu-item:hover { background: rgba(156, 163, 175, 0.1); }
 .slidev-menu-item.disabled { opacity: 0.4; cursor: default; pointer-events: none; }
+
+/* Headmatter `presenter: false` (see lib/switches.ts): there is no presenter page to go to. */
+html[data-presenter="off"] #nav-presenter { display: none; }

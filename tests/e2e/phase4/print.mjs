@@ -18,7 +18,7 @@ export async function run({ t, base, browser, problems }) {
   t.ok('without ?print=clicks every slide is at its final click', all[1] === '002-04' || all[1] === '002-03', all[1]);
   t.ok('every page carries its slide number', (await page.locator('[data-slide-ng-no="8"]').count()) === 1);
   const size = await page.locator('.print-slide-container').first().boundingBox();
-  t.ok('a page has the canvas size (960x540)', size.width === 960 && size.height === 540, `${size.width}x${size.height}`);
+  t.ok('a page has the canvas size (980x552)', size.width === 980 && size.height === 552, `${size.width}x${size.height}`);
   t.ok('all clicks are shown (nothing hidden)', (await page.locator('.slidev-vclick-hidden').count()) === 0);
   t.ok('render-when print shows its content, slide does not', (await page.locator('#only-print').count()) === 1 && (await page.locator('#only-slide').count()) === 0);
   t.ok('no overview, bar or presenter UI in the page', (await page.locator('app-nav-bar, app-overview, app-goto, app-context-menu').count()) === 0);
@@ -27,7 +27,7 @@ export async function run({ t, base, browser, problems }) {
   t.ok('the monaco editor exists', (await page.locator('.monaco-editor').count()) >= 1);
   t.ok('the v-mark is drawn on paper', (await page.locator('svg.rough-annotation').count()) === 1);
   const paper = await page.evaluate(() => [...document.styleSheets].flatMap((s) => [...s.cssRules]).concat([...document.querySelectorAll('style')].flatMap((e) => [...e.sheet.cssRules])).filter((r) => r.constructor.name === 'CSSPageRule').map((r) => r.style.getPropertyValue('size')).join());
-  t.ok('@page size comes from the canvas', paper.includes('960px 540px'), paper);
+  t.ok('@page size comes from the canvas', paper.includes('980px 552px'), paper);
   t.ok('the page is not a deck page (no hud)', (await page.locator('#hud').count()) === 0);
   const motion = await page.evaluate(() => document.getAnimations().length);
   t.ok('no animation is running', motion === 0, String(motion));

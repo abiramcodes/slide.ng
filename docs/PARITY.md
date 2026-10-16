@@ -42,10 +42,10 @@ Slidev is Vue and Vite; slide.ng is Angular. Anything that is about Vue, Vite pl
 | Global context `$slidev`, `$nav`, `$clicks`, `$page` | guide/global-context.md | different by design | Angular injection: `Nav`, `ClicksContext`, `SLIDE_NO`, `RENDER_CONTEXT` (see ARCHITECTURE.md); not verified (no test) |
 | `transform-component` (wrapping a component) | features/transform-component.md | done | `<transform scale origin>`; test: transform scales its content from the origin |
 | Zoom a slide (`zoom`) | features/zoom-slide.md | done | test: zoom: 1 in the slide frontmatter wins over the headmatter |
-| Canvas size (`canvasWidth`, `aspectRatio`) | features/canvas-size.md | partial | works, but the default width is 960 (Slidev: 980); set `canvasWidth: 980` to match; test: canvasWidth and aspectRatio set the canvas |
+| Canvas size (`canvasWidth`, `aspectRatio`) | features/canvas-size.md | done | default 980 wide, 16/9, height rounded up (Slidev's); test: canvasWidth and aspectRatio set the canvas |
 | `selectable` (text selection of the slide) | HeadmatterConfig.selectable | not done | text is selectable only in code blocks |
 | `themeConfig` passed to the theme | HeadmatterConfig.themeConfig | not done | a theme reads the headmatter itself (`HEADMATTER` is not exposed to themes yet) |
-| `fonts` (web fonts, sans/serif/mono) | custom/config-fonts.md | not done | no font loading; put a `@font-face` in `styles/index.css` and use `public/` |
+| `fonts` (web fonts, sans/serif/mono) | custom/config-fonts.md | partial | `sans`, `serif`, `mono`, `local`, `weights`, `italic`, `fallbacks`, `provider` (google, coollabs, none) like Slidev; `webfonts` and `custom` are read; fonts are not downloaded into the build (a remote @import, like Slidev); test: fonts.spec.ts, and the mono font becomes the code font in the browser |
 | `css: unocss`, UnoCSS in slides | custom/config-unocss.md | done | preset wind3 + icons + a few Slidev shortcuts; a root can add settings in `uno.config.mjs`; test: the UnoCSS shortcut of the theme works |
 
 ## Code
@@ -65,13 +65,13 @@ Slidev is Vue and Vite; slide.ng is Angular. Anything that is about Vue, Vite pl
 | Monaco editor `{monaco}`, `{monaco-diff}` | features/monaco-editor.md | done | test: {monaco} block becomes an editor with its text |
 | Monaco run `{monaco-run}` (JS/TS) | features/monaco-run.md | done | test: {monaco-run} runs TypeScript |
 | Monaco write `{monaco-write}` | features/monaco-write.md | done | whole files inside the deck folder, dev server only; test: {monaco-write} saves the edit into the snippet file |
-| Monaco settings (`monaco`, `monacoTypesSource`, `monacoRunAdditionalDeps`, `monacoRunUseStrict`, ...) | custom/config-monaco.md | not done | no type fetching; `setup/monaco.ts` has no equivalent |
-| Code runners setup (`setup/code-runners.ts`) | custom/config-code-runners.md | partial | `CODE_RUNNERS` provider (docs/THEMES.md); no test yet; not verified (no test) |
-| Highlighter setup (`setup/shiki.ts`), `highlighter`, `shiki` themes | custom/config-highlighter.md | partial | `shiki: { themes }` read; no setup hook for transformers or languages; not verified (no test) |
-| KaTeX setup (`setup/katex.ts`) | custom/config-katex.md | not done |  |
-| Mermaid setup (`setup/mermaid.ts`) and renderer | custom/config-mermaid.md | not done | the `mermaid` fence takes options inline |
-| Code transformers (`setup/transformers.ts`) | custom/config-transformers.md | not done |  |
-| Markdown parser setup (`setup/preparser.ts`, `config-parser`) | custom/config-parser.md | not done |  |
+| Monaco settings (`monaco`, `monacoTypesSource`, `monacoRunAdditionalDeps`, `monacoRunUseStrict`, ...) | custom/config-monaco.md | partial | `setup/monaco.ts` (gets `monaco`, returns editor options for every editor); no type fetching (`monacoTypesSource`); test: the options of setup/monaco.ts apply to the editor |
+| Code runners setup (`setup/code-runners.ts`) | custom/config-code-runners.md | done | docs/SETUP.md; the runner gets the text only (Slidev also passes a context); test: the python runner of setup/code-runners.ts ran the editor |
+| Highlighter setup (`setup/shiki.ts`), `highlighter`, `shiki` themes | custom/config-highlighter.md | done | docs/SETUP.md; options, `langs`, `transformers`, `theme` / `themes`; the highlighting is done while generating; test: the transformer marked every highlighted block |
+| KaTeX setup (`setup/katex.ts`) | custom/config-katex.md | done | docs/SETUP.md; test: the macro is drawn |
+| Mermaid setup (`setup/mermaid.ts`) and renderer | custom/config-mermaid.md | done | docs/SETUP.md; the fence also takes options inline; test: the config colours the diagram |
+| Code transformers (`setup/transformers.ts`) | custom/config-transformers.md | partial | `pre`, `preCodeblock`, `postCodeblock` (one pass) and `codeblocks`; no markdown-it plugins; test: the markdown syntax became HTML, the block became our element |
+| Markdown parser setup (`setup/preparser.ts`, `config-parser`) | custom/config-parser.md | done | Slidev's parser extensions (`transformRawLines`, `transformSlide`, `transformNote`); test: the raw line was replaced before slides were cut |
 
 ## Clicks, animations, transitions
 
@@ -134,21 +134,21 @@ Slidev is Vue and Vite; slide.ng is Angular. Anything that is about Vue, Vite pl
 | Remote access with password (`--remote`) | features/remote-access.md | done | LAN address not tried on a real LAN; test: --remote: the right password gives a cookie |
 | Laser pointer / presenter cursor | guide/ui.md | done | test: laser style shows a dot on the viewer |
 | Drawing (drauu), sync, persist, `drawings:` options | features/drawing.md | done | test: a stroke makes a path |
-| Recording and camera bubble | features/recording.md | partial | webm has no duration field; no separate camera file; no cloud upload; test: stopping downloads a webm named after the deck |
+| Recording and camera bubble | features/recording.md | partial | the webm gets a Duration like Slidev's; no separate camera file; no cloud upload; test: stopping downloads a webm named after the deck |
 | Screen mirror in the recorder | features/recording.md | done | with a fake screen source only; test: Screen Mirror hides the slide and offers sharing |
 | Navigation bar with the Slidev button order | guide/ui.md | done | test: bar buttons are in Slidev order |
 | Overview (`o`), goto dialog (`g`), info dialog | guide/ui.md | done | test: o opens and Escape closes the overview |
 | Settings menu (dark mode, scale, filters, cursor, camera) | guide/ui.md | done | test: the brightness slider filters the slide |
 | Dark mode, `colorSchema` | guide/ui.md | partial | `auto`, `light`, `dark` work; `all` is not read; test: dark mode is remembered after a reload |
-| Context menu | custom/config-context-menu.md | partial | the default menu; no `contextMenu` headmatter switch and no `setup/context-menu.ts`; test: menu entries match Slidev |
+| Context menu | custom/config-context-menu.md | done | the default menu, the `contextMenu` headmatter switch (true, false, dev, build) and `setup/context-menu.ts`; test: menu entries match Slidev, the added entry runs |
 | Fullscreen, wake lock (`wakeLock`) | HeadmatterConfig.wakeLock | done | real screen staying awake not observed; test: wakeLock: true in the headmatter starts with it on |
-| Side editor (`editor`) | features/side-editor.md | partial | plain textarea, not Monaco; takes over outside edits; test: the side editor shows the markdown of the slide |
-| `presenter: false\|dev\|build`, `editor: false`, `record: dev\|build` | HeadmatterConfig | partial | `record` is read; the others are not; test: record is on, so the bar has camera and record buttons |
-| Touch controls (swipe) | client touch handling | not done |  |
+| Side editor (`editor`) | features/side-editor.md | done | Slidev's kind: a textarea over Shiki-coloured markdown (lazy, dev only); takes over outside edits; `editor: false` hides it; test: the side editor shows the markdown of the slide |
+| `presenter: false\|dev\|build`, `editor: false`, `record: dev\|build` | HeadmatterConfig | done | all three are read (`lib/switches.ts`); `presenter: false` has no presenter page, button or menu entry; test: presenter: false sends the presenter address to slide 1, record is on |
+| Touch controls (swipe) | client touch handling | partial | swipe left or right (30% or 75px) for click steps, up or down (40% or 200px) for slides, not while drawing, Slidev's numbers; no pinch or touch tuning for drag and drawing; test: a swipe to the left goes to the next slide |
 | Shortcuts: space, arrows, page keys, shift variants | client/setup/shortcuts.ts | done | key repeat is the browser's, not Slidev's accelerating repeat; test: space goes to the next slide |
 | Shortcuts: d, o / backtick, Escape, g, f, overview arrows, Enter | client/setup/shortcuts.ts | done | test: g opens the goto box and focuses it |
 | Shortcuts off while typing and while drawing | client/logic/shortcuts.ts | done | test: keys typed in the editor are not slide shortcuts |
-| Custom shortcuts (`setup/shortcuts.ts`) | custom/config-shortcuts.md | different by design | `SHORTCUTS_SETUP` provider in `setup/providers.ts`; test: the setup provider of the theme adds the b shortcut |
+| Custom shortcuts (`setup/shortcuts.ts`) | custom/config-shortcuts.md | done | `setup/shortcuts.ts` gets `(actions, list)` and returns the list; entries are `{ name, key, run, when }`; test: the added key works |
 | Draggable elements `v-drag`, `<v-drag>`, `dragPos` | features/draggable.md | done | write-back in dev; rotate; arrow-key nudging; test: dragging moves the box by the mouse distance in slide pixels |
 | Global layers `global-top/bottom`, `slide-top/bottom` | features/global-layers.md | done | test: the four layers are drawn |
 | Router: `routeAlias`, `routerMode: hash\|history` | custom/config-routes.md | partial | `memory` mode and `setup/routes.ts` are not available; test: routerMode: hash puts the slide after # |
@@ -193,7 +193,7 @@ Slidev is Vue and Vite; slide.ng is Angular. Anything that is about Vue, Vite pl
 | Hash routing for hosts without rewrites | guide/hosting.md | done | test: hash routing under /sub/dir/ |
 | Download button with a PDF made at build (`download`) | features/build-with-pdf.md | done | test: clicking it downloads talk.pdf |
 | Bundle remote assets (`remoteAssets`) | features/bundle-remote-assets.md | done | images only; test: remoteAssets: both pictures were downloaded into the build |
-| Build size budgets | ng build | partial | raised to 1MB warn / 2MB error because Monaco and KaTeX decks reach ~850 kB; not verified (no test) |
+| Build size budgets | ng build | partial | raised to 1.5MB warn / 3MB error (decks measure 450-945 kB); the numbers are in DECISIONS.md, not enforced by a test |
 
 ## Head, SEO, PWA
 
@@ -202,7 +202,7 @@ Slidev is Vue and Vite; slide.ng is Angular. Anything that is about Vue, Vite pl
 | `title`, `titleTemplate`, `info`/description, `author`, `keywords` | guide/hosting.md | done | test: the document title uses the template |
 | `favicon`, `htmlAttrs`, `lang` | HeadmatterConfig | done | test: the lang and attributes are on <html> |
 | `seoMeta` (Open Graph, Twitter) | features/seo-meta.md | done | test: index.html: ${label} |
-| Open Graph image `auto` (screenshot of slide 1) | features/og-image.md | done | test: og-image.png is a screenshot of slide 1 (1440x810) |
+| Open Graph image `auto` (screenshot of slide 1) | features/og-image.md | done | test: og-image.png is a screenshot of slide 1 (1470x828) |
 | PWA: manifest and offline service worker (`pwa`) | features/pwa.md | done | test: the service worker is registered with the base as scope; the manifest lists real 192, 512 and maskable PNG icons; the badge shows Available offline and Offline |
 
 ## Themes, addons, setup files
@@ -213,9 +213,9 @@ Slidev is Vue and Vite; slide.ng is Angular. Anything that is about Vue, Vite pl
 | `addons: []` | guide/write-addon.md | partial | resolution and merge order are unit-tested; no end-to-end addon build yet; test: orders theme, addons, deck |
 | Theme layouts, components, layers, styles, public, UnoCSS, defaults, setup hooks | guide/write-theme.md | done | see docs/THEMES.md; test: a slide can use the component of the theme |
 | Theme eject | features/eject-theme.md | done | test: ejected built-in theme: the cover layout still renders |
-| Directory structure: `components/`, `layouts/`, `layers/`, `styles/`, `public/`, `setup/`, `snippets/` | custom/directory-structure.md | partial | all but `snippets/` (a snippet path is written out) and the Vue-specific setup files; test: writes the template into a new folder |
+| Directory structure: `components/`, `layouts/`, `layers/`, `styles/`, `public/`, `setup/`, `snippets/` | custom/directory-structure.md | partial | all but `snippets/` (a snippet path is written out), `setup/routes.ts` and the Vue and Vite files; test: writes the template into a new folder |
 | `theme.json` manifest (slide.ng only) | - | different by design | declares layout inputs and default headmatter instead of `package.json#slidev`; test: reads name, headmatter and layouts and drops bad entries |
-| `setup/main.ts`, `setup/vite.config.ts`, `vite.config.ts`, `vue.ts`, `setup/root.ts` | custom/config-vite.md, config-vue.md | different by design | no Vite or Vue; Angular providers in `setup/providers.ts` instead; not verified (no test) |
+| `setup/main.ts`, `setup/root.ts`, `setup/vite.config.ts`, `vite.config.ts`, `vue.ts` | custom/config-vite.md, config-vue.md | partial | `main` (Angular providers) and `root` (runs at start) exist, see docs/SETUP.md; Vite and Vue files are different by design; test: main and root ran |
 | Theme gallery, addon gallery, community themes | resources/*.md | not done (skipped on purpose) |  |
 
 ## Tooling
@@ -238,14 +238,14 @@ browser exporter page and `overviewSnapshots`. (They are also listed in the rows
 ## The biggest gaps, ranked
 
 1. **Slidev themes and addons cannot be used.** They are Vue packages. slide.ng has its own contract (docs/THEMES.md) and one example theme; there is no ecosystem.
-2. **No setup hooks for the code and text pipeline**: Shiki (transformers, languages), KaTeX, Mermaid, Monaco (including `monacoTypes*` type loading, so Monaco does not know package types), markdown transformers and the pre-parser. Only providers, shortcuts and code runners can be set up.
-3. **`fonts` (web fonts) is not read.** A deck has to add a `@font-face` itself.
+2. **Setup hooks are there (docs/SETUP.md)**, with these gaps: Monaco type loading (`monacoTypes*`, so Monaco does not know package types), markdown-it plugins in transformers, and a run context for code runners.
+3. **`fonts`** is read (names, local, weights, italic, fallbacks, provider) but the fonts are loaded from the provider at run time, not copied into the build.
 4. **Export**: editable PPTX is not made, `export` takes one entry, PDF/PNG need a local Chromium (`--executable-path` or `CHROME_PATH`).
 5. **Animations**: custom transition objects, `clickAnimation`, `preloadImages`, slide `preload` and the slide hooks (`onSlideEnter`, `onSlideLeave`) do not exist; `v-motion` has no motion presets.
-6. **Touch**: no swipe or touch navigation and none of the touch handling for drawing and `v-drag` was tried.
-7. **UI switches**: `contextMenu`, `presenter`, `editor` headmatter switches, a custom context menu, `selectable`, `themeConfig`, `TitleRenderer`, `notesAutoRuby` are not there.
+6. **Touch**: swipe navigation works; pinch zoom and touch handling for drawing and `v-drag` were not tried on a real device.
+7. **UI**: `selectable`, `themeConfig`, `TitleRenderer` and `notesAutoRuby` are not there.
 8. **Syntax**: MDC/Comark syntax is not parsed.
 9. **CLI**: dev `--base`, `--tunnel`, build `--router-mode`, `--inspect`; the dev server's default port differs (4230).
-10. **Recording and PWA**: the webm has no duration field and no separate camera file; the PWA part is done.
-11. **Size**: the first load of a deck with Monaco and KaTeX is about 850 kB (budget raised to 1 MB warning, 2 MB error).
+10. **Recording and PWA**: no separate camera file and no mp4 or mkv; the PWA part is done.
+11. **Size**: the first load of a deck with Monaco and KaTeX is about 850 kB (budget raised to 1.5 MB warning, 3 MB error).
 12. **Unverified ground**: Firefox and Safari, real devices over a LAN, a real screen-share picker, wake lock behaviour and hosts that need hash routing were not tried (STATUS.md, NOT VERIFIED).

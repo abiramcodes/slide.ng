@@ -115,6 +115,8 @@ const missing = deck('missing', 'theme: ./nope\n');
 const failure = await cli(['build', join(missing, 'slides.md'), '--out', join(missing, 'site')], missing).then(() => '', (e) => e.stderr);
 t.ok('a theme path that is not a folder fails with a message', /is not a folder/.test(failure), failure.trim());
 const unknown = deck('unknown', 'theme: seriph\n');
-const warned = await run(process.execPath, [bin, 'build', join(unknown, 'slides.md'), '--out', join(unknown, 'site')], { cwd: unknown, encoding: 'utf8' });
-t.ok('an uninstalled theme package warns and the deck still builds', /"seriph" was not found/.test(warned.stdout + warned.stderr) && existsSync(join(unknown, 'site/index.html')));
+const warned = await run(process.execPath, [bin, 'build', join(unknown, 'slides.md'), '--out', join(unknown, 'site')], { cwd: unknown, encoding: 'utf8' })
+  .then((r) => ({ ...r, status: 0 }), (e) => ({ stdout: e.stdout, stderr: e.stderr, status: e.code }));
+const unknownOutput = warned.stdout + warned.stderr;
+t.ok('an uninstalled theme package stops the build with the install command', warned.status !== 0 && /The theme "seriph" was not found\. Install it with: npm install -D slide-ng-theme-seriph/.test(unknownOutput) && !existsSync(join(unknown, 'site/index.html')), unknownOutput.trim().slice(-300));
 process.exit(t.done());

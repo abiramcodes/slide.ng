@@ -2,17 +2,23 @@
 // (also with a `#2,4-6` slide range) and merges the importing slide's frontmatter
 // over the imported one, so we get one flat list of slides.
 import { dirname, resolve } from 'node:path';
-import { load } from '@slidev/parser/fs';
+import { injectPreparserExtensionLoader, load } from '@slidev/parser/fs';
 import { mergeHeadmatter, resolveRoots } from './roots.mjs';
+import { preparserExtensions } from './setup/node-setups.mjs';
 
 // `sources` is optional: a { path: text } map that replaces reading files (used by tests).
 // `options.theme` is the `--theme` flag. The result has `roots` (theme, addons, the deck's own folder) and a headmatter
 // with the themes' defaults under it (see roots.mjs).
 export async function parseDeck(file = 'slides.md', sources, options = {}) {
   const entry = resolve(file);
+  // setup/preparser.ts of the roots: the parser asks for them once it has read the headmatter (which says which roots there are).
+  injectPreparserExtensionLoader(async (_, headmatter, filepath, mode) => {
+    const found = resolveRoots({ deckRoot: dirname(entry), headmatter, themeOverride: options.theme ?? (process.env.SLIDE_NG_THEME || undefined) });
+    return preparserExtensions(found, { filepath, headmatter, mode });
+  });
   const data = await load({ userRoot: dirname(entry), roots: [dirname(entry)] }, entry, sources);
   const problems = [];
-  const roots = resolveRoots({ deckRoot: dirname(entry), headmatter: data.headmatter, themeOverride: options.theme ?? (process.env.SLIDE_NG_THEME || undefined), warn: (m) => problems.push(m) });
+  const roots = resolveRoots({ deckRoot: dirname(entry), headmatter: data.headmatter, themeOverride: options.theme ?? (process.env.SLIDE_NG_THEME || undefined), });
   const headmatter = mergeHeadmatter(roots, data.headmatter);
   // `defaults:` in the headmatter is the starting point of every slide's frontmatter.
   const defaults = headmatter.defaults ?? {};

@@ -115,14 +115,33 @@ try {
   // ---- side editor
   await page.goto(`${base}/2`);
   await page.waitForFunction(() => /clicks \d+\/\d+/.test(document.querySelector('#hud')?.innerText ?? ''), null, { timeout: 60000 });
+  const scriptsBefore = await page.evaluate(() => performance.getEntriesByType('resource').filter((r) => r.name.endsWith('.js')).length);
+  t.ok('before the editor opens there is no coloured text and no highlighter', (await page.locator('#editor-highlight').count()) === 0);
   await page.locator('#nav-editor').click({ force: true });
   await page.waitForFunction(() => document.querySelector('#editor-text')?.value.includes('# Two'), null, { timeout: 15000 });
+  // The text is coloured by Shiki, which is loaded when the editor opens (like Slidev's editor); the textarea is transparent on top of it.
+  await page.waitForSelector('#editor-highlight pre.shiki', { timeout: 30000 });
+  const colours = await page.evaluate(() => {
+    const spans = [...document.querySelectorAll('#editor-highlight span span')];
+    return { distinct: new Set(spans.map((s) => getComputedStyle(s).color)).size, text: getComputedStyle(document.querySelector('#editor-text')).color };
+  });
+  t.ok('the editor text is coloured with more than one colour', colours.distinct > 1, JSON.stringify(colours));
+  t.ok('the textarea itself is transparent, so the colours show through', colours.text === 'rgba(0, 0, 0, 0)', colours.text);
+  const scriptsAfter = await page.evaluate(() => performance.getEntriesByType('resource').filter((r) => r.name.endsWith('.js')).length);
+  t.ok('the highlighter came as extra files when the editor opened', scriptsAfter > scriptsBefore, `${scriptsBefore} -> ${scriptsAfter}`);
+  const metrics = await page.evaluate(() => {
+    const props = ['fontFamily', 'fontSize', 'lineHeight', 'letterSpacing', 'whiteSpace', 'overflowWrap', 'wordBreak', 'tabSize', 'paddingLeft', 'paddingTop'];
+    const read = (el) => { const s = getComputedStyle(el); return { ...Object.fromEntries(props.map((k) => [k, s[k]])), width: el.clientWidth }; };
+    return { colours: read(document.querySelector('#editor-highlight')), field: read(document.querySelector('#editor-text')), code: getComputedStyle(document.querySelector('#editor-highlight code')).lineHeight };
+  });
+  t.ok('the coloured copy and the textarea have the same font, spacing, wrapping and width', JSON.stringify(metrics.colours) === JSON.stringify(metrics.field) && metrics.code === metrics.field.lineHeight, JSON.stringify(metrics));
   t.ok('the side editor shows the markdown of the slide, frontmatter included', (await page.locator('#editor-text').inputValue()).includes('dragPos:'));
   const stageRight = await page.locator('.stage').evaluate((e) => getComputedStyle(e).right);
   t.ok('the slide makes room for it', stageRight === '420px', stageRight);
   await page.locator('#editor-text').click();
   await page.keyboard.press('Control+End');
   await page.keyboard.type('\n\n<p id="from-editor">Typed in the editor</p>\n');
+  t.ok('what is typed is coloured too', (await page.locator('#editor-highlight').innerText()).includes('Typed in the editor'));
   t.ok('typing in the editor saves into the markdown file', await waitForFile((s) => s.includes('<p id="from-editor">Typed in the editor</p>')));
   t.ok('and the other slides of the file are untouched', read().includes('# One') && read().includes('# Three'));
   await page.waitForSelector('#from-editor', { timeout: 30000 });
@@ -208,6 +227,24 @@ try {
   t.ok('--remote: the viewer in another browser follows the presenter over the WebSocket', followed, await viewer.locator('#hud').innerText());
   await a.close();
   await b.close();
+  stop();
+  await sleep(2000);
+
+  // ===================================================================== --remote without a password (Slidev's default)
+  fresh();
+  const OPORT = 4222, obase = `http://127.0.0.1:${OPORT}`;
+  stop = startDev(OPORT, ['--remote']);
+  await waitFor(obase);
+  const osession = await api(OPORT, '/session');
+  t.ok('--remote without a password: the session needs no login', osession.status === 200 && typeof (await osession.json()).token === 'string');
+  t.ok('--remote without a password: a write without the token is refused', (await api(OPORT, '/slides/2/drag', { method: 'POST', body: { site: 0, pos: '1,2,3,4' } })).status === 403);
+  t.ok('--remote without a password: a foreign Origin is refused', (await api(OPORT, '/session', { headers: { origin: 'http://evil.example' } })).status === 403);
+  const openCtx = await browser.newContext({ viewport: { width: 1000, height: 600 } });
+  const open2 = await openCtx.newPage();
+  await open2.goto(`${obase}/1`);
+  await open2.waitForFunction(() => /clicks \d+\/\d+/.test(document.querySelector('#hud')?.innerText ?? ''), null, { timeout: 60000 });
+  t.ok('--remote without a password: the deck opens and has no password prompt', !(await open2.evaluate(() => document.body.innerText)).includes('Password'));
+  await openCtx.close();
 } finally {
   await browser?.close();
   stop?.();

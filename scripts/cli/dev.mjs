@@ -4,7 +4,6 @@
 //   3. the Angular dev server, which sends `/__slide-ng/*` to the companion (proxy.conf.mjs)
 //   slide-ng [dev] [slides.md] [--port 4230] [--open] [--remote[=password]] [--bind 0.0.0.0] [--log info] [--force]
 import { spawn, spawnSync } from 'node:child_process';
-import { randomBytes } from 'node:crypto';
 import { rmSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { hostname, networkInterfaces } from 'node:os';
@@ -13,6 +12,7 @@ import { randomSecret } from '../dev/config.mjs';
 import { ngBinary, prepareApp } from './app-root.mjs';
 import { applyThemeFlag, parseFlags } from './flags.mjs';
 import { packageRoot } from './package-root.mjs';
+import { remoteLines } from './remote-info.mjs';
 
 export const DEV_FLAGS = {
   port: { type: 'number', alias: 'p' },
@@ -35,10 +35,10 @@ export function devPlan(argv) {
   if (flags.base) throw new Error('--base is for `slide-ng build`; the dev server always runs at /');
   const log = flags.log ?? 'info';
   if (!LOG_LEVELS.includes(log)) throw new Error(`--log must be one of ${LOG_LEVELS.join(', ')}, got "${log}"`);
-  const remote = Boolean(flags.remote);
-  // Never open to the network without a password.
-  const password = remote ? (typeof flags.remote === 'string' && flags.remote ? flags.remote : randomBytes(6).toString('hex')) : '';
-  const host = flags.bind ?? (remote ? '0.0.0.0' : undefined);
+  // Like Slidev: `--remote` listens on every address, `--remote=secret` adds a password, which is optional. `--bind` only matters with --remote.
+  const remote = flags.remote !== undefined && flags.remote !== false;
+  const password = remote && typeof flags.remote === 'string' ? flags.remote : '';
+  const host = remote ? (flags.bind ?? '0.0.0.0') : undefined;
   // SLIDES_FILE is how tests (and older scripts) pick another deck.
   const entry = resolve(positionals[0] ?? process.env.SLIDES_FILE ?? 'slides.md');
   return { entry, port: flags.port ?? 4230, open: Boolean(flags.open), remote, password, host, log, force: Boolean(flags.force), theme: flags.theme };
@@ -84,9 +84,7 @@ export async function devCommand(argv) {
   for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => { stopAll(); process.exit(0); });
 
   if (plan.remote) {
-    const lan = Object.values(networkInterfaces()).flat().find((i) => i && i.family === 'IPv4' && !i.internal)?.address ?? '<your address>';
-    console.log(`\n[slide.ng] remote access is ON. Others on your network need the password: ${plan.password}`);
-    console.log(`[slide.ng]   deck:      http://${lan}:${plan.port}/`);
-    console.log(`[slide.ng]   presenter: http://${lan}:${plan.port}/presenter/1?password=${plan.password}\n`);
+    const addresses = Object.values(networkInterfaces()).flat().filter((i) => i && i.family === 'IPv4' && !i.internal).map((i) => i.address);
+    console.log(remoteLines({ port: plan.port, password: plan.password, addresses }).join('\n'));
   }
 }

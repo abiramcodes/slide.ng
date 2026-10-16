@@ -3,7 +3,7 @@ import { HEADMATTER } from '../../slides/generated';
 // Slides are drawn on a fixed-size canvas and scaled to fit the window.
 // This keeps layouts identical on every screen (Slidev does the same).
 
-const DEFAULT_WIDTH = 960;
+const DEFAULT_WIDTH = 980;
 const DEFAULT_RATIO = 16 / 9;
 
 /** `16/9`, `'16/9'`, `'4 / 3'` or a plain number; anything unusable gives the default. */
@@ -14,11 +14,12 @@ function readRatio(value: unknown): number {
   return Number.isFinite(ratio) && ratio > 0.2 && ratio < 5 ? ratio : DEFAULT_RATIO;
 }
 
-/** The canvas size from the headmatter's `canvasWidth` (default 960) and `aspectRatio` (default 16/9). */
+/** The canvas size from the headmatter's `canvasWidth` (default 980, like Slidev) and `aspectRatio` (default 16/9). */
 export function readCanvasSize(headmatter: Record<string, unknown>): { width: number; height: number } {
   const w = Number(headmatter['canvasWidth']);
   const width = Number.isFinite(w) && w >= 100 && w <= 10_000 ? Math.round(w) : DEFAULT_WIDTH;
-  return { width, height: Math.round(width / readRatio(headmatter['aspectRatio'])) };
+  // Height rounds up, as in Slidev, so a printed page never gets a blank extra page.
+  return { width, height: Math.ceil(width / readRatio(headmatter['aspectRatio'])) };
 }
 
 /** The `zoom` of a slide: its own frontmatter first, then the headmatter. 1 when missing or unusable. */

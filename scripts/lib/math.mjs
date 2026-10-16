@@ -20,10 +20,14 @@ export function extractMath(markdown) {
   return { markdown: md, maths };
 }
 
+// The deck's own KaTeX options (setup/katex.ts), put over the defaults below.
+let katexOptions = {};
+export const setKatexOptions = (options = {}) => { katexOptions = options; };
+
 function render(latex, displayMode) {
   try {
     // `output: 'html'`: the MathML part is left out because Angular does not know MathML-only tags like <annotation>.
-    return katex.renderToString(latex, { displayMode, throwOnError: false, output: 'html' });
+    return katex.renderToString(latex, { throwOnError: false, ...katexOptions, displayMode, output: 'html' });
   } catch (e) {
     console.warn(`[slides] math could not be drawn: ${e.message}`);
     return protect(latex);

@@ -1,5 +1,6 @@
 // Camera bubble, recording controls and screen mirror, with Chromium's fake camera and microphone.
-import { statSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { readFileSync, statSync } from 'node:fs';
 
 export async function run({ t, open }) {
   const page = await open('/presenter/1');
@@ -51,6 +52,13 @@ export async function run({ t, open }) {
   t.ok('stopping downloads a webm named after the deck', /^phase-3-deck-\d{4}-\d\d-\d\d-\d\d-\d\d-\d\d\.webm$/.test(download.suggestedFilename()), download.suggestedFilename());
   const size = statSync(await download.path()).size;
   t.ok('the file holds video', size > 2000, String(size));
+  // MediaRecorder writes no duration; like Slidev, the saved file is given one (about the 3.8 seconds that were recorded without the pause).
+  const file = readFileSync(await download.path());
+  t.ok('the webm has a Duration element', file.subarray(0, 4000).includes(Buffer.from([0x44, 0x89, 0x88])));
+  try {
+    const seconds = Number(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'default=nw=1:nk=1', await download.path()], { encoding: 'utf8' }));
+    t.ok('a player reads the length of the recording', seconds > 1.5 && seconds < 12, String(seconds));
+  } catch { console.log('NOT VERIFIED the length read by a player: ffprobe is not installed'); }
   t.ok('the controls return to idle', (await page.locator('#record-time').count()) === 0 && (await page.locator('#nav-record').getAttribute('title')) === 'Start recording');
 
   // ---- recording the screen and the mirror: depends on what this browser allows without a person

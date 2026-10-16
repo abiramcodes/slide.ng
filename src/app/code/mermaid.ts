@@ -5,6 +5,7 @@
 import { Component, ElementRef, effect, inject, input, signal, untracked, viewChild } from '@angular/core';
 import { optionalNumber } from '../lib/attrs';
 import { Dark } from '../lib/dark';
+import { MERMAID_SETUP } from '../setup/tokens';
 import { unpack } from './unpack';
 
 let counter = 0;
@@ -52,6 +53,7 @@ export class Mermaid {
   protected error = signal('');
   private box = viewChild<ElementRef<HTMLElement>>('box');
   private dark = inject(Dark);
+  private setups = inject(MERMAID_SETUP);
 
   constructor() {
     effect(async () => {
@@ -59,7 +61,8 @@ export class Mermaid {
       const theme = this.theme() ?? (this.dark.isDark() ? 'dark' : 'default');
       const [packed, code, extra] = [this.packed(), this.code(), this.config()];
       const text = packed ? await unpack<string>(packed) : code;
-      const config = { theme, ...JSON.parse(extra) };
+      // setup/mermaid.ts of the roots come first, the diagram's own options last.
+      const config = { theme, ...Object.assign({}, ...this.setups.map((f) => f())), ...JSON.parse(extra) };
       untracked(() => this.pending.set(true));
       try {
         const svg = await draw(text, config);

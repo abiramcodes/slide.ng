@@ -54,7 +54,7 @@ node bin/slide-ng.mjs mcp [slides.md]          # MCP server on stdio: read and e
 | `create` | `<folder>`, `--force` (add the missing files to a folder that has files) |
 
 The export needs a Chromium: set `CHROME_PATH` or pass `--executable-path`. It never downloads one. The headmatter can set `exportFilename`, `export: { ... }` (the same names as the flags) and `download`.
-Hosting, `--base`, the PDF button, the offline mode and the head tags are in [docs/HOSTING.md](docs/HOSTING.md). Themes and addons are in [docs/THEMES.md](docs/THEMES.md) and [docs/WRITING-A-THEME.md](docs/WRITING-A-THEME.md).
+Hosting, `--base`, the PDF button, the offline mode and the head tags are in [docs/HOSTING.md](docs/HOSTING.md). Setup files (`setup/shiki.ts`, `katex.ts`, `mermaid.ts`, `monaco.ts`, `shortcuts.ts`, ...) are in [docs/SETUP.md](docs/SETUP.md). Themes and addons are in [docs/THEMES.md](docs/THEMES.md) and [docs/WRITING-A-THEME.md](docs/WRITING-A-THEME.md).
 
 Keys: right arrow / space = next click or slide, left arrow = back, `o` overview, `g` go to slide, `d` dark mode, `f` fullscreen.
 Move the mouse to the bottom left for the bar, right click for the menu. All keys are in [docs/SYNTAX.md](docs/SYNTAX.md).
@@ -96,7 +96,7 @@ npm start -- --remote=secret
 ```
 
 Others on your network can open the deck and follow the presenter. It prints the addresses; the presenter's is `/presenter/1?password=secret`.
-Without `=secret` a random password is made and printed. There is no HTTPS: use it on a network you trust. Details and the security rules are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+The password is optional, as in Slidev: plain `--remote` listens on every address with no password, prints a warning, and still checks the address, origin and session token of every request. There is no HTTPS: use it on a network you trust. Details and the security rules are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Tests
 

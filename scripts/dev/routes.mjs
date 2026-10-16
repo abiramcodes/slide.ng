@@ -5,6 +5,7 @@ import { writeDrawing, MAX_DRAWING } from './drawings-store.mjs';
 import { HttpError } from './http-error.mjs';
 import { MAX_FILE, writeMonaco } from './monaco-write.mjs';
 import { readSlide, writeDrag, writeSlide } from './slides-write.mjs';
+import { canvasSize } from '../lib/canvas-size.mjs';
 import { parseDeck } from '../lib/parse-deck.mjs';
 
 const json = (res, status, body, headers = {}) => {
@@ -58,8 +59,8 @@ export function createHandler(ctx) {
     }
     if ((m = /^\/drawings\/(\d+)$/.exec(path)) && method === 'PUT') {
       const { svg } = await body(req, MAX_DRAWING + 1_000);
-      const { slides } = await parseDeck(ctx.entry);
-      await serial(async () => writeDrawing(ctx, number(m[1]), svg, slides.length));
+      const { slides, headmatter } = await parseDeck(ctx.entry);
+      await serial(async () => writeDrawing(ctx, number(m[1]), svg, slides.length, canvasSize(headmatter)));
       return json(res, 200, { ok: true });
     }
     if ((m = /^\/monaco\/([\w-]{1,40})$/.exec(path)) && method === 'PUT') {

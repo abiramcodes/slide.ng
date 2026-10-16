@@ -17,8 +17,9 @@ addons:
 - `theme: default` (or `none`, or no `theme:`) is the built-in theme.
 - A name that is not a path is looked up in `node_modules` (from the deck's folder upwards) as `slide-ng-theme-<name>`, then as `<name>`.
   Addons use `slide-ng-addon-<name>`, then `<name>`.
-- A path that is not a folder is an error. A package name that is not installed is a **warning**, and the built-in theme is used,
-  so a deck written for another tool's theme still runs.
+- A path that is not a folder is an error, and so is a package name that is not installed, as in Slidev: the build stops with
+  `The theme "x" was not found. Install it with: npm install -D slide-ng-theme-x` (`pnpm add -D` or `yarn add -D` when the deck has that lock file).
+  In a terminal, `dev` and `build` ask first whether to install it now. A name with a slash (`themes/mine`) is a path, `@/themes/mine` is relative to the deck's folder.
 - `SLIDE_NG_THEME=<name|path>` in the environment overrides the headmatter (the generator reads it).
 - `slide-ng theme eject` copies the theme in use into `./theme` and sets `theme: ./theme` (see below).
 
@@ -43,7 +44,8 @@ folders listed below; the rest of it (your markdown, `node_modules`, ...) is nev
 | `layers/<name>.ts` | A layer component: `global-top`, `global-bottom`, `slide-top`, `slide-bottom` (default export). |
 | `styles/index.css` | CSS. Added after the app's styles, so it can override them. |
 | `public/` | Files served from the site root (`/logo.png`). Merged; the later root wins on the same name. |
-| `setup/providers.ts` | Angular providers (default export: an array). See "Setup hooks". |
+| `setup/*.ts` | Setup hooks: `shiki`, `katex`, `transformers`, `preparser`, `mermaid`, `monaco`, `code-runners`, `shortcuts`, `context-menu`, `main`, `root`. Written out in [SETUP.md](SETUP.md). |
+| `setup/providers.ts` | Angular providers (default export: an array; `setup/main.ts` is the newer way). See "Setup hooks". |
 | `uno.config.mjs` | UnoCSS settings (default export). Merged into the app's: `presets`, `rules`, `safelist`, `variants` are added; `shortcuts` and `theme` are merged key by key. |
 | `theme.json` | Name, default headmatter and layout inputs. See below. |
 
@@ -86,6 +88,8 @@ import { SHORTCUTS_SETUP } from 'slide-ng/lib/shortcuts';
   `classProp: true` sends the slide's `class` to the input `contentClass` instead of the tag.
 
 ## Setup hooks
+
+The hooks of a theme or addon work the same as in a deck and are listed, with examples, in [SETUP.md](SETUP.md); the deck's own file always runs last.
 
 `setup/providers.ts` default-exports an array of Angular providers. They are added to the application, so a theme can use any token the app injects:
 

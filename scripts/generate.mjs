@@ -1,8 +1,10 @@
 // Reads slides.md and writes one Angular component per slide into
 // src/slides/generated/, plus an index.ts and uno.css (the CSS for the class names in use). Usage: node scripts/generate.mjs [--watch]
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, watch, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { offerInstall } from './lib/install-root.mjs';
 import { parseDeck } from './lib/parse-deck.mjs';
+import { RootNotFoundError } from './lib/roots.mjs';
 import { ROOT_FOLDERS } from './lib/roots.mjs';
 import { slideName, slideSource } from './lib/emit.mjs';
 import { indexSource } from './lib/index-source.mjs';
@@ -10,6 +12,9 @@ import { layoutName } from './lib/layouts.mjs';
 import { makeCss, tsFiles } from './lib/make-css.mjs';
 import { detectFeatures } from './lib/features.mjs';
 import { initHighlighter } from './lib/code/highlighter.mjs';
+import { setKatexOptions } from './lib/math.mjs';
+import { katexOptions, shikiSetup, transformersSetup } from './lib/setup/node-setups.mjs';
+import { applyPreTransformers } from './lib/setup/pre-transform.mjs';
 import { readDrawings } from './lib/drawings.mjs';
 import { applyRoots } from './lib/theme-files.mjs';
 import { monacoWriteTargets, resetMonacoWriteTargets } from './lib/code/monaco.mjs';
@@ -61,8 +66,21 @@ function writeIndexHtml(deck, base) {
   write(`${OUT}index.html`, renderIndexHtml(readFileSync('src/index.html', 'utf8'), parts, warn));
 }
 
+// A missing theme or addon: in a terminal the first run offers to install it (like Slidev); otherwise the error stops the run.
+let deckRead = false;
+async function readDeck() {
+  try {
+    return await parseDeck(INPUT, undefined, { theme: THEME });
+  } catch (e) {
+    if (!(e instanceof RootNotFoundError) || deckRead || process.argv.includes('--watch')) throw e;
+    if (!(await offerInstall(e, dirname(resolve(INPUT))))) throw e;
+    return parseDeck(INPUT, undefined, { theme: THEME });
+  }
+}
+
 async function generate() {
-  const deck = await parseDeck(INPUT, undefined, { theme: THEME });
+  const deck = await readDeck();
+  deckRead = true;
   const build = buildOptions();
   deck.problems.forEach((p) => console.warn(`[slides] ${p}`));
   // Options of `slide-ng build` (see lib/build-options.mjs).
@@ -80,8 +98,12 @@ async function generate() {
   const { unoConfigs } = await applyRoots(deck, OUT, write, (m) => console.warn(`[slides] ${m}`));
   // Decide each layout once, so that an unknown name is reported once.
   deck.slides.forEach((s, i) => (s.layout = layoutName(s.frontmatter, i, deck.layouts)));
+  // setup/katex.ts, setup/transformers.ts and setup/shiki.ts of the roots (docs/SETUP.md).
+  setKatexOptions(await katexOptions(deck.roots));
+  deck.transformers = await transformersSetup(deck.roots);
+  await applyPreTransformers(deck.slides, deck.transformers.pre, deck.headmatter);
   const features = detectFeatures(deck.slides);
-  await initHighlighter({ langs: features.langs, headmatter: deck.headmatter, twoslash: features.twoslash });
+  await initHighlighter({ langs: features.langs, headmatter: deck.headmatter, twoslash: features.twoslash, setup: await shikiSetup(deck.roots) });
   const wanted = new Set(deck.slides.map((_, i) => `${slideName(i + 1)}.ts`).concat('index.ts', 'index.html', 'layers.ts', 'setup.ts', 'theme.css', 'uno.css', 'features.css', 'remote-assets', 'roots', 'public'));
   for (const f of readdirSync(OUT)) if (!wanted.has(f)) rmSync(OUT + f, { recursive: true });
   resetMonacoWriteTargets();

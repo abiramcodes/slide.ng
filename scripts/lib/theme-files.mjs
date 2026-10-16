@@ -3,27 +3,56 @@
 import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { fontsCss } from './fonts.mjs';
 import { findLayerFiles, layersSource } from './layers.mjs';
 import { scanRoots } from './scan-roots.mjs';
 import { syncRoots } from './sync-roots.mjs';
 
-/** `src/slides/generated/setup.ts`: the Angular providers that roots bring in `setup/providers.ts` (default export: an array). */
-export function setupSource(roots) {
-  const withSetup = roots.filter((r) => existsSync(join(r.dir, 'setup', 'providers.ts')));
-  const imports = withSetup.map((r, i) => `import providers${i} from './roots/${r.id}/setup/providers';`);
-  const list = withSetup.map((_, i) => `...providers${i}`).join(', ');
-  return `// GENERATED: providers from the setup/providers.ts of themes, addons and the deck - do not edit
-import type { Provider } from '@angular/core';
-${imports.join('\n')}
+// The browser side setup files (docs/SETUP.md): the name of the file, and the helper of src/app/setup/index.ts that turns the files into providers.
+// `providers.ts` is the older way and default-exports an array itself.
+const BROWSER_SETUPS = [
+  ['main', 'mainProviders'],
+  ['root', 'rootProviders'],
+  ['shortcuts', 'shortcutsProviders'],
+  ['context-menu', 'contextMenuProviders'],
+  ['mermaid', 'mermaidProviders'],
+  ['monaco', 'monacoProviders'],
+  ['code-runners', 'codeRunnerProviders'],
+];
 
-export const SETUP_PROVIDERS: Provider[] = [${list}];
+/** `src/slides/generated/setup.ts`: the providers that roots bring in `setup/*.ts`. Weakest root first, so the deck has the last word. */
+export function setupSource(roots) {
+  const has = (r, name) => existsSync(join(r.dir, 'setup', `${name}.ts`));
+  const imports = [];
+  const list = [];
+  roots.filter((r) => has(r, 'providers')).forEach((r, i) => {
+    imports.push(`import providers${i} from './roots/${r.id}/setup/providers';`);
+    list.push(`...providers${i}`);
+  });
+  for (const [name, helper] of BROWSER_SETUPS) {
+    const names = roots.filter((r) => has(r, name)).map((r) => {
+      const id = `${name.replace(/-(\w)/g, (_, c) => c.toUpperCase())}${imports.length}`;
+      imports.push(`import ${id} from './roots/${r.id}/setup/${name}';`);
+      return id;
+    });
+    if (names.length) list.push(`...${helper}([${names.join(', ')}])`);
+  }
+  const helpers = BROWSER_SETUPS.filter(([, h]) => list.some((l) => l.startsWith(`...${h}(`))).map(([, h]) => h);
+  return `// GENERATED: providers from the setup/*.ts of themes, addons and the deck - do not edit
+import type { EnvironmentProviders, Provider } from '@angular/core';
+${helpers.length ? `import { ${helpers.join(', ')} } from '../../app/setup';\n` : ''}${imports.join('\n')}
+
+export const SETUP_PROVIDERS: (Provider | EnvironmentProviders)[] = [${list.join(', ')}];
 `;
 }
 
-/** `src/slides/generated/theme.css`: the style sheets of the roots (`styles/index.css`), weakest first. */
-export function themeCss(roots) {
+/** `src/slides/generated/theme.css`: the deck's `fonts`, then the style sheets of the roots (`styles/index.css`), weakest first. */
+export function themeCss(roots, headmatter = {}) {
   const imports = roots.filter((r) => existsSync(join(r.dir, 'styles', 'index.css'))).map((r) => `@import './roots/${r.id}/styles/index.css';`);
-  return imports.length ? `${imports.join('\n')}\n` : '/* no theme styles */\n';
+  // An @import must come before the rules, so the font @import is written first and the font rules after the roots' imports.
+  const lines = fontsCss(headmatter).split('\n').filter(Boolean);
+  const text = [...lines.filter((l) => l.startsWith('@import')), ...imports, ...lines.filter((l) => !l.startsWith('@import'))].join('\n');
+  return text ? `${text}\n` : '/* no theme styles */\n';
 }
 
 /**
@@ -46,7 +75,7 @@ export async function applyRoots(deck, out, write, warn) {
   deck.layers = Object.keys(layerFiles);
   write(`${out}layers.ts`, layersSource(layerFiles));
   write(`${out}setup.ts`, setupSource(deck.roots));
-  write(`${out}theme.css`, themeCss(deck.roots));
+  write(`${out}theme.css`, themeCss(deck.roots, deck.headmatter));
 
   // A root's uno.config.mjs is plain JavaScript that default-exports (part of) a UnoCSS config.
   const unoConfigs = [];

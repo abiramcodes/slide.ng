@@ -8,6 +8,8 @@ import { Drawings } from './drawing/drawings';
 import { DrawingControls } from './drawing/drawing-controls';
 import { DrawingLayer } from './drawing/drawing-layer';
 import { Nav } from './lib/nav';
+import { swipeAction } from './lib/swipe';
+import { contextMenuEnabled } from './lib/switches';
 import { SlideShow } from './lib/slide-show';
 import { keyHandler } from './lib/key-handler';
 import { Ui } from './lib/ui-state';
@@ -33,6 +35,8 @@ import { Overview } from './ui/overview';
       [class.slidev-nav-go-forward]="nav.direction() > 0"
       [class.slidev-nav-go-backward]="nav.direction() < 0"
       (contextmenu)="contextMenu($event)"
+      (pointerdown)="swipeStart($event)"
+      (pointerup)="swipeEnd($event)"
     >
       <app-slide-show context="slide"><app-drawing-layer /><app-drag-controls /><app-presenter-cursor /></app-slide-show>
       <div class="absolute bottom-0 left-0 p-2 transition duration-300 opacity-0 hover:opacity-100 focus-within:opacity-100">
@@ -55,15 +59,30 @@ export class Deck {
   private ui = inject(Ui);
   protected editor = inject(SideEditorState);
   protected key = keyHandler(this.nav, this.ui);
+  private drawings = inject(Drawings);
+  private swipeFrom: { x: number; y: number } | null = null;
 
   constructor() {
     hideIdleCursor(() => this.ui.hideIdleCursor());
     startNavSync(this.nav);
   }
 
+  // Touch swipes move through the deck (not while drawing, as in Slidev).
+  swipeStart(e: PointerEvent) {
+    this.swipeFrom = e.pointerType === 'touch' && !this.drawings.enabled() ? { x: e.clientX, y: e.clientY } : null;
+  }
+
+  swipeEnd(e: PointerEvent) {
+    const from = this.swipeFrom;
+    this.swipeFrom = null;
+    if (!from || e.pointerType !== 'touch' || this.drawings.enabled()) return;
+    const action = swipeAction(e.clientX - from.x, e.clientY - from.y, window.innerWidth, window.innerHeight);
+    if (action) this.nav[action]();
+  }
+
   // Shift + right click keeps the browser's own menu.
   contextMenu(e: MouseEvent) {
-    if (e.shiftKey || e.defaultPrevented) return;
+    if (e.shiftKey || e.defaultPrevented || !contextMenuEnabled()) return;
     e.preventDefault();
     this.ui.contextMenu.set({ x: e.pageX, y: e.pageY });
   }

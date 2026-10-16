@@ -20,12 +20,12 @@ export function isSafeMarkup(markup) {
 }
 
 /** Write (or, for an empty drawing, delete) the file of slide `no`. */
-export function writeDrawing(ctx, no, markup, slideCount) {
+export function writeDrawing(ctx, no, markup, slideCount, size) {
   if (!Number.isInteger(no) || no < 1 || no > slideCount) throw new HttpError(400, 'bad slide number');
   const dir = join(ctx.root, DRAWINGS_DIR);
   const file = join(dir, `${no}.svg`);
   if (typeof markup === 'string' && markup.trim() === '') { rmSync(file, { force: true }); return; }
   if (!isSafeMarkup(markup)) throw new HttpError(422, 'the drawing contains something that is not a drawing shape');
   mkdirSync(dir, { recursive: true });
-  writeFileSync(file, svgDocument(markup));
+  writeFileSync(file, svgDocument(markup, size));
 }

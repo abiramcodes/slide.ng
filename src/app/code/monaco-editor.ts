@@ -4,6 +4,7 @@ import { Component, ElementRef, afterNextRender, booleanAttribute, computed, eff
 import { DevApi } from '../dev/dev-api';
 import { Dark } from '../lib/dark';
 import { CodeRunner } from './code-runner';
+import { MONACO_SETUP } from '../setup/tokens';
 import { runJs } from './monaco/run-js';
 import { CODE_RUNNERS } from './runners';
 import { unpack } from './unpack';
@@ -58,6 +59,7 @@ export class MonacoEditor {
   private model?: Monaco.editor.ITextModel;
   private ready: Promise<void>;
   private markReady!: () => void;
+  private setups = inject(MONACO_SETUP);
 
   protected height = computed(() => {
     const h = this.heightOption();
@@ -77,19 +79,23 @@ export class MonacoEditor {
     const modified = this.diff() ? (await unpack<string>(this.diff())).trimEnd() : null;
     const { monaco } = await import('./monaco/setup');
     this.monaco = monaco;
+    // setup/monaco.ts of the roots: they get `monaco`, and the options they return apply to every editor.
+    const fromSetup: Monaco.editor.IStandaloneEditorConstructionOptions = {};
+    for (const setup of this.setups) Object.assign(fromSetup, await setup(monaco));
     const lang = LANGUAGES[this.lang()] ?? this.lang();
     const ext = EXTENSIONS[lang] ?? lang;
     const newModel = (value: string) => monaco.editor.createModel(value, lang, monaco.Uri.parse(`file:///model-${++modelCounter}.${ext}`));
 
     const model = (this.model = newModel(text));
     this.code.set(text);
-    const options = {
+    const base = {
       automaticLayout: true, readOnly: this.readonly(), lineNumbers: this.lines() ? 'on' : 'off',
       minimap: { enabled: false }, overviewRulerBorder: false, overviewRulerLanes: 0, padding: { top: 10, bottom: 10 },
       lineNumbersMinChars: 3, bracketPairColorization: { enabled: false }, tabSize: 2, fontSize: 11.5,
       fontFamily: 'var(--slidev-code-font-family)', scrollBeyondLastLine: false, useInlineViewWhenSpaceIsLimited: false,
       theme: this.dark.isDark() ? 'vs-dark' : 'vs',
     } as const;
+    const options: Monaco.editor.IStandaloneEditorConstructionOptions = { ...base, ...fromSetup };
 
     const grow = (height: number) => { this.firstHeight.update((h) => h || height); this.contentHeight.set(height); };
     if (modified != null) {

@@ -14,7 +14,7 @@ command line as a package, themes and addons, an example theme, the MCP server a
 5. **Offline mode** (`pwa: true`): manifest, install icons (192, 512, maskable 512), service worker and an "Available offline" / "Offline" label, tested in Chromium with the server stopped.
 6. **Command line as a package**: `bin/slide-ng.mjs` with `dev` (default), `build`, `export`, `export-notes`, `format`, `theme eject`, `mcp`, `create`; flags `--port --open --remote --bind --log --force --base (build) --theme`;
    `npm start` runs the same code. Single package with a `template/` folder (DECISIONS.md 11). `create my-deck` was run, and the new deck was formatted and built (the repository stands in for `npm install slide-ng`, see below).
-7. **Themes and addons**: `theme:`, `addons:`, `--theme`, folders in the deck, layouts, components, layers, styles, public, UnoCSS settings, default headmatter, setup providers (shortcuts, code runners), `theme eject`,
+7. **Themes and addons**: `theme:`, `addons:`, `--theme`, folders in the deck, layouts, components, layers, styles, public, UnoCSS settings, default headmatter, the `setup/` hooks (docs/SETUP.md), `theme eject`,
    `examples/theme-minimal` (docs/THEMES.md, docs/WRITING-A-THEME.md). The example theme changes the rendered output and its component is used from slides (browser test).
 8. **MCP server** `slide-ng mcp`: seven tools, tested with a scripted client over stdio (initialize, tools/list, get, update, insert, move, remove, refusals, path confinement).
 9. **Polish**: the PDF button in the bar (enabled only when the PDF exists), `dev --open`, `--theme`, the side editor takes over outside edits, the next-step preview draws global layers, v-drag boxes were already drawn in thumbnails.
@@ -27,7 +27,7 @@ command line as a package, themes and addons, an example theme, the MCP server a
 - `npm run test:e2e`: starter deck **45**, showcase **144**, code and content **125**, phase 3 decks **152**, print route **24**; 0 failed.
 - `npm run test:dev`: live update **6**, dev server **36**; 0 failed.
 - `npm run test:export`: export command **33**, build **46**, theme **18**, scaffold **13**, MCP **22**; 0 failed.
-- Hand-written code: scripts, CLI, exporter, dev server and MCP 3750 lines, app 6463 lines (largest file 152 lines, largest script 148), unit tests 3607, browser and export tests with their decks 3655, CSS 352, docs and README 2015, example theme and template 175.
+- Tests at the last full run: 629 unit tests; browser tests 45, 144, 125, 154, 24 and 24 checks (run, showcase, phase 2 to 5); dev server tests 6 and 46; export tests 123.
 
 ## Not done
 
@@ -35,11 +35,11 @@ command line as a package, themes and addons, an example theme, the MCP server a
 - `export` takes one entry; no `--format pptx-editable`.
 - `dev --tunnel` (needs a tunnel service; refused with a message) and `dev --base` (refused with a message); `build --router-mode` (use `routerMode`).
 - VS Code extension, prettier plugin, Vue-syntax converter, community themes, browser exporter page, `overviewSnapshots` (out of scope).
-- Setup hooks for Shiki, KaTeX, Mermaid, Monaco and the markdown pipeline; Monaco type loading; `fonts`; MDC/Comark; `notesAutoRuby`; slide hooks; custom transition objects; touch controls. The full list is in docs/PARITY.md.
+- Monaco type loading; fonts copied into the build; MDC/Comark; `notesAutoRuby`; slide hooks; custom transition objects; touch tuning for drawing and drag. The full list is in docs/PARITY.md.
 - PWA: remote pictures are not cached in dev. Icons are drawn with Chromium at build time (a build without one warns and has no icons).
 - MCP: slide 1 cannot be removed or moved; insert, remove and move need all slides in the entry file.
-- The first load of a deck with Monaco and KaTeX is about 850 kB (budget raised to 1 MB / 2 MB).
-- Recording: no `fix-webm-duration`, no separate camera file, no cloud upload (as before). No HTTPS for `--remote` (as before).
+- The first load of a deck with Monaco and KaTeX is about 850 kB (budget 1.5 MB / 3 MB).
+- Recording: no separate camera file, no mp4 or mkv, no cloud upload. No HTTPS for `--remote` (as before).
 - Phase 2 and phase 3 lists still apply (Monaco and Mermaid limits, `v-motion` limits, footnote limits, resizing a rotated `v-drag` box, `{monaco-write}` limits, imported slides outside the deck's folder cannot be edited by the dev server).
 
 ## Problems found and fixed along the way
