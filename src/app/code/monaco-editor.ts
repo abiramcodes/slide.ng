@@ -1,6 +1,7 @@
 // A code block that is a real editor:  ```ts {monaco}   ```ts {monaco-diff}   ```ts {monaco-run}
 // Port of Slidev's Monaco.vue. Monaco itself is loaded lazily the first time one of these is on screen.
 import { Component, ElementRef, afterNextRender, booleanAttribute, computed, effect, inject, input, signal, viewChild } from '@angular/core';
+import { DevApi } from '../dev/dev-api';
 import { Dark } from '../lib/dark';
 import { CodeRunner } from './code-runner';
 import { runJs } from './monaco/run-js';
@@ -39,11 +40,15 @@ export class MonacoEditor {
   runnable = input(false, { transform: booleanAttribute });
   autorun = input<boolean | 'once', unknown>(true, { transform: toAutorun });
   showOutputAt = input<string>();
+  /** `{monaco-write}`: the id the dev server knows the file by. Edits are saved through it. */
+  writeId = input('', { alias: 'write-id' });
 
   /** The current text of the editor; the runner watches it. */
   protected code = signal('');
   private box = viewChild.required<ElementRef<HTMLElement>>('box');
   private dark = inject(Dark);
+  private api = inject(DevApi);
+  private writeTimer?: ReturnType<typeof setTimeout>;
   private contentHeight = signal(0);
   private firstHeight = signal(0);
   private monaco?: typeof Monaco;
@@ -97,8 +102,20 @@ export class MonacoEditor {
       const editor = monaco.editor.create(this.box().nativeElement, { model, lineDecorationsWidth: 0, ...options });
       editor.onDidContentSizeChange((e) => grow(e.contentHeight + 4));
     }
-    model.onDidChangeContent(() => { if (modified == null) this.code.set(model.getValue()); });
+    model.onDidChangeContent(() => {
+      if (modified != null) return;
+      this.code.set(model.getValue());
+      this.saveToFile(model.getValue());
+    });
     this.markReady();
+  }
+
+  // `{monaco-write}`: write the text to its file once the typing pauses (dev server only).
+  private saveToFile(text: string) {
+    const id = this.writeId();
+    if (!id) return;
+    clearTimeout(this.writeTimer);
+    this.writeTimer = setTimeout(() => void this.api.send('PUT', `/monaco/${id}`, { content: text }), 600);
   }
 
   // Runs the editor's text: TypeScript is turned into JavaScript by Monaco's own TypeScript worker.

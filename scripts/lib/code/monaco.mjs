@@ -1,8 +1,32 @@
 // ```ts {monaco}, {monaco-diff} and {monaco-run} -> <monaco> editor component (src/app/code/monaco-editor.ts).
 // The code travels packed, because code is full of braces and quotes.
 import { parseMonacoInfo } from './meta.mjs';
+import { createHash } from 'node:crypto';
+import { relative } from 'node:path';
 import { attrs } from '../protect.mjs';
 import { pack } from '../pack.mjs';
+
+// `{monaco-write}` editors, as { id: file path in the project }. The generator saves this list next to the deck
+// and the dev server writes only to files on it (scripts/dev/monaco-write.mjs): the page sends an id, never a path.
+const writeTargets = {};
+export const monacoWriteTargets = () => ({ ...writeTargets });
+export const resetMonacoWriteTargets = () => { for (const k of Object.keys(writeTargets)) delete writeTargets[k]; };
+
+/** The id of an editor that saves to `file`, or undefined (and a warning) when it cannot. */
+function writeIdFor(fence, ctx) {
+  if (!fence.file || fence.partial) {
+    console.warn('[slides] {monaco-write} needs a whole file: use `<<< ./file.ts {monaco-write}` (not a #region), the editor is shown without saving');
+    return undefined;
+  }
+  const path = relative(ctx.root ?? '.', fence.file);
+  if (path.startsWith('..')) {
+    console.warn(`[slides] {monaco-write}: ${fence.file} is outside the project, the editor is shown without saving`);
+    return undefined;
+  }
+  const id = createHash('sha1').update(path).digest('hex').slice(0, 12);
+  writeTargets[id] = path;
+  return id;
+}
 
 export const isMonaco = (fence) => parseMonacoInfo(fence.info) !== null;
 
@@ -11,16 +35,14 @@ const DIFF_SEPARATOR = /^\s*~~~\s*\n/m;
 
 export function renderMonaco(fence, ctx = {}) {
   const { lang, kind, options } = parseMonacoInfo(fence.info);
-  if (kind === 'monaco-write') {
-    // Saving to the file needs the dev server; this is phase 3.
-    console.warn('[slides] {monaco-write} is not supported yet, the editor is shown without saving');
-  }
+  const writeId = kind === 'monaco-write' ? writeIdFor(fence, ctx) : undefined;
   const [original, modified] = (kind === 'monaco-diff' ? fence.code.split(DIFF_SEPARATOR, 2) : [fence.code]).map((s) => s.trimEnd());
   const a = attrs({
     lang,
     runnable: kind === 'monaco-run' || undefined,
     lines: options.lines ?? ctx.headmatter?.lineNumbers,
     readonly: options.readonly,
+    'write-id': writeId,
     height: options.height,
     autorun: options.autorun === undefined ? undefined : String(options.autorun),
     showOutputAt: options.showOutputAt,

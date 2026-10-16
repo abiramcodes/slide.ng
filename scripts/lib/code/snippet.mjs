@@ -38,7 +38,7 @@ export function dedent(lines) {
 }
 
 // `line` is the whole `<<<` line, `file` the markdown file it is in, `root` the project folder.
-// Returns { code, lang, meta, path } or throws with a readable message.
+// Returns { code, lang, meta, path, partial } (`partial`: only a region of the file) or throws with a readable message.
 export function resolveSnippet(line, file, root) {
   const m = SNIPPET_LINE.exec(line.trim());
   if (!m) return null;
@@ -51,5 +51,5 @@ export function resolveSnippet(line, file, root) {
     if (found) lines = dedent(found);
     else console.warn(`[slides] region "${region.slice(1)}" not found in ${path}, using the whole file`);
   }
-  return { code: lines.join('\n'), lang: lang.trim() || extname(name).slice(1), meta: meta.trim(), path };
+  return { code: lines.join('\n'), lang: lang.trim() || extname(name).slice(1), meta: meta.trim(), path, partial: !!region };
 }

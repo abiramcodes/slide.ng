@@ -10,6 +10,7 @@ import { detectFeatures } from './lib/features.mjs';
 import { initHighlighter } from './lib/code/highlighter.mjs';
 import { readDrawings } from './lib/drawings.mjs';
 import { findLayers, layersSource } from './lib/layers.mjs';
+import { monacoWriteTargets, resetMonacoWriteTargets } from './lib/code/monaco.mjs';
 
 // SLIDES_FILE lets tests build another deck.
 const INPUT = process.env.SLIDES_FILE ?? 'slides.md';
@@ -32,6 +33,15 @@ function featureCss(features) {
   return imports.length ? imports.join('\n') + '\n' : '/* no feature styles needed */\n';
 }
 
+// The editors that may save to a file (`{monaco-write}`). The dev server reads this list; see scripts/dev/monaco-write.mjs.
+function writeMonacoTargets(root) {
+  const targets = monacoWriteTargets();
+  const file = `${root}/.slide-ng/monaco-files.json`;
+  if (!Object.keys(targets).length && !existsSync(file)) return;
+  mkdirSync(`${root}/.slide-ng`, { recursive: true });
+  write(file, JSON.stringify(targets, null, 2) + '\n');
+}
+
 async function generate() {
   const deck = await parseDeck(INPUT);
   deck.problems.forEach((p) => console.warn(`[slides] ${p}`));
@@ -44,7 +54,9 @@ async function generate() {
   mkdirSync(OUT, { recursive: true });
   const wanted = new Set(deck.slides.map((_, i) => `${slideName(i + 1)}.ts`).concat('index.ts', 'layers.ts', 'uno.css', 'features.css'));
   for (const f of readdirSync(OUT)) if (!wanted.has(f)) rmSync(OUT + f);
+  resetMonacoWriteTargets();
   deck.slides.forEach((s, i) => write(`${OUT}${slideName(i + 1)}.ts`, slideSource(s, i + 1, deck)));
+  writeMonacoTargets(deck.root);
   write(`${OUT}index.ts`, indexSource(deck));
   write(`${OUT}layers.ts`, layersSource(deck.layers));
   write(`${OUT}features.css`, featureCss(features));

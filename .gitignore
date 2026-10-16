@@ -45,3 +45,7 @@ Thumbs.db
 
 # Written by `npm run generate` from slides.md
 /src/slides/generated/
+
+# Written by the generator: the files a {monaco-write} editor may save to
+**/.slide-ng/monaco-files.json
+/tests/e2e/dev/.slide-ng/

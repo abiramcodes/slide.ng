@@ -32,7 +32,7 @@ export function extractFences(markdown, ctx = {}) {
       open = { ticks: ticks.length, info: info.trim(), lines: [] };
     } else if (SNIPPET_LINE.test(line)) {
       const snippet = resolveSafe(line, ctx);
-      if (snippet) finish({ ticks: 3, info: `${snippet.lang} ${snippet.meta}`.trim(), code: snippet.code });
+      if (snippet) finish({ ticks: 3, info: `${snippet.lang} ${snippet.meta}`.trim(), code: snippet.code, file: snippet.path, partial: snippet.partial });
     } else if (!group && GROUP_OPEN.test(line)) {
       group = [];
     } else if (group && GROUP_CLOSE.test(line)) {

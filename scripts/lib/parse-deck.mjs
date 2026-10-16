@@ -19,6 +19,8 @@ export async function parseDeck(file = 'slides.md', sources) {
     content: s.content,
     note: s.note,
     file: s.source?.filepath, // the markdown file this slide came from (snippet paths start there)
+    // Where the slide sits in that file, in lines: the dev server edits the file there.
+    source: s.source && { filepath: s.source.filepath, start: s.source.start, contentStart: s.source.contentStart, end: s.source.end },
   }));
 
   // Import problems (missing file, circular import, bad range) are collected by the parser.

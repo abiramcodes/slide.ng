@@ -1,0 +1,76 @@
+import { Injectable, isDevMode, signal } from '@angular/core';
+
+/** Where the dev companion server answers. The Angular dev server forwards this address to it. */
+export const API = '/__slide-ng';
+
+/**
+ * The page's door to the dev companion server (scripts/dev/server.mjs). Only a dev build uses it: in a static
+ * build `enabled` is false and nothing is ever requested. It logs in with `?password=` (or asks once), then
+ * fetches the session token that every write needs.
+ */
+@Injectable({ providedIn: 'root' })
+export class DevApi {
+  readonly enabled = isDevMode();
+  /** The server wants a password and we do not have it: writes and device sync stay off. */
+  readonly locked = signal(false);
+  private session?: Promise<string | null>;
+
+  /** The session token, or null when there is no companion server (or no access). Asked once per page. */
+  token(): Promise<string | null> {
+    if (!this.enabled) return Promise.resolve(null);
+    return (this.session ??= this.connect());
+  }
+
+  private async connect(): Promise<string | null> {
+    try {
+      const fromUrl = new URLSearchParams(location.search).get('password');
+      if (fromUrl) { await this.login(fromUrl); this.forgetPasswordInUrl(); }
+      let res = await fetch(`${API}/session`, { credentials: 'same-origin' });
+      if (res.status === 401) {
+        const typed = window.prompt('Password for this slide.ng session');
+        if (typed && (await this.login(typed))) res = await fetch(`${API}/session`, { credentials: 'same-origin' });
+      }
+      if (res.status === 401) this.locked.set(true);
+      return res.ok ? ((await res.json()) as { token: string }).token : null;
+    } catch {
+      return null; // no companion server (a plain `ng serve`): the deck works, it just cannot write
+    }
+  }
+
+  private async login(password: string): Promise<boolean> {
+    const res = await fetch(`${API}/login`, {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'content-type': 'application/json' }, body: JSON.stringify({ password }),
+    });
+    return res.ok;
+  }
+
+  // The password should not stay in the address bar, the history or a shared link.
+  private forgetPasswordInUrl() {
+    const url = new URL(location.href);
+    url.searchParams.delete('password');
+    history.replaceState(history.state, '', url);
+  }
+
+  /** POST or PUT a JSON body. Resolves true when the server accepted it. */
+  async send(method: 'POST' | 'PUT', path: string, body: unknown): Promise<boolean> {
+    const token = await this.token();
+    if (!token) return false;
+    try {
+      const res = await fetch(`${API}${path}`, {
+        method, credentials: 'same-origin', body: JSON.stringify(body),
+        headers: { 'content-type': 'application/json', 'x-slide-ng-token': token },
+      });
+      return res.ok;
+    } catch { return false; }
+  }
+
+  async get<T>(path: string): Promise<T | null> {
+    const token = await this.token();
+    if (!token) return null;
+    try {
+      const res = await fetch(`${API}${path}`, { credentials: 'same-origin', headers: { 'x-slide-ng-token': token } });
+      return res.ok ? ((await res.json()) as T) : null;
+    } catch { return null; }
+  }
+}

@@ -1,0 +1,32 @@
+// The dev companion server: what the Angular dev server cannot do. It writes to slides.md, saves drawings,
+// and passes sync messages between windows (WebSocket). It listens on 127.0.0.1 only; the Angular dev server
+// proxies `/__slide-ng/*` to it (proxy.conf.mjs), so the page uses the same address and the same origin for everything.
+// Even with `--remote` this server is not reachable from the network by itself: only through the proxy, with the same checks.
+import { createServer } from 'node:http';
+import { API, check } from './auth.mjs';
+import { readConfig } from './config.mjs';
+import { createHandler } from './routes.mjs';
+import { createHub } from './ws-hub.mjs';
+
+export function startServer(ctx) {
+  const server = createServer(createHandler(ctx));
+  const hub = createHub();
+  // A WebSocket starts as an HTTP request: it gets the same checks as a write (host, origin, password, token).
+  server.on('upgrade', (req, socket, head) => {
+    const path = new URL(req.url, 'http://x').pathname;
+    const denied = path === `${API}/ws` ? check(req, ctx) : { status: 404, error: 'not found' };
+    if (denied) {
+      socket.end(`HTTP/1.1 ${denied.status} ${denied.error}\r\nConnection: close\r\n\r\n`);
+      return;
+    }
+    hub.handleUpgrade(req, socket, head, (ws) => hub.emit('connection', ws, req));
+  });
+  return new Promise((resolve) => server.listen(ctx.port, '127.0.0.1', () => resolve({ server, hub, port: server.address().port })));
+}
+
+// Started as a program by scripts/dev.mjs (or by a test, with its own environment).
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const ctx = readConfig(process.env);
+  const { port } = await startServer(ctx);
+  console.log(`[dev-server] listening on 127.0.0.1:${port}${ctx.remote ? ' (remote: password required)' : ''}`);
+}
