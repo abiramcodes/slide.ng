@@ -12,6 +12,9 @@ import { layoutName } from './lib/layouts.mjs';
 import { makeCss, tsFiles } from './lib/make-css.mjs';
 import { detectFeatures } from './lib/features.mjs';
 import { initHighlighter } from './lib/code/highlighter.mjs';
+import { setKatexOptions } from './lib/math.mjs';
+import { katexOptions, shikiSetup, transformersSetup } from './lib/setup/node-setups.mjs';
+import { applyPreTransformers } from './lib/setup/pre-transform.mjs';
 import { readDrawings } from './lib/drawings.mjs';
 import { applyRoots } from './lib/theme-files.mjs';
 import { monacoWriteTargets, resetMonacoWriteTargets } from './lib/code/monaco.mjs';
@@ -95,8 +98,12 @@ async function generate() {
   const { unoConfigs } = await applyRoots(deck, OUT, write, (m) => console.warn(`[slides] ${m}`));
   // Decide each layout once, so that an unknown name is reported once.
   deck.slides.forEach((s, i) => (s.layout = layoutName(s.frontmatter, i, deck.layouts)));
+  // setup/katex.ts, setup/transformers.ts and setup/shiki.ts of the roots (docs/SETUP.md).
+  setKatexOptions(await katexOptions(deck.roots));
+  deck.transformers = await transformersSetup(deck.roots);
+  await applyPreTransformers(deck.slides, deck.transformers.pre, deck.headmatter);
   const features = detectFeatures(deck.slides);
-  await initHighlighter({ langs: features.langs, headmatter: deck.headmatter, twoslash: features.twoslash });
+  await initHighlighter({ langs: features.langs, headmatter: deck.headmatter, twoslash: features.twoslash, setup: await shikiSetup(deck.roots) });
   const wanted = new Set(deck.slides.map((_, i) => `${slideName(i + 1)}.ts`).concat('index.ts', 'index.html', 'layers.ts', 'setup.ts', 'theme.css', 'uno.css', 'features.css', 'remote-assets', 'roots', 'public'));
   for (const f of readdirSync(OUT)) if (!wanted.has(f)) rmSync(OUT + f, { recursive: true });
   resetMonacoWriteTargets();

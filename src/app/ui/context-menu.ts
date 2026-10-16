@@ -3,6 +3,7 @@ import { Drawings } from '../drawing/drawings';
 import { Fullscreen } from '../lib/fullscreen';
 import { Nav } from '../lib/nav';
 import { Ui } from '../lib/ui-state';
+import { CONTEXT_MENU_SETUP } from '../setup/tokens';
 
 // The right-click menu (Slidev's ContextMenu): four arrows, then a list of actions.
 
@@ -54,6 +55,7 @@ export class ContextMenu {
   private nav = inject(Nav);
   private fullscreen = inject(Fullscreen);
   private drawings = inject(Drawings);
+  private setup = inject(CONTEXT_MENU_SETUP); // setup/context-menu.ts of the roots
   private menu = viewChild<ElementRef<HTMLElement>>('menu');
 
   protected arrows = computed(() => [
@@ -63,7 +65,7 @@ export class ContextMenu {
     { icon: 'i-carbon:arrow-down', title: 'Next Slide', run: () => this.nav.nextSlide(), disabled: this.nav.no() >= this.nav.total },
   ]);
 
-  protected items = computed(() => [
+  protected items = computed(() => this.setup([
     ...(this.drawings.available ? [{ icon: 'i-carbon:pen', label: this.drawings.enabled() ? 'Hide drawing toolbar' : 'Show drawing toolbar', run: () => this.drawings.toggle(), disabled: false }] : []),
     { icon: 'i-carbon:apps', label: 'Show slide overview', run: () => this.ui.toggleOverview(), disabled: false },
     this.nav.isPresenter
@@ -75,7 +77,7 @@ export class ContextMenu {
       run: () => this.fullscreen.toggle(),
       disabled: false,
     },
-  ]);
+  ]));
 
   // Keep the menu inside the window: if it would stick out, move it back by the overflow.
   private size = signal({ width: 0, height: 0 });

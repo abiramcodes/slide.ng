@@ -1,0 +1,35 @@
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { describe, expect, it } from 'vitest';
+import { setupSource } from '../theme-files.mjs';
+
+function root(id: string, names: string[]) {
+  const dir = mkdtempSync(join(tmpdir(), 'slide-ng-browser-setup-'));
+  mkdirSync(join(dir, 'setup'));
+  for (const n of names) writeFileSync(join(dir, 'setup', `${n}.ts`), 'export default () => []');
+  return { id, dir };
+}
+
+describe('setupSource', () => {
+  it('is an empty list when no root has a setup file', () => {
+    const text = setupSource([root('deck', [])]);
+    expect(text).toContain('SETUP_PROVIDERS: (Provider | EnvironmentProviders)[] = []');
+    expect(text).not.toContain("from '../../app/setup'");
+  });
+
+  it('imports each setup file and hands the files, weakest root first, to the helper', () => {
+    const text = setupSource([root('theme-a', ['shortcuts', 'mermaid']), root('deck', ['shortcuts', 'main', 'code-runners'])]);
+    expect(text).toMatch(/import shortcuts\d from '\.\/roots\/theme-a\/setup\/shortcuts'/);
+    expect(text).toMatch(/\.\.\.shortcutsProviders\(\[shortcuts\d, shortcuts\d\]\)/);
+    expect(text).toMatch(/\.\.\.mainProviders\(\[main\d\]\)/);
+    expect(text).toMatch(/\.\.\.mermaidProviders\(\[mermaid\d\]\)/);
+    expect(text).toMatch(/\.\.\.codeRunnerProviders\(\[codeRunners\d\]\)/);
+    expect(text).toContain("from '../../app/setup'");
+    expect(text.indexOf('theme-a/setup/shortcuts')).toBeLessThan(text.indexOf('deck/setup/shortcuts'));
+  });
+
+  it('still reads the older setup/providers.ts', () => {
+    expect(setupSource([root('deck', ['providers'])])).toMatch(/\.\.\.providers0\]/);
+  });
+});

@@ -1,0 +1,50 @@
+import { TestBed } from '@angular/core/testing';
+import { describe, expect, it } from 'vitest';
+import { CODE_RUNNERS } from '../code/runners';
+import { SHORTCUTS_SETUP, Shortcut, ShortcutActions } from '../lib/shortcuts';
+import { CONTEXT_MENU_SETUP, ContextMenuItem, MERMAID_SETUP, codeRunnerProviders, contextMenuProviders, mainProviders, mermaidProviders, rootProviders, shortcutsProviders } from './index';
+
+const none = {} as ShortcutActions;
+const key = (name: string): Shortcut => ({ name, key: name, run: () => {} });
+
+describe('setup providers', () => {
+  it('chains shortcut setups, each getting the list so far', () => {
+    TestBed.configureTestingModule({
+      providers: shortcutsProviders([(_a, list) => [...list, key('a')], (_a, list) => list.filter((s) => s.name !== 'x').concat(key('b'))]),
+    });
+    const result = TestBed.inject(SHORTCUTS_SETUP)(none, [key('x'), key('y')]);
+    expect(result.map((s) => s.name)).toEqual(['y', 'a', 'b']);
+  });
+
+  it('chains context menu setups', () => {
+    TestBed.configureTestingModule({
+      providers: contextMenuProviders([(items) => [...items, { icon: 'i', label: 'one', run: () => {} }], (items) => items.slice().reverse()]),
+    });
+    const base: ContextMenuItem[] = [{ icon: 'i', label: 'zero', run: () => {} }];
+    expect(TestBed.inject(CONTEXT_MENU_SETUP)(base).map((i) => i.label)).toEqual(['one', 'zero']);
+  });
+
+  it('keeps the mermaid setups in order, for the diagram to merge', () => {
+    TestBed.configureTestingModule({ providers: mermaidProviders([() => ({ a: 1 }), () => ({ b: 2 })]) });
+    expect(Object.assign({}, ...TestBed.inject(MERMAID_SETUP).map((f) => f()))).toEqual({ a: 1, b: 2 });
+  });
+
+  it('provides one code runner map per file', () => {
+    TestBed.configureTestingModule({ providers: codeRunnerProviders([() => ({ python: async () => ({ lines: [['1']] }) }), () => ({ lua: async () => ({ lines: [] }) })]) });
+    const maps = TestBed.inject(CODE_RUNNERS);
+    expect(maps.map((m) => Object.keys(m))).toEqual([['python'], ['lua']]);
+  });
+
+  it('runs a root setup once, where inject() works', () => {
+    let ran = 0;
+    TestBed.configureTestingModule({ providers: rootProviders([() => { ran++; }]) });
+    TestBed.inject(SHORTCUTS_SETUP);
+    expect(ran).toBe(1);
+  });
+
+  it('flattens the providers of main setups', () => {
+    const a = { provide: 'A', useValue: 1 };
+    const b = { provide: 'B', useValue: 2 };
+    expect(mainProviders([() => [a], () => [b]])).toEqual([a, b]);
+  });
+});
