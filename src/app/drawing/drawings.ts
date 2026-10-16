@@ -1,7 +1,7 @@
 // Drawing on the slides with drauu (a framework-free SVG drawing library), a port of Slidev's useDrawings.
 // One instance per page (provided by the deck and the presenter). The SVG of each slide lives in
 // SyncState.drawings, so it is shared with the other windows and saved (see persistence.ts).
-import { Injectable, effect, inject, signal, untracked } from '@angular/core';
+import { DestroyRef, Injectable, effect, inject, signal, untracked } from '@angular/core';
 import type { Brush, Drauu, DrawingMode } from 'drauu';
 import { Nav } from '../lib/nav';
 import { storedSignal } from '../lib/stored-signal';
@@ -55,9 +55,11 @@ export class Drawings {
     if (!this.available) return;
     startPersistence(this.config.persist);
     // A drawing from another window of the current slide: show it.
-    this.sync.onRemoteDrawings((patch) => {
+    const destroyRef = inject(DestroyRef);
+    const stopListening = this.sync.onRemoteDrawings((patch) => {
       if (patch[this.nav.no()] != null) this.show(this.nav.no());
     });
+    destroyRef.onDestroy(stopListening);
     // Another slide: show its drawing.
     effect(() => {
       const no = this.nav.no();
@@ -74,7 +76,9 @@ export class Drawings {
         if (this.drauu) this.drauu.brush = { ...b };
       });
     });
-    window.addEventListener('keydown', (e) => this.key(e));
+    const onKey = (e: KeyboardEvent) => this.key(e);
+    window.addEventListener('keydown', onKey);
+    destroyRef.onDestroy(() => window.removeEventListener('keydown', onKey));
   }
 
   /** Called by the drawing layer once its <svg> is in the page. */

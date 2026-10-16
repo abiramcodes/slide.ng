@@ -67,6 +67,20 @@ describe('SyncState', () => {
     expect(transport.sent).toEqual([['hello', {}]]);
   });
 
+  it('a handler that was removed hears nothing more', () => {
+    const { transport, sync } = setup();
+    let hello = 0;
+    const heard: unknown[] = [];
+    const stopHello = sync.onHello(() => hello++);
+    const stopDrawings = sync.onRemoteDrawings((p) => heard.push(p));
+    stopHello();
+    stopDrawings();
+    transport.deliver('hello', {});
+    transport.deliver('drawings', { 1: '<path/>' });
+    expect(hello).toBe(0);
+    expect(heard).toEqual([]);
+  });
+
   it('sends through every transport that is provided', () => {
     const a = new FakeTransport(),
       b = new FakeTransport();

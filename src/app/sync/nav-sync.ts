@@ -1,7 +1,7 @@
 // Keeps this window's slide and click in step with the other windows.
 // The presenter drives and the audience follows. A viewer on this machine may also drive
 // (like Slidev); a viewer on another machine only follows.
-import { computed, effect, inject, untracked } from '@angular/core';
+import { DestroyRef, computed, effect, inject, untracked } from '@angular/core';
 import { Nav } from '../lib/nav';
 import { SyncState } from './sync-state';
 
@@ -70,6 +70,6 @@ export function startNavSync(nav: Nav) {
   });
 
   // A window that opens later asks where we are; presenters answer.
-  if (nav.isPresenter) sync.onHello(send);
+  if (nav.isPresenter) inject(DestroyRef).onDestroy(sync.onHello(send));
   else sync.sendHello();
 }

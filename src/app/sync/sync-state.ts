@@ -58,12 +58,15 @@ export class SyncState {
   sendHello() {
     this.send('hello', {});
   }
-  onHello(fn: () => void) {
+  /** Returns a function that removes the handler again. */
+  onHello(fn: () => void): () => void {
     this.helloHandlers.push(fn);
+    return () => (this.helloHandlers = this.helloHandlers.filter((h) => h !== fn));
   }
   /** Called when drawings arrive from outside (not for our own patches). */
-  onRemoteDrawings(fn: (patch: DrawingsState) => void) {
+  onRemoteDrawings(fn: (patch: DrawingsState) => void): () => void {
     this.drawingHandlers.push(fn);
+    return () => (this.drawingHandlers = this.drawingHandlers.filter((h) => h !== fn));
   }
 
   private send(channel: string, data: unknown) {
