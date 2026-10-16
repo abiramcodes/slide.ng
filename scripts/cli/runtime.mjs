@@ -1,6 +1,7 @@
 // Where the Angular app and the generator live, and how to run them for one deck.
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
+import { ngBinary, prepareApp } from './app-root.mjs';
 import { packageRoot } from './package-root.mjs';
 import { claimDirectory, markDirectory } from './safe-dir.mjs';
 
@@ -15,8 +16,8 @@ function run(args, { cwd, env, quiet }) {
 }
 
 /** Writes the generated slides for `entry` (an absolute path to the deck's markdown file). */
-export function generateSlides(entry, { quiet = false, env = {} } = {}) {
-  run([join(packageRoot, 'scripts/generate.mjs')], { cwd: packageRoot, env: { SLIDES_FILE: entry, ...env }, quiet });
+export function generateSlides(entry, { quiet = false, env = {}, appRoot = prepareApp(entry) } = {}) {
+  run([join(packageRoot, 'scripts/generate.mjs')], { cwd: appRoot, env: { SLIDES_FILE: entry, ...env }, quiet });
 }
 
 /**
@@ -26,9 +27,9 @@ export function generateSlides(entry, { quiet = false, env = {} } = {}) {
  */
 export function buildDeck({ entry, workDir, base = '/', quiet = false, cwd = process.cwd(), env = {} }) {
   claimDirectory(workDir, cwd);
-  generateSlides(entry, { quiet, env: { SLIDE_NG_BASE: base, ...env } });
-  const ng = join(packageRoot, 'node_modules/@angular/cli/bin/ng.js');
-  run([ng, 'build', '--output-path', workDir, '--base-href', base], { cwd: packageRoot, env: { SLIDES_FILE: entry, ...env }, quiet });
+  const appRoot = prepareApp(entry); // this package itself for decks inside it, a working copy for any other deck
+  generateSlides(entry, { quiet, appRoot, env: { SLIDE_NG_BASE: base, ...env } });
+  run([ngBinary(), 'build', '--output-path', workDir, '--base-href', base], { cwd: appRoot, env: { SLIDES_FILE: entry, ...env }, quiet });
   markDirectory(workDir);
   return join(workDir, 'browser');
 }

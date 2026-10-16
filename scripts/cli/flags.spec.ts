@@ -5,6 +5,7 @@ const spec = {
   port: { type: 'number', alias: 'p' },
   open: { type: 'boolean', alias: 'o' },
   format: { type: 'string' },
+  remote: { type: 'optional' },
 };
 
 describe('parseFlags', () => {
@@ -15,6 +16,10 @@ describe('parseFlags', () => {
     expect(parseFlags(['-p', '1', '-o'], spec).flags).toEqual({ port: 1, open: true });
     expect(parseFlags(['--open=false'], spec).flags).toEqual({ open: false });
     expect(parseFlags(['--no-open'], spec).flags).toEqual({ open: false });
+  });
+  it('an optional value is only taken with an equals sign', () => {
+    expect(parseFlags(['--remote', 'my.md'], spec)).toEqual({ flags: { remote: true }, positionals: ['my.md'] });
+    expect(parseFlags(['--remote=pw'], spec).flags).toEqual({ remote: 'pw' });
   });
   it('keeps positionals and everything after --', () => {
     const r = parseFlags(['my.md', '--open', '--', '--port', 'x'], spec);

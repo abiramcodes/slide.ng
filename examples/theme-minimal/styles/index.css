@@ -1,0 +1,27 @@
+/* The look of the minimal theme. Plain CSS: it comes after the app's styles, so it can override them. */
+:root {
+  --minimal-accent: #f59e0b;
+}
+
+.minimal-cover {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0 4rem;
+  text-align: left;
+}
+.minimal-cover h1 { font-size: 3.2rem; letter-spacing: -0.02em; }
+.minimal-cover-line { width: 6rem; height: 4px; margin-top: 1.5rem; background: var(--minimal-accent); }
+
+.minimal-quote { display: flex; align-items: center; padding: 0 5rem; }
+.minimal-quote-body { border-left: 6px solid var(--minimal-accent); padding-left: 2rem; font-size: 1.8rem; font-style: italic; }
+
+.minimal-callout {
+  display: block;
+  margin: 1rem 0;
+  padding: 0.6rem 1rem;
+  border-left: 4px solid var(--minimal-accent);
+  background: rgba(245, 158, 11, 0.12);
+}
+.minimal-callout-title { display: block; color: var(--minimal-accent); }

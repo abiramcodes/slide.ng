@@ -1,0 +1,10 @@
+{
+  "name": "minimal",
+  "headmatter": {
+    "colorSchema": "dark",
+    "transition": "fade"
+  },
+  "layouts": {
+    "quote": { "props": [], "slots": [], "classProp": false }
+  }
+}

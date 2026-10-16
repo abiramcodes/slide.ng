@@ -1,6 +1,6 @@
 # {{name}}
 
-Slides made with [slide.ng](https://github.com/erkamyaman/slide.ng).
+Slides made with slide.ng.
 
 ```sh
 npm install

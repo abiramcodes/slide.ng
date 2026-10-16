@@ -1,5 +1,6 @@
 // A small command line reader, so every command parses flags the same way.
 //   spec = { port: { type: 'number', alias: 'p' }, open: { type: 'boolean' }, format: { type: 'string' } }
+// Types: string, number, boolean, and `optional` (`--remote` is true, `--remote=secret` is the text; it never takes the next argument).
 // Accepts `--port 3030`, `--port=3030`, `-p 3030`, `--open`, `--no-open` (false), and `--` (the rest is positional).
 // An unknown flag is an error, so a typo is never silently ignored.
 export function parseFlags(argv, spec) {
@@ -27,6 +28,7 @@ export function parseFlags(argv, spec) {
       flags[name] = inline === undefined ? true : !['false', '0', 'no'].includes(inline);
       continue;
     }
+    if (s.type === 'optional') { flags[name] = inline === undefined ? true : inline; continue; }
     // A value flag takes `=value` or the next argument.
     const value = inline ?? argv[++i];
     if (value === undefined) throw new Error(`--${name} needs a value`);

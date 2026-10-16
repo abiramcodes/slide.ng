@@ -1,7 +1,9 @@
 // Reads slides.md and writes one Angular component per slide into
 // src/slides/generated/, plus an index.ts and uno.css (the CSS for the class names in use). Usage: node scripts/generate.mjs [--watch]
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, watch, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { parseDeck } from './lib/parse-deck.mjs';
+import { ROOT_FOLDERS } from './lib/roots.mjs';
 import { slideName, slideSource } from './lib/emit.mjs';
 import { indexSource } from './lib/index-source.mjs';
 import { layoutName } from './lib/layouts.mjs';
@@ -91,10 +93,14 @@ async function generate() {
   const slideFiles = deck.slides.map((_, i) => `${OUT}${slideName(i + 1)}.ts`);
   write(`${OUT}uno.css`, await makeCss([...deck.files, ...slideFiles, ...tsFiles('src/app'), ...tsFiles(`${OUT}roots`)], unoConfigs));
   console.log(`[slides] generated ${deck.slides.length} slides`);
-  return deck.files;
+  return { files: deck.files, folders: rootFolders(deck.roots) };
 }
 
-const files = await generate();
+// What to watch for the roots: a theme or addon folder as a whole, and only the known folders of the deck's own folder
+// (the rest of it is the deck's files, `node_modules` and so on).
+const rootFolders = (roots) => roots.flatMap((r) => (r.kind === 'deck' ? ROOT_FOLDERS.map((f) => join(r.dir, f)) : [r.dir])).filter((d) => existsSync(d));
+
+const { files, folders } = await generate();
 if (process.argv.includes('--watch')) {
   let timer;
   const watched = new Set();
@@ -103,9 +109,12 @@ if (process.argv.includes('--watch')) {
     clearTimeout(timer);
     timer = setTimeout(() => generate().then(watchAll).catch((e) => console.error(e.message)), 100);
   };
-  // The entry file and every file it imports with `src:`.
-  const watchAll = (list) => list.filter((f) => !watched.has(f)).forEach((f) => (watched.add(f), watch(f, onChange)));
-  watchAll(files);
+  // The entry file, every file it imports with `src:`, and the folders of themes and addons.
+  const watchAll = ({ files, folders }) => {
+    for (const f of files) if (!watched.has(f)) (watched.add(f), watch(f, onChange));
+    for (const d of folders) if (!watched.has(d)) (watched.add(d), watch(d, { recursive: true }, onChange));
+  };
+  watchAll({ files, folders });
   watch('src/app', { recursive: true }, onChange); // layouts may use new class names
-  console.log(`[slides] watching ${INPUT} (and its imports) and src/app`);
+  console.log(`[slides] watching ${INPUT} (and its imports), its theme folders and src/app`);
 }
