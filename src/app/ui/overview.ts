@@ -1,13 +1,14 @@
 import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { Nav } from '../lib/nav';
 import { Ui } from '../lib/ui-state';
+import { IconBtn } from './icon-btn';
 import { Thumbnail } from './thumbnail';
 
 // The slide overview (key `o`, Slidev's QuickOverview): every slide as a live thumbnail.
 // Click a card to go there. Arrows move the highlight, Enter goes, Escape closes (see shortcuts.ts).
 @Component({
   selector: 'app-overview',
-  imports: [Thumbnail],
+  imports: [Thumbnail, IconBtn],
   host: { '(window:resize)': 'measure()' },
   template: `
     @if (ui.overview()) {
@@ -32,9 +33,11 @@ import { Thumbnail } from './thumbnail';
           }
         </div>
       </div>
-      <button id="overview-close" type="button" class="slidev-icon-btn fixed top-4 right-4 z-modal text-gray-400 text-2xl" title="Close" (click)="close()">
-        <div class="i-carbon:close"></div>
-      </button>
+      <div class="fixed top-4 right-4 z-modal text-gray-400">
+        <button icon-btn id="overview-close" class="text-2xl" title="Close" (click)="close()">
+          <div class="i-carbon:close"></div>
+        </button>
+      </div>
     }
   `,
 })
