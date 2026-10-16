@@ -55,6 +55,25 @@ export async function run({ t, open }) {
     await page.locator('#download-pdf').isDisabled(),
   );
 
+  // the dock follows Slidev's order
+  const dock = await page.locator('nav [id^=nav-]').evaluateAll((l) => l.map((e) => e.id));
+  const order = [
+    'nav-dark',
+    'nav-camera',
+    'nav-record',
+    'nav-cursor',
+    'nav-drawing',
+    'nav-play',
+    'nav-layout',
+    'nav-settings',
+    'nav-counter',
+  ];
+  t.ok(
+    'dock order: schema, recording, cursor, drawing, mode, layout, settings, counter',
+    order.every((id, i) => dock.indexOf(id) > (i ? dock.indexOf(order[i - 1]) : -1)),
+    dock.join(),
+  );
+
   // dark mode
   await page.locator('#settings-dark').check();
   await page.waitForTimeout(200);
@@ -78,6 +97,10 @@ export async function run({ t, open }) {
   t.ok('no filter at first', (await canvasFilter()) === 'none');
   await page.locator('#filter-brightness').fill('1.5');
   await page.waitForTimeout(200);
+  t.ok(
+    'a changed filter puts a dot on the settings button (as in Slidev)',
+    (await page.locator('#nav-settings-dot').count()) === 1,
+  );
   t.ok(
     'the brightness slider filters the slide',
     (await canvasFilter()).includes('brightness(1.5)'),
@@ -108,6 +131,7 @@ export async function run({ t, open }) {
   await page.locator('#filter-invert').uncheck();
   await page.waitForTimeout(200);
   t.ok('setting the defaults again clears it', (await canvasFilter()) === 'none');
+  t.ok('and removes the dot', (await page.locator('#nav-settings-dot').count()) === 0);
 
   // cursor options
   t.ok(
