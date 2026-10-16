@@ -1,23 +1,41 @@
 import { remoteLines } from './remote-info.mjs';
 
 describe('remoteLines', () => {
-  it('with a password: a private address with the password, no warning', () => {
+  it('shows a private address with the password', () => {
     const text = remoteLines({ port: 4230, password: 'sec ret', addresses: ['192.168.1.5'] }).join(
       '\n',
     );
     expect(text).toContain('public slide show:  http://192.168.1.5:4230/');
     expect(text).toContain('private slide show: http://192.168.1.5:4230/?password=sec%20ret');
     expect(text).toContain('presenter/1?password=sec%20ret');
-    expect(text).not.toContain('WARNING');
   });
-  it('without a password: warns and shows no password in any address', () => {
-    const text = remoteLines({ port: 4230, password: '', addresses: ['10.0.0.2'] }).join('\n');
-    expect(text).toContain('WARNING: no password');
-    expect(text).not.toContain('password=');
-    expect(text).not.toContain('private slide show');
+  it('says what remote mode allows: editing slides and listed files, not only following', () => {
+    const text = remoteLines({ port: 1, password: 'x', addresses: [] }).join('\n');
+    expect(text).toContain('can edit your slides.md');
+    expect(text).toContain('{monaco-write}');
+    expect(text).toContain('no HTTPS');
+    expect(text).not.toContain('WARNING: no password');
+  });
+  it('prints a generated password and the presenter address that carries it', () => {
+    const text = remoteLines({
+      port: 4230,
+      password: 'gen-erated-pass-1234',
+      generated: true,
+      addresses: ['10.0.0.2'],
+    }).join('\n');
+    expect(text).toContain('no password was given: a random one was made for this run');
+    expect(text).toContain('gen-erated-pass-1234');
+    expect(text).toContain('http://10.0.0.2:4230/presenter/1?password=gen-erated-pass-1234');
+  });
+  it('notes that a password on the command line shows in the process list', () => {
+    const text = remoteLines({ port: 1, password: 'x', fromArgv: true, addresses: [] }).join('\n');
+    expect(text).toContain('SLIDE_NG_PASSWORD');
+    expect(remoteLines({ port: 1, password: 'x', addresses: [] }).join('\n')).not.toContain(
+      'process list',
+    );
   });
   it('says so when there is no network address', () => {
-    expect(remoteLines({ port: 1, password: '', addresses: [] }).join('\n')).toContain(
+    expect(remoteLines({ port: 1, password: 'x', addresses: [] }).join('\n')).toContain(
       '<your address>',
     );
   });

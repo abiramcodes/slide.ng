@@ -8,10 +8,11 @@ import { rmSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { hostname, networkInterfaces } from 'node:os';
 import { join, resolve } from 'node:path';
-import { randomSecret } from '../dev/config.mjs';
+import { randomPassword, randomSecret } from '../dev/config.mjs';
 import { ngBinary, prepareApp } from './app-root.mjs';
 import { applyThemeFlag, parseFlags } from './flags.mjs';
 import { packageRoot } from './package-root.mjs';
+import { askPassword } from './prompt.mjs';
 import { remoteLines } from './remote-info.mjs';
 
 export const DEV_FLAGS = {
@@ -29,7 +30,7 @@ export const DEV_FLAGS = {
 const LOG_LEVELS = ['error', 'warn', 'info', 'silent'];
 
 /** Checks the flags and returns the plan for the three processes. Pure, so it can be tested without starting anything. */
-export function devPlan(argv) {
+export function devPlan(argv, env = process.env) {
   const { flags, positionals } = parseFlags(argv, DEV_FLAGS);
   if (flags.tunnel)
     throw new Error(
@@ -40,9 +41,21 @@ export function devPlan(argv) {
   const log = flags.log ?? 'info';
   if (!LOG_LEVELS.includes(log))
     throw new Error(`--log must be one of ${LOG_LEVELS.join(', ')}, got "${log}"`);
-  // Like Slidev: `--remote` listens on every address, `--remote=secret` adds a password, which is optional. `--bind` only matters with --remote.
+  // `--remote` listens on every address and always has a password (unlike Slidev, where it is optional): `--remote=secret`,
+  // else SLIDE_NG_PASSWORD, else (a prompt on a terminal, see devCommand, or) a random one that is printed. `--bind` only matters with --remote.
   const remote = flags.remote !== undefined && flags.remote !== false;
-  const password = remote && typeof flags.remote === 'string' ? flags.remote : '';
+  let password = '';
+  let passwordFrom = '';
+  if (remote && typeof flags.remote === 'string' && flags.remote) {
+    password = flags.remote;
+    passwordFrom = 'argv';
+  } else if (remote && env.SLIDE_NG_PASSWORD) {
+    password = env.SLIDE_NG_PASSWORD;
+    passwordFrom = 'env';
+  } else if (remote) {
+    password = randomPassword();
+    passwordFrom = 'random';
+  }
   const host = remote ? (flags.bind ?? '0.0.0.0') : undefined;
   // SLIDES_FILE is how tests (and older scripts) pick another deck.
   const entry = resolve(positionals[0] ?? process.env.SLIDES_FILE ?? 'slides.md');
@@ -52,6 +65,8 @@ export function devPlan(argv) {
     open: Boolean(flags.open),
     remote,
     password,
+    passwordFrom,
+    passwordGenerated: passwordFrom === 'random',
     host,
     log,
     force: Boolean(flags.force),
@@ -70,6 +85,12 @@ const freePort = () =>
 
 export async function devCommand(argv) {
   const plan = devPlan(argv);
+  // On a terminal, ask for the password (Enter keeps the random one), so it never has to be in the command line.
+  if (plan.remote && plan.passwordGenerated && process.stdin.isTTY) {
+    const typed = await askPassword('[slide.ng] remote password (Enter for a random one): ');
+    if (typed)
+      Object.assign(plan, { password: typed, passwordFrom: 'prompt', passwordGenerated: false });
+  }
   applyThemeFlag(plan);
   const appRoot = prepareApp(plan.entry);
   if (plan.force) rmSync(join(appRoot, '.angular', 'cache'), { recursive: true, force: true }); // the build cache is the only thing --force clears
@@ -119,6 +140,14 @@ export async function devCommand(argv) {
       .flat()
       .filter((i) => i && i.family === 'IPv4' && !i.internal)
       .map((i) => i.address);
-    console.log(remoteLines({ port: plan.port, password: plan.password, addresses }).join('\n'));
+    console.log(
+      remoteLines({
+        port: plan.port,
+        password: plan.password,
+        generated: plan.passwordGenerated,
+        fromArgv: plan.passwordFrom === 'argv',
+        addresses,
+      }).join('\n'),
+    );
   }
 }

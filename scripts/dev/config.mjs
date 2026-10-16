@@ -5,7 +5,13 @@ import { dirname, resolve } from 'node:path';
 
 export const randomSecret = () => randomBytes(24).toString('hex');
 
+/** A password for `--remote` when the person gave none: 24 random characters (144 bits), URL safe. */
+export const randomPassword = () => randomBytes(18).toString('base64url');
+
 export function readConfig(env, cwd = process.cwd()) {
+  // There is no passwordless remote mode: the command line always makes (or asks for) one.
+  if (env.SLIDE_NG_REMOTE === '1' && !env.SLIDE_NG_PASSWORD)
+    throw new Error('remote mode needs a password (SLIDE_NG_PASSWORD)');
   const entry = resolve(cwd, env.SLIDES_FILE ?? 'slides.md');
   return {
     /** The folder of the deck: nothing outside it is ever written. `.slide-ng/` lives here too. */
@@ -13,7 +19,7 @@ export function readConfig(env, cwd = process.cwd()) {
     entry,
     /** Sent with every write and WebSocket; a page learns it from /session. */
     token: env.SLIDE_NG_TOKEN || randomSecret(),
-    /** `--remote` password; empty means no password (only possible without --remote). */
+    /** `--remote` password; empty only without --remote. */
     password: env.SLIDE_NG_PASSWORD ?? '',
     /** What the cookie holds once the password was right. Different from the password, new every start. */
     auth: randomSecret(),

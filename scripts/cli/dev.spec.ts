@@ -3,7 +3,7 @@ import { devPlan } from './dev.mjs';
 
 describe('devPlan', () => {
   it('has sensible defaults', () => {
-    const plan = devPlan([]);
+    const plan = devPlan([], {});
     expect(plan).toMatchObject({
       port: 4230,
       open: false,
@@ -24,14 +24,35 @@ describe('devPlan', () => {
     expect(plan).toMatchObject({ port: 4300, open: true, log: 'warn', force: true });
     expect(plan.entry.endsWith('talk/my.md')).toBe(true);
   });
-  it('--remote listens on every address; the password is optional, as in Slidev', () => {
-    const named = devPlan(['--remote=secret']);
+  it('--remote listens on every address and always has a password', () => {
+    const named = devPlan(['--remote=secret'], {});
     expect(named).toMatchObject({ remote: true, password: 'secret', host: '0.0.0.0' });
-    expect(devPlan(['--remote'])).toMatchObject({ remote: true, password: '', host: '0.0.0.0' });
-    expect(devPlan(['--remote='])).toMatchObject({ remote: true, password: '' });
+    expect(named.passwordGenerated).toBe(false);
+    expect(named.passwordFrom).toBe('argv');
+  });
+  it('--remote without a password makes a random one of at least 16 characters, new each time', () => {
+    const a = devPlan(['--remote'], {});
+    const b = devPlan(['--remote='], {});
+    expect(a).toMatchObject({ remote: true, passwordGenerated: true });
+    expect(a.password.length).toBeGreaterThanOrEqual(16);
+    expect(b.password.length).toBeGreaterThanOrEqual(16);
+    expect(a.password).not.toBe(b.password);
+    expect(a.password).toMatch(/^[A-Za-z0-9_-]+$/);
+  });
+  it('SLIDE_NG_PASSWORD gives the password for --remote; argv wins', () => {
+    const env = { SLIDE_NG_PASSWORD: 'from-env-12345678' };
+    expect(devPlan(['--remote'], env)).toMatchObject({
+      password: 'from-env-12345678',
+      passwordGenerated: false,
+      passwordFrom: 'env',
+    });
+    expect(devPlan(['--remote=cli'], env).password).toBe('cli');
+  });
+  it('no password is made without --remote', () => {
+    expect(devPlan([], { SLIDE_NG_PASSWORD: 'x' })).toMatchObject({ remote: false, password: '' });
   });
   it('--remote does not swallow the next argument', () => {
-    expect(devPlan(['--remote', 'other.md']).entry.endsWith('other.md')).toBe(true);
+    expect(devPlan(['--remote', 'other.md'], {}).entry.endsWith('other.md')).toBe(true);
   });
   it('--bind sets the address in remote mode only, as in Slidev', () => {
     expect(devPlan(['--bind', '127.0.0.1']).host).toBeUndefined();

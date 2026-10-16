@@ -22,9 +22,9 @@ const read = () => readFileSync(WORK, 'utf8');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // detached = own process group, so the dev runner and everything it started can be stopped together.
-function startDev(port, extra = []) {
+function startDev(port, extra = [], capture = false) {
   const dev = spawn('npm', ['start', '--', '--port', String(port), ...extra], {
-    stdio: 'ignore',
+    stdio: ['ignore', capture ? 'pipe' : 'ignore', 'ignore'],
     detached: true,
     env: { ...process.env, SLIDES_FILE: WORK },
   });
@@ -36,6 +36,9 @@ function startDev(port, extra = []) {
     }
   };
   process.on('exit', stop);
+  let output = '';
+  dev.stdout?.on('data', (d) => (output += d));
+  stop.output = () => output;
   return stop;
 }
 async function waitFor(url) {
@@ -465,39 +468,47 @@ try {
   stop();
   await sleep(2000);
 
-  // ===================================================================== --remote without a password (Slidev's default)
+  // ===================================================================== --remote without a password: a random one is made
   fresh();
   const OPORT = 4222,
     obase = `http://127.0.0.1:${OPORT}`;
-  stop = startDev(OPORT, ['--remote']);
+  stop = startDev(OPORT, ['--remote'], true);
   await waitFor(obase);
-  const osession = await api(OPORT, '/session');
+  for (let i = 0; i < 40 && !/random one was made/.test(stop.output()); i++) await sleep(250);
+  const made = /random one was made for this run: (\S+)/.exec(stop.output())?.[1] ?? '';
   t.ok(
-    '--remote without a password: the session needs no login',
+    '--remote without a password: a random password of 16+ characters is printed',
+    made.length >= 16,
+    made,
+  );
+  t.ok(
+    '--remote without a password: the presenter address carries it',
+    stop.output().includes(`/presenter/1?password=${encodeURIComponent(made)}`),
+  );
+  t.ok(
+    '--remote without a password: there is no passwordless mode, the session needs the login',
+    (await api(OPORT, '/session')).status === 401,
+  );
+  t.ok(
+    '--remote without a password: an empty password is refused',
+    (await api(OPORT, '/login', { method: 'POST', body: { password: '' } })).status === 401,
+  );
+  const ologin = await api(OPORT, '/login', { method: 'POST', body: { password: made } });
+  const ocookie = ologin.headers.get('set-cookie')?.split(';')[0] ?? '';
+  t.ok(
+    '--remote without a password: the printed password logs in',
+    ologin.status === 200 && ocookie !== '',
+  );
+  const osession = await api(OPORT, '/session', { headers: { cookie: ocookie } });
+  t.ok(
+    '--remote without a password: after the login the session gives its token',
     osession.status === 200 && typeof (await osession.json()).token === 'string',
   );
   t.ok(
-    '--remote without a password: a write without the token is refused',
-    (await api(OPORT, '/slides/2/drag', { method: 'POST', body: { site: 0, pos: '1,2,3,4' } }))
+    '--remote without a password: a foreign Origin is refused',
+    (await api(OPORT, '/session', { headers: { cookie: ocookie, origin: 'http://evil.example' } }))
       .status === 403,
   );
-  t.ok(
-    '--remote without a password: a foreign Origin is refused',
-    (await api(OPORT, '/session', { headers: { origin: 'http://evil.example' } })).status === 403,
-  );
-  const openCtx = await browser.newContext({ viewport: { width: 1000, height: 600 } });
-  const open2 = await openCtx.newPage();
-  await open2.goto(`${obase}/1`);
-  await open2.waitForFunction(
-    () => /clicks \d+\/\d+/.test(document.querySelector('#hud')?.innerText ?? ''),
-    null,
-    { timeout: 60000 },
-  );
-  t.ok(
-    '--remote without a password: the deck opens and has no password prompt',
-    !(await open2.evaluate(() => document.body.innerText)).includes('Password'),
-  );
-  await openCtx.close();
 } finally {
   await browser?.close();
   stop?.();
