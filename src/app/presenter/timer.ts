@@ -91,7 +91,8 @@ export class Timer {
   }
 
   toggle() {
-    this.status() === 'running' ? this.pause() : this.start();
+    if (this.status() === 'running') this.pause();
+    else this.start();
   }
   reset() {
     this.set({ status: 'stopped', startedAt: 0, pausedAt: 0 });

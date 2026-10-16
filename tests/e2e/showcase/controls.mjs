@@ -1,5 +1,5 @@
 // The bottom-left bar, the overview, the right-click menu, dark mode, the info dialog and the settings menu.
-export async function run({ t, open, press, hud, pathOf, style, base, browser, problems }) {
+export async function run({ t, open, press, pathOf, style, base, browser, problems }) {
   let page = await open('/1');
 
   // ---- navigation bar ---------------------------------------------------------------

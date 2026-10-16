@@ -1,5 +1,5 @@
 // Slide transitions: slides 33 (slide-left), 34 (fade), 35 (view-transition) in showcase/slides.md.
-export async function run({ t, open, press, pathOf, hud, base, browser, problems }) {
+export async function run({ t, open, pathOf, hud }) {
   const page = await open('/33');
   await page.addInitScript(() => {});
   // Counts how often the browser's view transition is started.

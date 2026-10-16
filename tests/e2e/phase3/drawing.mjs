@@ -1,5 +1,5 @@
 // Drawing: toolbar, tools, colours, undo, clear, sync between windows and persistence in the browser.
-export async function run({ t, open, press, hud, windowGroup }) {
+export async function run({ t, open, hud, windowGroup }) {
   const group = await windowGroup();
   const presenter = await open('/presenter/1', undefined, undefined, group);
   const viewer = await open('/1', undefined, undefined, group);

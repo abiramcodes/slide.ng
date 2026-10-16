@@ -1,5 +1,5 @@
 // Twoslash: TypeScript types worked out while generating, shown as popups by CSS only.
-export async function run({ t, open, press }) {
+export async function run({ t, open }) {
   const page = await open('/12');
   t.ok(
     'a twoslash block has hover popups with real types',

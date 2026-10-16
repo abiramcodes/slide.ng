@@ -38,5 +38,5 @@ const sandboxConsole = { log, info: log, debug: log, warn: log, error: log, clea
   }
   send({ done: true });
 })();
-<\/script>`;
+</script>`;
 }

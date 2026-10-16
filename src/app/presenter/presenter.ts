@@ -1,7 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { HEADMATTER } from '../../slides/generated';
-import { hideIdleCursor } from '../lib/idle-cursor';
 import { keyHandler } from '../lib/key-handler';
 import { DragControls } from '../drag/drag-controls';
 import { Drawings } from '../drawing/drawings';
@@ -9,7 +8,6 @@ import { DrawingControls } from '../drawing/drawing-controls';
 import { DrawingLayer } from '../drawing/drawing-layer';
 import { Nav } from '../lib/nav';
 import { SlideShow } from '../lib/slide-show';
-import { storedSignal } from '../lib/stored-signal';
 import { Ui } from '../lib/ui-state';
 import { startNavSync } from '../sync/nav-sync';
 import { ContextMenu } from '../ui/context-menu';

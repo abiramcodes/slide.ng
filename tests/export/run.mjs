@@ -185,22 +185,25 @@ async function pixel(file, x = 3, y = 3) {
   await page.setContent(
     `<img src="data:image/png;base64,${readFileSync(file).toString('base64')}">`,
   );
-  const rgba = await page.evaluate(async () => {
-    const img = document.querySelector('img');
-    await img.decode();
-    const c = Object.assign(document.createElement('canvas'), {
-      width: img.naturalWidth,
-      height: img.naturalHeight,
-    });
-    c.getContext('2d').drawImage(img, 0, 0);
-    return [...c.getContext('2d').getImageData(3, 3, 1, 1).data];
-  });
+  const rgba = await page.evaluate(
+    async ([px, py]) => {
+      const img = document.querySelector('img');
+      await img.decode();
+      const c = Object.assign(document.createElement('canvas'), {
+        width: img.naturalWidth,
+        height: img.naturalHeight,
+      });
+      c.getContext('2d').drawImage(img, 0, 0);
+      return [...c.getContext('2d').getImageData(px, py, 1, 1).data];
+    },
+    [x, y],
+  );
   await page.close();
   return rgba;
 }
-r = slideNg(`export ${common} --format png --output light --scale 1 --range 8`);
-r = slideNg(`export ${common} --format png --output dark --scale 1 --range 8 --dark`);
-r = slideNg(`export ${common} --format png --output clear --scale 1 --range 8 --omit-background`);
+slideNg(`export ${common} --format png --output light --scale 1 --range 8`);
+slideNg(`export ${common} --format png --output dark --scale 1 --range 8 --dark`);
+slideNg(`export ${common} --format png --output clear --scale 1 --range 8 --omit-background`);
 const [light, dark, clear] = [
   await pixel(join(scratch, `run${counter - 2}`, 'light', '008.png')),
   await pixel(join(scratch, `run${counter - 1}`, 'dark', '008.png')),
@@ -281,7 +284,7 @@ writeFileSync(
     'exportFilename: ../../../escaped',
   ),
 );
-r = slideNg(`export ${common}`, { entry: evilDeck, cwd: join(evilDir, 'inner') });
+slideNg(`export ${common}`, { entry: evilDeck, cwd: join(evilDir, 'inner') });
 t.ok(
   'exportFilename "../../../escaped" stays in the current folder',
   existsSync(join(evilDir, 'inner', 'escaped.pdf')) &&
@@ -294,13 +297,13 @@ const hostile = readFileSync(deck, 'utf8').replace(
   `exportFilename: ${JSON.stringify('/etc/cron.d/x')}\nexport:\n  executablePath: /bin/false\n  output: /tmp/hacked`,
 );
 writeFileSync(evilDeck, hostile);
-r = slideNg(`export ${common}`, { entry: evilDeck, cwd: join(evilDir, 'inner') });
+slideNg(`export ${common}`, { entry: evilDeck, cwd: join(evilDir, 'inner') });
 t.ok(
   'an absolute exportFilename is flattened, executablePath and output in the headmatter are ignored',
   existsSync(join(evilDir, 'inner', 'etc-cron.d-x.pdf')) && !existsSync('/tmp/hacked.pdf'),
   readdirSync(join(evilDir, 'inner')).join(),
 );
-r = slideNg(`export ${common} --format png`, { entry: evilDeck, cwd: join(evilDir, 'inner') });
+slideNg(`export ${common} --format png`, { entry: evilDeck, cwd: join(evilDir, 'inner') });
 const before = readdirSync(join(evilDir, 'inner')).length;
 t.ok(
   'png export into a folder never deletes what is already there',

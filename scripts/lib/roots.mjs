@@ -90,7 +90,7 @@ export function readManifest(dir) {
   try {
     data = JSON.parse(readFileSync(file, 'utf8'));
   } catch (e) {
-    throw new Error(`${file} is not valid JSON (${e.message})`);
+    throw new Error(`${file} is not valid JSON (${e.message})`, { cause: e });
   }
   const object = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
   const layouts = Object.fromEntries(

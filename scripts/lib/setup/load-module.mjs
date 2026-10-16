@@ -58,7 +58,9 @@ export async function loadSetupFunction(file) {
     });
     code = result.outputFiles[0].text;
   } catch (e) {
-    throw new Error(`${file} could not be read: ${e.errors?.[0]?.text ?? e.message}`);
+    throw new Error(`${file} could not be read: ${e.errors?.[0]?.text ?? e.message}`, {
+      cause: e,
+    });
   }
   const dir = mkdtempSync(join(tmpdir(), 'slide-ng-setup-'));
   try {

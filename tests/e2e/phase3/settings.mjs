@@ -1,5 +1,5 @@
 // The settings menu: dark mode, filters, cursor options, wake lock, camera options and the PDF stub.
-export async function run({ t, open, press }) {
+export async function run({ t, open }) {
   const page = await open('/presenter/1');
   await page.bringToFront();
   const menu = async () => {

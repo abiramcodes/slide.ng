@@ -52,7 +52,10 @@ export class Stage {
       old.destroy();
       make();
     };
-    if ('startViewTransition' in document) (document as any).startViewTransition(swap);
+    if ('startViewTransition' in document)
+      (
+        document as Document & { startViewTransition(update: () => void): unknown }
+      ).startViewTransition(swap);
     else swap(); // no support: switch without animation
   }
 

@@ -5,6 +5,8 @@
 // path traversal here.) The `--output` flag is typed by the person running the command and may name a folder.
 import { basename, extname, resolve, sep } from 'node:path';
 
+// The control characters are the point of the pattern.
+// eslint-disable-next-line no-control-regex
 const BAD = /[\\/:*?"<>|\0-\x1f]+/g; // folder separators, characters Windows refuses, control characters
 
 /** A safe file name (without extension) from untrusted text, or `fallback` when nothing usable is left. */

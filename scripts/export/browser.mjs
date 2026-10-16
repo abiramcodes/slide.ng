@@ -10,6 +10,7 @@ export async function launchBrowser(executablePath) {
       `Could not start Chromium (${String(error.message).split('\n')[0]}).\n` +
         'Install one with `npx playwright-core install chromium`, or point to an existing Chrome or Chromium with\n' +
         '`--executable-path /path/to/chrome` (or the CHROME_PATH environment variable).',
+      { cause: error },
     );
   }
 }

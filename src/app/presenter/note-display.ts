@@ -1,7 +1,6 @@
 import {
   Component,
   ElementRef,
-  afterNextRender,
   computed,
   effect,
   inject,

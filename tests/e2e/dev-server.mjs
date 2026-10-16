@@ -95,7 +95,6 @@ try {
   stop = startDev(PORT);
   await waitFor(base);
   const page = await open(browser, `${base}/2`);
-  const marker = () => page.evaluate(() => window.__marker);
   await page.evaluate(() => {
     window.__marker = 'alive';
   });

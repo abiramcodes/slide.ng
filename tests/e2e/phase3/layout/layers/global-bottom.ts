@@ -1,5 +1,4 @@
-import { Component, inject } from '@angular/core';
-import { SLIDE_NO } from 'slide-ng/lib/slide-context';
+import { Component } from '@angular/core';
 // Test layer (copied to src/app/layers while the layout deck is built): a small label that says where it is.
 // Test layer: a small label that says where it is.
 @Component({

@@ -31,7 +31,6 @@ const cli = async (args, cwd = scratch) =>
 
 const pictures = await remotePictures();
 const fonts = await fontProvider('OfflineTest');
-const png = readFileSync(new URL('../../public/favicon.ico', import.meta.url)); // any bytes: only the address matters in the build
 
 // ---- the deck: history routing, pwa and remote assets are all asked for; --offline must override the first two
 const deckDir = join(scratch, 'deck');

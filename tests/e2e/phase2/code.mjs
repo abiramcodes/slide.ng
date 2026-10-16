@@ -14,7 +14,7 @@ export async function run({ t, open, press, hud }) {
     ),
   );
   t.ok('inline code stays text', (await page.locator('p code').innerText()) === '{{ x }}');
-  const color = (mode) =>
+  const color = () =>
     page
       .locator('pre.shiki .line span')
       .first()

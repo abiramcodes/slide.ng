@@ -42,6 +42,8 @@ export class ClicksSlider {
   total = input.required<number>();
   start = input(0);
   readonly = input(false);
+  // `change` matches the event of a range input, which is how the slider is used in templates.
+  // eslint-disable-next-line @angular-eslint/no-output-native
   change = output<number>();
   protected cells = computed(() =>
     Array.from(

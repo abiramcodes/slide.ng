@@ -190,7 +190,8 @@ export class Drawings {
     };
     let handled = true;
     if (e.code === 'KeyZ' && (e.ctrlKey || e.metaKey)) {
-      e.shiftKey ? this.redo() : this.undo();
+      if (e.shiftKey) this.redo();
+      else this.undo();
     } else if (e.code === 'Escape') this.enabled.set(false);
     else if (plain && tools[e.code]) this.pickTool(tools[e.code]);
     else if (plain && e.code === 'KeyC') this.clear();

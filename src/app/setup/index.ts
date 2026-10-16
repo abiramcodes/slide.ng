@@ -1,11 +1,6 @@
 // Turns the `setup/*.ts` files of the roots into Angular providers. `generated/setup.ts` calls these with the files it found
 // (weakest root first: built-in theme, `theme:`, addons, the deck).
-import {
-  EnvironmentProviders,
-  Provider,
-  inject,
-  provideEnvironmentInitializer,
-} from '@angular/core';
+import { EnvironmentProviders, Provider, provideEnvironmentInitializer } from '@angular/core';
 import { CODE_RUNNERS, CodeRunnerFn } from '../code/runners';
 import type { Shortcut, ShortcutActions } from '../lib/shortcuts';
 import { SHORTCUTS_SETUP } from '../lib/shortcuts';
