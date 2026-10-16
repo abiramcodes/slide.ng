@@ -22,9 +22,16 @@ function spliceLines(text, from, to, replacement) {
 export const sourceOf = (text, slide) =>
   text.replace(/\r\n/g, '\n').split('\n').slice(slide.start, slide.end).join('\n');
 
-/** The file with this slide's lines replaced by `raw`. */
+/**
+ * The file with this slide's lines replaced by `raw`. A slide without frontmatter begins right after a plain `---` line: its
+ * text must start with a blank line there, or the parser would read `---` and the text below it as a frontmatter block.
+ */
 export const replaceSource = (text, slide, raw) =>
-  withEol(text, (t) => ({ text: spliceLines(t, slide.start, slide.end, raw.replace(/\r\n/g, '\n')) }));
+  withEol(text, (t) => {
+    let body = raw.replace(/\r\n/g, '\n');
+    if (slide.start > 0 && slide.contentStart === slide.start && !/^(\n|---)/.test(body)) body = `\n${body}`;
+    return { text: spliceLines(t, slide.start, slide.end, body) };
+  });
 
 /** Set `path` (like ['dragPos', 'name']) in the slide's frontmatter, adding the block when the slide has none. */
 function setFrontmatter(text, slide, path, value) {

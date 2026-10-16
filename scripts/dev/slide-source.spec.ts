@@ -80,6 +80,10 @@ describe('sourceOf and replaceSource', () => {
     const r = replaceSource(md, slides[2], sourceOf(md, slides[2]).replace('<v-drag pos="5,6,7,8">x</v-drag>', 'changed'));
     expect(r.text).toBe(md.replace('<v-drag pos="5,6,7,8">x</v-drag>', 'changed'));
   });
+  it('keeps a blank line under the separator of a slide that has no frontmatter, so its text is not read as frontmatter', () => {
+    const r = replaceSource(md, slides[2], '# Three, edited');
+    expect(r.text).toContain('---\n\n# Three, edited');
+  });
   it('can make a slide longer or shorter without touching the others', () => {
     const r = replaceSource(md, slides[0], '# One');
     expect(r.text.startsWith('# One\n')).toBe(true);
