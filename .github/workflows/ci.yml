@@ -35,6 +35,23 @@ jobs:
       - run: npm run build
       - run: npm test
 
+  # Known problems in the dependencies. It reads the lock file and needs the network, which the tests do not, so it is
+  # its own job and never blocks a change; read its report.
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+
+      - run: npm audit --audit-level=moderate
+
   # The suites that drive a real browser. They build their own decks.
   browser:
     runs-on: ubuntu-latest

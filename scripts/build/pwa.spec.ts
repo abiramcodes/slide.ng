@@ -96,4 +96,16 @@ describe('writePwa', () => {
     writePwa(dir, {});
     expect(/slide-ng-(\w+)'/.exec(readFileSync(join(dir, 'sw.js'), 'utf8'))![1]).not.toBe(first);
   });
+  it('changes the cache name when a file changes without changing its length', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'slide-ng-pwa-'));
+    writeFileSync(join(dir, 'main.js'), 'if (a > 1) go();');
+    writePwa(dir, {});
+    const version = () => /slide-ng-(\w+)'/.exec(readFileSync(join(dir, 'sw.js'), 'utf8'))![1];
+    const first = version();
+    writePwa(dir, {});
+    expect(version()).toBe(first); // the same files give the same name
+    writeFileSync(join(dir, 'main.js'), 'if (a < 1) go();'); // one character, same length
+    writePwa(dir, {});
+    expect(version()).not.toBe(first);
+  });
 });

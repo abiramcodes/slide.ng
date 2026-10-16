@@ -98,9 +98,19 @@ export function writePwa(distDir, headmatter) {
     JSON.stringify(manifestJson(headmatter, files), null, 2) + '\n',
   );
   files.push(manifest);
-  // The version changes whenever a file changes, so a visitor with an old copy gets the new one.
+  // The version changes whenever a file changes (its content, not only its size: a one-character fix has the same length),
+  // so a visitor with an old copy gets the new one.
   const version = createHash('sha256')
-    .update(files.map((f) => f + readFileSync(join(distDir, f)).length).join('|'))
+    .update(
+      files
+        .map(
+          (f) =>
+            `${f}:${createHash('sha256')
+              .update(readFileSync(join(distDir, f)))
+              .digest('hex')}`,
+        )
+        .join('|'),
+    )
     .digest('hex')
     .slice(0, 12);
   writeFileSync(join(distDir, 'sw.js'), serviceWorkerSource(files, version));
