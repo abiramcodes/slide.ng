@@ -202,10 +202,250 @@ Available in every slide without importing anything.
 | `<v-switch>` | one child per click: `<v-switch><div at="1">a</div><div at="2">b</div><div at="3-5">c</div></v-switch>` (a number lasts until the next one starts, `3-5` is explicit) |
 | `<v-click-gap size="2" />` | leaves two clicks empty |
 | `<v-clicks>`, `v-click`, `v-after` | see Clicks |
+| `<arrow x1="10" y1="20" x2="100" y2="200" color="red" width="2" two-way />` | an arrow on the slide (SVG, positions in slide pixels). `two-way` adds a head at the start |
+| `<transform scale="0.5" origin="top left">` | scales what is inside |
+| `<auto-fit-text min="10" max="60" class="w-60 h-20">text</auto-fit-text>` | the biggest font size (between `min` and `max`) that fits the box. `multi-line="false"` keeps it on one line |
+| `<youtube id="luoMHjh-XcQ" width="560" height="315" />` | an embedded YouTube video (`id` is the video id; no start time or playlist options) |
+| `<slide-video autoplay="true" autoreset="click" controls poster="...">` | a video that plays when its slide (or its `v-click`) comes. `autoplay="once"` plays once; `timestamp` starts at a second. Put `<source>` tags inside |
+| `<tweet id="20" scale="0.8" conversation="none" cards="hidden" />` | an embedded tweet (loads Twitter's script, needs the network) |
+| `<blue-sky uri="at://did:.../app.bsky.feed.post/..." scale="0.8" />` | an embedded Bluesky post (needs the network). `uri` can also be the post's web address |
+| `<code-group>`, `<code-block-wrapper>`, `<shiki-magic-move>`, `<katex-block-wrapper>`, `<mermaid>`, `<plant-uml>`, `<monaco>` | written by the generator for code fences and math; you normally use the markdown forms below |
 
 The table of contents lists every slide that has a title and is not `hideInToc`. A slide whose level is higher than the one
 before it becomes its child: `# A`, `## A.1`, `## A.2`, `# B` gives A (with A.1, A.2) and B. In `mode="onlyCurrentTree"` only the path to
 the current slide (and what is below it) is shown, `onlySiblings` shows the lists that contain the current slide.
+
+## Code
+
+Code fences are coloured while the slides are generated (Shiki), so the browser gets finished HTML.
+The language is the first word. Everything after it is optional and written in Slidev's order:
+
+````md
+```ts [title.ts] {2,3|5|all} {lines:true, startLine:5, maxHeight:'100px'}
+const a = 1
+```
+````
+
+| part | meaning |
+| ---- | ------- |
+| `[title.ts]` | a title bar above the block |
+| `{2,3}` | lines 2 and 3 are highlighted, the others are dimmed. `{*}` highlights nothing and keeps every line normal |
+| `{1\|3-4\|all}` | one range **per click**: line 1, then lines 3 and 4, then everything (`hide` shows nothing; `all` shows all lines). Each `\|` adds one click to the slide |
+| `{at:'+1', finally:'last'}` | in the options: the first click of the ranges (default `+1`) and what is shown after the last click (`last`, `all`, `hide` or a range) |
+| `lines:true` | line numbers (set `lineNumbers: true` in the headmatter for every block) |
+| `startLine:5` | the first line number |
+| `maxHeight:'100px'` | scroll inside the block |
+
+The ranges and the options are two separate braces, as in Slidev. Options only take simple values (numbers, `true`/`false`, text).
+Hover a block to get the copy button. Colours: `shiki: { themes: { light: 'vitesse-light', dark: 'vitesse-dark' } }` in the headmatter,
+and `codeAliases: { mylang: 'ts' }` for extra language names. A language Shiki does not know is shown plain, with a warning.
+
+### Snippets
+
+`<<<` puts a file (or one part of it) into a code block. It takes the same title, ranges and options as a fence:
+
+```md
+<<< ./snippets/example.ts
+<<< ./snippets/example.ts#greet
+<<< ./snippets/example.ts#greet ts {1|2}
+<<< @/snippets/example.ts {*}{lines:true}
+```
+
+The path is relative to the markdown file; `@/` is the folder of the entry `slides.md`. `#greet` is a region written in the file as
+`// #region greet` ... `// #endregion greet` (also `<!-- #region -->`, `/* #region */`, `# region`). A missing file is a warning and a comment in the block.
+
+### Code groups
+
+Tabs for several blocks (the tab name is the `[title]`):
+
+````md
+::code-group
+
+```sh [npm]
+npm i slide-ng
+```
+
+```sh [yarn]
+yarn add slide-ng
+```
+
+::
+````
+
+The `~icon~` title syntax and the automatic file icons of Slidev are not drawn.
+
+### Magic Move
+
+Several code steps in one block, moving between them with a click each (the animation is `@shikijs/magic-move`, loaded only when a deck uses it).
+Use a fence with **four** backticks and `magic-move` after the language, holding normal fences:
+
+`````md
+````md magic-move {lines: true}
+```js {*|1|2-3}
+let count = 1
+function add() { count++ }
+```
+
+```ts
+let count: number = 1
+const add = () => count += 1
+```
+````
+`````
+
+Each inner fence is one step; ranges inside a step add clicks of their own (`{*|1|2-3}` is three steps). Options after `magic-move`:
+`lines`, `at` (first click) and `duration` (ms; the headmatter `magicMoveDuration` sets it for the deck). A `[title]` before the options gives a title bar.
+
+## Math
+
+KaTeX, drawn while generating. `$...$` is inline, `$$ ... $$` is a block. The text of inline math follows Slidev's rule, so `$5 and $10` stays text.
+
+```md
+Inline $\sqrt{3x-1}+(1+x)^2$
+
+$$ {1|2|all}
+\begin{aligned}
+\nabla \cdot \vec{E} &= \frac{\rho}{\varepsilon_0} \\
+\nabla \cdot \vec{B} &= 0
+\end{aligned}
+$$
+```
+
+`{1|2|all}` after the opening `$$` steps through the formula's lines with clicks (the same range syntax as code). Inside math, `{{` is math, never
+an interpolation. KaTeX's CSS and fonts are only part of the build when a deck uses math. `mhchem` is not loaded.
+
+## Diagrams
+
+Mermaid is drawn in the browser (loaded only when a deck has one); the options come after the language:
+
+````md
+```mermaid {theme:'neutral', scale:0.8}
+graph TD
+A[Text] --> B{Decision}
+```
+````
+
+`theme` defaults to `dark` or `default` following the colour mode. Any other key is passed to Mermaid's own `initialize`. While a diagram is being drawn its
+element has `data-slide-ng-waitfor`; the attribute goes away when the picture is there (an exporter can wait for that).
+`<mermaid code="..." />` works as a tag too.
+
+PlantUML is a picture from a PlantUML server (the browser needs the network):
+
+````md
+```plantuml
+@startuml
+Alice -> Bob : Hello!
+@enduml
+```
+````
+
+Set the server in the headmatter: `plantUmlServer: https://www.plantuml.com/plantuml` (the default).
+
+## Monaco
+
+An editor in the slide (the Monaco editor, loaded only when a deck has one, no network needed):
+
+````md
+```ts {monaco}
+const message: string = 'edit me'
+```
+
+```ts {monaco-diff}
+console.log('Original text')
+~~~
+console.log('Modified text')
+```
+
+```ts {monaco-run} {autorun:false, showOutputAt:'+1', height:'auto'}
+console.log('runs on a click and the result appears')
+```
+````
+
+- `{monaco}`: an editor with the code. Options (flat, after the braces): `lines`, `readonly`, `height` (`initial`, `auto` or a CSS size).
+- `{monaco-diff}`: two texts side by side, split by a line with `~~~`.
+- `{monaco-run}`: an editor and a **Run** result below it. `autorun` is `true`, `false` or `'once'`; `showOutputAt:'+1'` shows the output after a click.
+  The code runs in a sandboxed frame with no access to the slides, and stops after 5 seconds. TypeScript is turned into JavaScript for you. `import` is not supported.
+- `{monaco-write}`: **not supported yet** (saving the file needs the dev server, phase 3). It shows a normal editor and prints a warning.
+
+Keys typed in an editor do not trigger slide shortcuts.
+
+## Twoslash
+
+Add `twoslash` after the language and hover the code to see types (worked out while generating, so no TypeScript reaches the browser):
+
+````md
+```ts twoslash
+const count = Math.max(1, 2)
+//    ^?
+```
+````
+
+`//    ^?` shows the type of the word above the `^`. A block that does not compile is shown without types, with a warning.
+
+## Marks and motion
+
+`v-mark` draws a hand-made mark on an element at a click (rough-notation, loaded only when used). It works like `v-click`:
+
+```md
+<span v-mark.red.circle="1">circled at click 1</span>
+<span v-mark.underline>underlined at the next click</span>
+<span v-mark="{ at: 3, type: 'box', color: '#234' }">boxed at click 3</span>
+<span v-mark="[2, 4]">shown at clicks 2 and 3 only</span>
+```
+
+Modifiers: type `underline` (default), `circle`, `highlight`, `box`, `bracket`, `strike-through` (`strike`, `line-through`), `crossed-off` (`cross`);
+colour `red`, `blue`, `green`, `orange`, `yellow`, `pink`, `purple`, `teal`, `cyan`, `indigo`, `lime`, `gray`, `black`, `white`; `.delay300` (ms after the click),
+`.op50` (opacity). In the object form any rough-notation option works (`strokeWidth`, `padding`, `iterations`, `animationDuration`, `brackets`, `multiline`).
+`true` shows the mark from the start, `false` never.
+
+`v-motion` moves an element between named states. It is a small substitute for Slidev's (CSS transitions, no spring physics):
+
+```md
+<div v-motion
+  :initial="{ x: -80, opacity: 0 }"
+  :enter="{ x: 0, opacity: 1 }"
+  :click-1="{ y: 30 }"
+  :click-2-4="{ scale: 1.5, transition: { duration: 800 } }"
+  :leave="{ x: 80 }">
+  Slidev
+</div>
+```
+
+`initial` is before the slide, `enter` while it is shown, `click-N` from click N on (`click-N-M`: from N up to M, later clicks win), `leave` after the slide.
+Put `v-click` on the same element and it uses `initial` before its click and `enter` after. Properties: `x`, `y` (px), `scale`, `scaleX`, `scaleY`, `rotate` (deg),
+`opacity`, and any other CSS property (camelCase); `transition: { duration, delay, ease }` (ms, ms, CSS timing function, default 500 / 0 / `ease-out`).
+Not supported: springs, `hovered`, `tapped`, `focused`, `visible`, keyframe lists, presets.
+
+## Markdown extras
+
+GitHub alerts (`NOTE`, `TIP`, `IMPORTANT`, `WARNING`, `CAUTION`), task lists and footnotes:
+
+```md
+> [!NOTE]
+> Useful information.
+
+- [x] done
+- [ ] to do
+
+A claim[^1].
+
+[^1]: The note is listed at the bottom of the slide.
+```
+
+Footnote numbers are not links. A note is one paragraph of inline markdown.
+
+## Icons
+
+Any icon of an installed [Iconify](https://iconify.design) set can be written as a tag, `<set-name />`, or as a class:
+
+```md
+<carbon-apps /> <mdi-account-circle class="text-red-500 text-3xl" /> <ph-star-fill />
+<span class="i-carbon:apps"></span>
+```
+
+Carbon, Material Design Icons (`mdi`) and Phosphor (`ph`) are installed. To add a set, find it on iconify.design and run
+`npm i -D @iconify-json/<set>` (for example `@iconify-json/tabler`), then write `<tabler-bell />`. Nothing else is configured; only the icons you use end up in the CSS.
+Colour and size come from the text: `text-red-500`, `text-3xl`.
 
 ## Angular in markdown
 

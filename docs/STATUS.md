@@ -1,63 +1,69 @@
-# Status: phase 1 (core presenting)
+# Status: phase 2 (code and content)
+
+Phases 0 and 1 (core presenting, layouts, controls) are unchanged and still pass. Phase 2 added code, math, diagrams, editors, more components,
+click markers and markdown extras. Presenter view, drawing, recording and export are still not done.
 
 ## Done (each item was run; results below)
 
-1. **Deck format**: `src:` imports (with `#2,4-6` ranges, importer's keys win, missing file reported), headmatter `defaults`,
-   `routeAlias` (address and TOC links), `level`, `title`, `hideInToc`, speaker notes (stored in the metadata, not shown),
-   `clicks` (total override), `clicksStart`, `transition`, per-slide scoped `<style>`, `::name::` slot sugar.
-2. **All layouts**: default, cover, intro, center, section, statement, fact, quote, end, full, none, image, image-left, image-right,
-   iframe, iframe-left, iframe-right, two-cols, two-cols-header, plus `404` and `error`; props `image`, `url`, `scale`, `background`,
-   `backgroundSize`, `class`, `layoutClass`. Unknown layout: warning with the list of names, falls back to `default`.
-3. **Navigation bar** at the bottom left (fullscreen, previous, next, overview, dark mode, drawing placeholder, presenter placeholder,
-   info, settings, counter), shown on hover, Carbon icons through UnoCSS.
-4. **Right-click menu** (four arrows, drawing/overview/presenter/fullscreen entries, native-menu hint; Shift keeps the native menu).
-5. **Transitions**: `slide-left/right/up/down`, `fade`, `fade-out`, `view-transition`, forward and backward variants, per-slide and deck default.
-6. **Overview** with live thumbnails at the last click (lazy with `@defer`), click, arrows, Enter, Escape.
-7. **Shortcuts** with Slidev's keys, as a list that a deck can change (`SHORTCUTS_SETUP`); `g` goto box; `f`, `o`, `d`, Escape.
-8. **Dark mode**: `colorSchema`, toggle, remembered in `localStorage`, `dark` class on `<html>`, all layouts checked in both modes (pictures in `docs/screenshots/`).
-9. **Built-ins**: `<slide-toc>` (all options), `<slide-link>`, `<slide-current-no>`, `<slides-total>`, `<light-or-dark>`, `<render-when>`, `<v-switch>`, `<v-click-gap>`.
-10. Info dialog (headmatter `info`) and a small settings menu (slide scale, hide idle cursor).
+1. **Shiki at generate time**: both themes as CSS variables, headmatter `shiki.themes`, `codeAliases`, `lineNumbers`; languages found by a pre-scan.
+2. **Line highlights and click-stepped ranges**: `{2,3}`, `{1|2-3|all}`, `at`, `finally`, `lines`, `startLine`, `maxHeight`, title bar, copy button.
+3. **Snippets** (`<<< file#region lang {ranges}`, `@/` root, missing file reported) and **code groups** (`::code-group`).
+4. **Magic Move** (`@shikijs/magic-move`), steps by clicks, ranges inside steps.
+5. **KaTeX** inline and block, with click-stepped block ranges; Angular-safe output; CSS only in decks that use math.
+6. **Mermaid** (lazy, theme follows dark mode, cached) with `data-slide-ng-waitfor`, and **PlantUML** (image from a server, encoded while generating).
+7. **Monaco**: `{monaco}`, `{monaco-diff}`, `{monaco-run}` (sandboxed iframe, TypeScript through Monaco's own worker, 5 s limit). Works offline, workers bundled.
+8. **Twoslash** (`@shikijs/twoslash`, popups in CSS, `ts twoslash`).
+9. **Built-in components**: `<arrow>`, `<transform>`, `<auto-fit-text>`, `<youtube>`, `<slide-video>`, `<tweet>`, `<blue-sky>`, registered in `scripts/lib/registry.mjs`.
+10. **`v-mark`** (rough-notation: types, colours, `at`, delay, opacity, ranges, click-integrated) and a small **`v-motion`** (`:initial`, `:enter`, `:click-N`, `:click-N-M`, `:leave`).
+11. **Markdown extras**: GitHub alerts, task lists, footnotes, icon tags for every installed Iconify set (Carbon, MDI and Phosphor installed).
+12. **Showcase deck** `tests/e2e/phase2/slides.md` with 14 feature slides; 28 pictures of them (light and dark) in `docs/screenshots/` (`feature-*.png`).
+
+## TODO for phase 3
+
+- **`{monaco-write}`**: editing the file on disk from the slide. It needs the dev server (a small write endpoint). Today it shows a normal editor and the generator prints a warning.
 
 ## Test results (last run, Node 22.23.3, Chromium from `/opt/pw-browsers`)
 
-- `npm run build`: succeeds, no warnings printed.
-- `npm test`: 12 files, **118** tests passed.
-- `npm run test:e2e`: starter deck **39** passed, 0 failed; showcase deck **144** passed, 0 failed
-  (layouts 40, controls 42, shortcuts 20, transitions 11, built-ins 30, plus one check for no console errors or warnings).
-- `npm run test:dev`: **6** passed (5 of 5 edits updated the open page without a reload, no console errors).
-- `npm run screenshots`: wrote 44 pictures to `docs/screenshots/` (19 layouts x light/dark, nav bar, context menu, overview).
+- `npm run build`: succeeds. Starter deck: initial total 332.70 kB (main 117.26 kB, shared chunk 177.83 kB, styles 37.61 kB).
+- `npm test`: 27 files, **230** tests passed.
+- `npm run test:e2e`: starter deck **45** passed; layout showcase **144** passed; code and content deck **125** passed (code 26, magic move 10, math 10, diagrams 9, Monaco 17, twoslash 5, components 17, mark 15, markdown 15, plus one for no console errors); 0 failed.
+- `npm run test:dev`: **6** passed (5 edits updated the open page without a reload).
+- Hand-written code: generator 1068 lines, app 3327 lines (largest file 143 lines), unit tests 1431, browser tests and test decks 1390, CSS 271, docs 1032.
 
-I looked at a sample of the pictures (cover, two-cols-header, image-left, iframe-right, quote, overview, nav bar, context menu).
+### Bundle sizes
+
+- Starter deck (no code features): the browser output has **no** Monaco, Mermaid, KaTeX, Magic Move or rough-notation code and no worker files (checked by `run.mjs`).
+- Phase 2 deck (uses everything): initial = main 357.65 kB + styles 464.79 kB (KaTeX, Monaco and Magic Move CSS) = 822 kB raw, 217 kB compressed.
+  Lazy: Monaco TypeScript worker 7.04 MB, Monaco 2.76 MB, Mermaid (several chunks, 1.47 MB for the elk layout alone), Monaco setup 1.32 MB, editor worker 307 kB, KaTeX 262 kB.
+  The build prints one budget warning for this deck's initial size (budget 500 kB); the starter deck has none.
 
 ## Not done (later phases or left out on purpose)
 
-- Presenter view and its sync, drawing, recording, camera, Monaco, Shiki and code highlighting, export/print (`?print`), PWA.
-- Touch and swipe controls, wake lock, CSS filter settings, the "side editor".
-- Typing digits inside the overview, Slidev's key auto-repeat timer, `contextMenu` frontmatter option, `preload`, `zoom`, `dragPos`, `lang`.
-- `render-when context="visible"`; transitions as CSS classes (Vue style `*-enter-active`); `<v-switch>` transition props.
-- Showing the `error` layout (it exists, nothing uses it yet).
-- Showing speaker notes anywhere (needs the presenter view).
-- Lazy loading of slide components (all slides are in the main bundle).
+- Presenter view and its sync, drawing, recording, camera, export/print (`?print`), PWA, touch controls (all as before).
+- `{monaco-write}` (see above); Monaco type acquisition (types of npm packages) and Shiki highlighting inside Monaco; `import` in `{monaco-run}`; syntax highlighting of run output; custom runners.
+- Code: Slidev's `~icon~` title icons and automatic file icons in code groups; `{monaco}` `editorOptions`; `mhchem` chemistry; `<<<` with a VS Code style `{lines}`-only prefix.
+- `v-motion` limits: CSS transitions only. No spring physics, no `hovered` / `tapped` / `focused` / `visible` / `variants`, no keyframe arrays, no presets, no `delay`/`duration` shorthand attributes
+  (use `transition` inside a variant). A `v-click` on the **same** element drives it; one on a parent does not. Print and overview show the end state.
+- `v-mark`: colours are fixed Tailwind shades (not UnoCSS theme colours); the stroke width does not grow with the slide scale; no `annotationGroup`.
+- Footnotes: one paragraph of inline markdown per note, numbers are not links.
+- `<tweet>`, `<blue-sky>`, `<youtube>` and PlantUML need the network when presenting. `<slide-video>`: no `print*` props.
+- Monaco's JavaScript imports its CSS, and the builder writes it next to the output as unused `chunk-*.css` files (about 190 kB each, not linked) in decks that use Monaco.
+- The icon sets `simple-icons` and `vscode-icons` are not installed (so the Bluesky placeholder uses a Carbon icon).
 
 ## Problems and limits found
 
-- Editing a slide's title, frontmatter or notes changes the generated `index.ts`, and the dev server then does a full page reload (as in phase 0).
-  Editing body text updates in place.
-- In-place updates re-create the slide component, so a component's own state goes back to its start value.
-- Per-slide `<style>` uses CSS nesting. It reaches into the layout's own elements (more than Vue's scoped CSS) and does not support `--uno:`.
-- Browsers: Angular's `[src]` on an iframe needs a trusted-URL bypass (done for the layouts), so the `url` frontmatter is trusted as written.
-- The generator warns about problems (unknown layout, unknown slot, bad import) but does not stop.
-- `/` addresses with a number clamp (`/99` shows the last slide); any other unknown address shows `404`.
-- Image paths such as `/photo.png` are used as written (served from `public/`); a deck hosted under a sub-path needs a relative path.
-- Dark mode is applied after Angular starts, so a dark-mode user may see one light frame at load.
+- Same as phase 1 (full reload when the title, frontmatter or notes change in dev mode; in-place updates reset a component's state; per-slide `<style>` uses CSS nesting).
+- Twoslash starts a TypeScript program while generating (about one second) and only when a deck has a twoslash block. A block that does not compile loses its types and a warning is printed.
+- `{{` inside `$...$` is math and never an interpolation.
+- The code option parser reads simple values only (numbers, booleans, text); it does not evaluate JavaScript as Slidev does.
+- Rough-notation measures in screen pixels, so its drawing is un-scaled by CSS under the scaled canvas (`code.css`). It looks right in the pictures at 1280x720; other sizes were not compared.
 
 ## NOT VERIFIED
 
-- Looks versus real Slidev: only compared by reading Slidev's CSS and layouts; no side-by-side picture (not possible offline). The `full` layout (no padding here, see phase 1 decision 9) may differ.
-- Browsers other than Chromium: Firefox and Safari (View Transitions, CSS nesting for slide styles, `translate` in animations), Windows and macOS.
-- Fullscreen was checked in headless Chromium only; real fullscreen with the Escape key not tried by hand.
-- `colorSchema: light|dark` in the headmatter has unit-level reasoning only, no browser test.
-- Overview with hundreds of slides (speed, memory), mobile viewports, touch input, print.
-- Node versions below 22.23.3; `npm install` from a clean machine (dependencies were added incrementally in this folder).
-- Dev server with the generator watching when an imported (`src:`) file is edited: the watcher code was written but only the main file was edited in the test.
-- The zip was not unpacked and rebuilt.
+- Everything under Phase 1's list still applies (looks versus real Slidev, other browsers, real fullscreen, print, mobile).
+- Real network: Mermaid, Monaco and KaTeX run offline and were tested; PlantUML (stand-in server), YouTube, Twitter and Bluesky were **not** tried against the real services.
+- Selecting text and moving the cursor with the mouse inside a Monaco editor on a **scaled** canvas (the canvas is scaled with CSS `transform`; Monaco measures in pixels). Typing and running were tested, mouse selection was not.
+- `v-mark` and `v-motion` in the overview thumbnails and print (they should show the end state; only reasoned, not tested), and `v-motion` during a slide transition.
+- Firefox and Safari for: Monaco workers, `DecompressionStream('deflate-raw')` (Magic Move, Mermaid and Monaco text), CSS `:has()` (task list), `calc(1 / var())` (marks).
+- Large decks: build time and size with many Mermaid / Monaco blocks; Twoslash on big projects.
+- A clean `npm install` on another machine, and the zip unpacked and rebuilt.

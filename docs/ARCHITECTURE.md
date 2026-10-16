@@ -30,7 +30,17 @@ dist/slide-ng/browser
 | `lib/emit.mjs` | TypeScript source of one slide component |
 | `lib/index-source.mjs` | TypeScript source of `index.ts` |
 | `lib/registry.mjs` | table of components that slides can use (and re-export of the layouts) |
-| `lib/make-css.mjs` | build UnoCSS output for the class names found |
+| `lib/make-css.mjs` | build UnoCSS output for the class names found (deck, generated slides and `src/app`) |
+| `lib/fences.mjs` | line scanner that finds code fences, `<<<` snippet lines and `::code-group`, and leaves a placeholder for each |
+| `lib/code/meta.mjs` | reads a fence's info string: language, `[title]`, `{ranges}`, `{options}` |
+| `lib/code/highlighter.mjs`, `render-code.mjs` | Shiki (both themes as CSS variables) and the HTML of one highlighted block (with Twoslash) |
+| `lib/code/render-fence.mjs` | decides what a fence becomes: code, group, magic move, mermaid, plantuml or Monaco |
+| `lib/code/snippet.mjs`, `magic-move.mjs`, `diagrams.mjs`, `plantuml.mjs`, `monaco.mjs` | one job each; see the file headers |
+| `lib/math.mjs` | cuts `$...$` and `$$...$$` out of the markdown and renders them with KaTeX |
+| `lib/features.mjs` | scans the deck for what it uses (languages, math, Monaco, Magic Move, Twoslash) |
+| `lib/directives.mjs`, `icons.mjs`, `alerts.mjs`, `footnotes.mjs` | Vue-style `v-mark` / `v-motion` attributes, icon tags, GitHub alerts and footnotes |
+| `lib/pack.mjs` | JSON -> deflate -> base64, so text with `{{ }}` can travel in an attribute (the browser has `code/unpack.ts`) |
+| `lib/protect.mjs` | the entity escaping for `{ } @` and the `attr()` helpers |
 
 ### Why placeholders in `to-template.mjs`
 
@@ -39,6 +49,24 @@ may be changed). So the generator replaces each piece of Angular syntax by a har
 runs the converter, and puts the original text back. Code fences and inline code are set aside
 the same way and written out escaped, with `ngNonBindable`, so `{{ x }}` inside code stays text.
 Remaining `{`, `}` and `@` in normal text become HTML entities.
+
+### Code, math and other fences
+
+Fences are cut out first (`fences.mjs`) and written back last (`code/render-fence.mjs`). Syntax is coloured by Shiki while generating,
+so the browser gets finished HTML inside `<code-block-wrapper>`. That component only adds behaviour: line numbers, the copy button, and the
+highlight ranges, which are an attribute (`ranges="2-3|5"`) turned into classes by the current click. `RangedBlock` is the base class that code and
+math blocks share. Anything with text that Angular would read as a binding (Magic Move steps, Mermaid, Monaco) is passed `pack()`ed.
+
+`features.mjs` scans the deck before generating, and `generate.mjs` writes `src/slides/generated/features.css` with only the stylesheets that deck needs
+(KaTeX, Magic Move, Twoslash, Monaco). Heavy code (Monaco, Mermaid, Magic Move, rough-notation) is reached only through `import()`, so it is a lazy chunk;
+`tsconfig.app.json` lists only `src/main.ts` so that unused features (and Monaco's workers) are not compiled into decks that do not use them.
+The starter test checks that the output of a deck without them contains none of their code.
+
+### Rewrites before markdown
+
+Before the markdown converter runs, `to-template.mjs` rewrites Vue-style syntax into plain Angular: `v-mark.red="1"` becomes
+`mark-mods="red" v-mark="1"`, the `:initial` / `:click-N` attributes of `v-motion` become one `[v-motion]="{ ... }"` binding (Angular has no
+dynamic input names), and `<carbon-apps />` becomes `<span class="i-carbon:apps"></span>`. After it: alerts are found in the HTML, and footnotes are listed at the end.
 
 ### Layout wrapping and slots
 
@@ -73,6 +101,10 @@ The `<style>` text goes into the slide component's `styles`, wrapped in `slide-0
 | `lib/clicks.ts` | `ClicksContext`: per-slide click state (current, total, relative/absolute/range maths) |
 | `lib/v-click.ts`, `v-clicks.ts`, `v-click-gap.ts`, `v-switch.ts` | click directives and components |
 | `lib/slide-base.ts`, `slide-meta.ts` | base class of generated slides; type of an index entry |
+| `code/*.ts` | `code-block-wrapper`, `code-group`, `magic-move`, `katex-block`, `mermaid`, `plant-uml`, `monaco-editor` (+ `code-runner`); `monaco/` holds the lazy Monaco setup, its two workers and the sandbox runner |
+| `lib/v-mark.ts`, `mark-options.ts` | `v-mark` directive (rough-notation, lazy) and the pure option reader |
+| `lib/v-motion.ts`, `motion-style.ts` | `v-motion` directive and the pure variant maths |
+| `builtin/*.ts` (phase 2) | `arrow`, `transform`, `auto-fit-text`, `youtube`, `slide-video`, `tweet`, `blue-sky` |
 | `layouts/*.ts` | one small component per layout (`background.ts` and `frame.ts` are helpers) |
 | `builtin/*.ts` | `slide-toc`, `slide-link`, `slide-current-no`, `slides-total`, `light-or-dark`, `render-when` |
 | `ui/*.ts` | nav bar, context menu, overview and thumbnail, goto box, info dialog, settings menu, icon button |
@@ -120,5 +152,8 @@ reset and `src/styles/` (variables, the layouts' typography ported from Slidev's
 - `tests/e2e/run.mjs`: builds the starter deck `slides.md`, serves `dist/`, drives Chromium (`playwright-core`): navigation and clicks.
 - `tests/e2e/showcase.mjs` + `showcase/`: builds `tests/e2e/showcase/slides.md` (every layout, TOC, built-ins, transitions, `src:` import)
   into `dist/showcase` and checks layouts, controls, shortcuts, transitions and built-ins.
+- `tests/e2e/phase2.mjs` + `phase2/`: builds `tests/e2e/phase2/slides.md` (every code and content feature) into `dist/phase2` and runs one file per topic
+  (`code`, `magic`, `math`, `diagrams`, `monaco`, `twoslash`, `components`, `mark`, `markdown`). `node tests/e2e/phase2.mjs mark` runs one topic.
+  It answers the PlantUML server and the tweet / Bluesky scripts with stand-ins, so no network is needed.
 - `tests/e2e/dev-hmr.mjs`: dev server live-update check.
-- `tests/e2e/screenshots.mjs`: not a test; writes `docs/screenshots/`.
+- `tests/e2e/screenshots.mjs` and `screenshots-features.mjs`: not tests; write `docs/screenshots/` (layouts, controls, and every feature slide).

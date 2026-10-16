@@ -44,15 +44,21 @@ The URL is the state: `/7?clicks=2` is slide 7 at click 2.
 - Navigation bar, right-click menu, slide overview with live thumbnails, go-to box, info dialog, light and dark mode.
 - Built-in `<slide-toc>`, `<slide-link>`, `<slide-current-no>`, `<slides-total>`, `<light-or-dark>`, `<render-when>`.
 - Keyboard shortcuts as a list you can change.
+- Code: Shiki highlighting at build time, line numbers, line highlights that step with clicks (`{1|2-3|all}`), `<<<` snippets with regions, code groups, copy button, Magic Move.
+- Twoslash type popups, KaTeX math (also stepped by clicks), Mermaid and PlantUML diagrams.
+- Monaco editors in slides: `{monaco}`, `{monaco-diff}` and `{monaco-run}` (runs the code in a sandbox). Heavy libraries are lazy chunks, only in decks that use them.
+- Built-in `<arrow>`, `<transform>`, `<auto-fit-text>`, `<youtube>`, `<slide-video>`, `<tweet>`, `<blue-sky>`.
+- `v-mark` (rough-notation marks on clicks) and a small `v-motion`.
+- GitHub alerts, task lists, footnotes, and icons as tags (`<carbon-apps />`, `<mdi-account-circle />`, `<ph-star />`; any installed Iconify set).
 
-Not yet: presenter view, drawing, recording, syntax highlighting, code editor, export. See [docs/STATUS.md](docs/STATUS.md).
-Pictures of the layouts (light and dark) are in `docs/screenshots/`; `npm run screenshots` makes them again.
+Not yet: presenter view, drawing, recording, `{monaco-write}`, export. See [docs/STATUS.md](docs/STATUS.md).
+Pictures of the layouts and of every feature slide (light and dark) are in `docs/screenshots/`; `npm run screenshots` makes them again.
 
 ## Tests
 
 ```sh
-npm test             # unit tests (generator, click engine, table of contents, shortcuts, transitions)
-npm run test:e2e     # builds the starter deck and a showcase deck, and checks both in a real browser
+npm test             # unit tests (generator, code and math handling, click engine, table of contents, shortcuts, transitions)
+npm run test:e2e     # builds the starter deck, the layout showcase and the code and content showcase, and checks all three in a real browser
 npm run test:dev     # starts the dev server and edits slides.md to check live updates
 ```
 

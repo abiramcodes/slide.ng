@@ -122,7 +122,7 @@ await page.close();
 // ---- the starter deck uses no heavy feature, so none of them is in the output ---------------
 const dist = 'dist/slide-ng/browser';
 const text = readdirSync(dist).filter((f) => /\.(js|css)$/.test(f)).map((f) => readFileSync(`${dist}/${f}`, 'utf8')).join('\n');
-for (const [name, marker] of [['Monaco', 'MonacoEnvironment'], ['Mermaid', 'mermaidAPI'], ['KaTeX', '.katex{'], ['Magic Move', 'shiki-magic-move-container{'], ['rough-notation', 'rough-annotation']]) {
+for (const [name, marker] of [['Monaco', 'MonacoEnvironment'], ['Mermaid', 'mermaidAPI'], ['KaTeX', '.katex{'], ['Magic Move', 'shiki-magic-move-container{'], ['rough-notation', 'rough-notation-dash']]) {
   t.ok(`the starter build does not contain ${name}`, !text.includes(marker));
 }
 t.ok('no worker files in the starter build', !readdirSync(dist).some((f) => f.startsWith('worker-')));
