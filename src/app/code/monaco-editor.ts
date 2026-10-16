@@ -18,7 +18,8 @@ const toAutorun = (v: unknown): boolean | 'once' => (v === 'once' ? 'once' : !(v
 @Component({
   selector: 'monaco',
   imports: [CodeRunner],
-  host: { class: 'relative slidev-monaco-container block' },
+  // The host has `data-slide-ng-waitfor` until Monaco is loaded and the editor exists, so an exporter can wait.
+  host: { class: 'relative slidev-monaco-container block', '[attr.data-slide-ng-waitfor]': 'loaded() ? null : ".monaco-editor"' },
   template: `
     <div class="relative slidev-monaco-container-inner" [style.height]="height()">
       <div #box class="absolute inset-0.5"></div>
@@ -49,6 +50,7 @@ export class MonacoEditor {
   private dark = inject(Dark);
   private api = inject(DevApi);
   private writeTimer?: ReturnType<typeof setTimeout>;
+  protected loaded = signal(false);
   private contentHeight = signal(0);
   private firstHeight = signal(0);
   private monaco?: typeof Monaco;
@@ -107,6 +109,7 @@ export class MonacoEditor {
       this.code.set(model.getValue());
       this.saveToFile(model.getValue());
     });
+    this.loaded.set(true);
     this.markReady();
   }
 

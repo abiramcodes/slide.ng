@@ -21,7 +21,8 @@ export function stepAt(ranges: string[][], clickCount: number, stepCount: number
 
 @Component({
   selector: 'shiki-magic-move',
-  host: { class: 'slidev-code-wrapper slidev-code-magic-move relative group' },
+  // While the animation code and the steps load, the host has `data-slide-ng-waitfor` (like the Mermaid block), so an exporter can wait.
+  host: { class: 'slidev-code-wrapper slidev-code-magic-move relative group', '[attr.data-slide-ng-waitfor]': 'data() ? null : ".shiki-magic-move-container span"' },
   template: `
     @if (title()) {
       <div class="slidev-code-block-title"><div class="leading-1em">{{ title() }}</div></div>

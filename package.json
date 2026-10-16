@@ -7,7 +7,7 @@
     "start": "node scripts/dev.mjs",
     "build": "npm run generate && ng build",
     "test": "npm run generate && ng test --no-watch",
-    "test:e2e": "node tests/e2e/run.mjs && node tests/e2e/showcase.mjs && node tests/e2e/phase2.mjs && node tests/e2e/phase3.mjs",
+    "test:e2e": "node tests/e2e/run.mjs && node tests/e2e/showcase.mjs && node tests/e2e/phase2.mjs && node tests/e2e/phase3.mjs && node tests/e2e/phase4.mjs",
     "test:dev": "node tests/e2e/dev-hmr.mjs && node tests/e2e/dev-server.mjs",
     "screenshots": "node tests/e2e/screenshots.mjs && node tests/e2e/screenshots-features.mjs && node tests/e2e/screenshots-phase3.mjs"
   },

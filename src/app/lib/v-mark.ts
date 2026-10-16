@@ -1,11 +1,13 @@
 // <span v-mark.red.circle="2">text</span>: draws a hand-made looking mark around the element
 // on a click. Uses rough-notation, loaded only when a slide has a v-mark.
 import { Directive, ElementRef, OnDestroy, OnInit, effect, inject, input, signal } from '@angular/core';
+import { RENDER_CONTEXT } from './slide-context';
 import type { RoughAnnotation } from 'rough-notation/lib/model';
 import { ClickInfo, ClicksContext } from './clicks';
 import { markOptions } from './mark-options';
 
-@Directive({ selector: '[v-mark]' })
+// While the mark is still to be drawn the element has `data-slide-ng-waitfor`, so an exporter can wait for it.
+@Directive({ selector: '[v-mark]', host: { '[attr.data-slide-ng-waitfor]': 'pending() ? "svg.rough-annotation" : null' } })
 export class VMark implements OnInit, OnDestroy {
   value = input<unknown>(undefined, { alias: 'v-mark' });
   // The generator moves `.red.circle` out of the attribute name into this one.
@@ -16,6 +18,8 @@ export class VMark implements OnInit, OnDestroy {
   private annotation = signal<RoughAnnotation | null>(null);
   private info = signal<ClickInfo | null>(null);
   private options = markOptions(undefined, '');
+  private printing = inject(RENDER_CONTEXT) === 'print';
+  protected pending = signal(true);
   private timer?: ReturnType<typeof setTimeout>;
   private gone = false;
 
@@ -27,9 +31,11 @@ export class VMark implements OnInit, OnDestroy {
       const info = this.info();
       const show = at === true || at === 'true' || (!!info && info.isActive(this.ctx.current()));
       clearTimeout(this.timer);
-      if (!show) return mark.hide();
+      if (!show) { this.pending.set(false); return mark.hide(); }
       // rough-notation has no delay option, so we wait ourselves.
-      this.timer = setTimeout(() => { mark.show(); this.fade(); }, this.options.delay ?? 0);
+      // On paper there is no animation and no delay: the mark is just there.
+      const delay = this.printing ? 0 : this.options.delay ?? 0;
+      this.timer = setTimeout(() => { mark.show(); this.fade(); this.pending.set(false); }, delay);
     });
   }
 
@@ -44,7 +50,7 @@ export class VMark implements OnInit, OnDestroy {
     const { annotate } = await import('rough-notation');
     if (this.gone) return;
     const { at: _at, delay: _d, opacity: _o, ...config } = this.options;
-    this.annotation.set(annotate(this.el, config as never));
+    this.annotation.set(annotate(this.el, (this.printing ? { ...config, animate: false } : config) as never));
   }
 
   ngOnDestroy() {

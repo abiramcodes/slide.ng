@@ -1,0 +1,11 @@
+/* The /print page (see app/print/): slides stacked at full size, one paper page each. */
+html.print, html.print body { height: auto; overflow: visible; }
+html.print * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+/* A page is a frozen picture: nothing may move while it is captured. */
+html.print *, html.print *::before, html.print *::after {
+  transition: none !important;
+  animation: none !important;
+  caret-color: transparent;
+}
+.print-slide-container { position: relative; display: block; overflow: hidden; break-after: page; }
+.print-slide-container > * { position: absolute; inset: 0; display: block; }
