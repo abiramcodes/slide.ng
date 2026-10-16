@@ -84,10 +84,11 @@ export function createHandler(ctx) {
     }
     if ((m = /^\/drawings\/(\d+)$/.exec(path)) && method === 'PUT') {
       const { svg } = await body(req, MAX_DRAWING + 1_000);
-      const { slides, headmatter } = await parseDeck(ctx.entry);
-      await serial(async () =>
-        writeDrawing(ctx, number(m[1]), svg, slides.length, canvasSize(headmatter)),
-      );
+      // Parsed inside the queue, so it sees the deck as the writes before it left it.
+      await serial(async () => {
+        const { slides, headmatter } = await parseDeck(ctx.entry);
+        await writeDrawing(ctx, number(m[1]), svg, slides.length, canvasSize(headmatter));
+      });
       return json(res, 200, { ok: true });
     }
     if ((m = /^\/monaco\/([\w-]{1,40})$/.exec(path)) && method === 'PUT') {
