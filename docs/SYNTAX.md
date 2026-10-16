@@ -27,20 +27,20 @@ class: text-red-500
 
 Keys slide.ng understands:
 
-| key                                                                    | what it does                                                                                                   |
-| ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `layout`                                                               | one of the layouts below. The first slide is `cover` if you set nothing, all others `default`.                 |
-| `class`                                                                | extra CSS (UnoCSS) classes on the layout (on the content for layouts that have a `class` prop, see Layouts)    |
-| `title`                                                                | slide title (otherwise the first `#` heading); used in the browser tab, the table of contents and the goto box |
-| `level`                                                                | depth in the table of contents (otherwise the number of `#` in the first heading)                              |
-| `hideInToc`                                                            | leave this slide out of `<slide-ng-toc>`                                                                       |
-| `routeAlias`                                                           | an extra address: `routeAlias: intro` makes `/intro` open this slide                                           |
-| `hide`, `disabled`                                                     | the slide is left out of the deck completely                                                                   |
-| `clicksStart`                                                          | first click number of the slide (default 0)                                                                    |
-| `clicks`                                                               | fixes the number of clicks of the slide, whatever its elements ask for                                         |
-| `transition`                                                           | transition to the next slide, see Transitions                                                                  |
-| `src`                                                                  | take the slides from another markdown file, see Importing slides                                               |
-| `image`, `url`, `scale`, `backgroundSize`, `background`, `layoutClass` | props of some layouts                                                                                          |
+| key                                                                    | what it does                                                                                                                   |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `layout`                                                               | one of the layouts below. The first slide is `cover` if you set nothing, all others `default`.                                 |
+| `class`                                                                | extra CSS (UnoCSS) classes on the layout (on the content for layouts that have a `class` prop, see Layouts)                    |
+| `title`                                                                | slide title (otherwise the first `#` heading); used in the browser tab, the table of contents and the goto box                 |
+| `level`                                                                | depth in the table of contents (otherwise the number of `#` in the first heading)                                              |
+| `hideInToc`                                                            | leave this slide out of `<slide-ng-toc>`                                                                                       |
+| `routeAlias`                                                           | an extra address: `routeAlias: intro` makes `/intro` open this slide; `print`, `notes` and `presenter` are refused (app pages) |
+| `hide`, `disabled`                                                     | the slide is left out of the deck completely                                                                                   |
+| `clicksStart`                                                          | first click number of the slide (default 0)                                                                                    |
+| `clicks`                                                               | fixes the number of clicks of the slide, whatever its elements ask for                                                         |
+| `transition`                                                           | transition to the next slide, see Transitions                                                                                  |
+| `src`                                                                  | take the slides from another markdown file, see Importing slides                                                               |
+| `image`, `url`, `scale`, `backgroundSize`, `background`, `layoutClass` | props of some layouts                                                                                                          |
 
 In the headmatter (the frontmatter of the first slide) you can also set:
 

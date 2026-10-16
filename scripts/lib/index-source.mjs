@@ -2,6 +2,7 @@
 import { marked } from 'marked';
 import { layoutName } from './layouts.mjs';
 import { slideClass, slideName } from './emit.mjs';
+import { checkRouteAlias } from './route-alias.mjs';
 import { noteToHtml } from './note-html.mjs';
 import { downloadTarget } from '../export/filename.mjs';
 import { pwaEnabled } from '../build/pwa.mjs';
@@ -15,7 +16,7 @@ function metaOf(slide, index) {
     layout: slide.layout ?? layoutName(f, index),
     note: slide.note ?? null,
     noteHtml: noteToHtml(slide.note),
-    routeAlias: f.routeAlias != null ? String(f.routeAlias) : null,
+    routeAlias: checkRouteAlias(f.routeAlias, index + 1),
     hideInToc: Boolean(f.hideInToc),
     transition: f.transition ?? null,
     frontmatter: f,
