@@ -170,7 +170,7 @@ Three channels exist: `shared` (page, clicks, timer, cursor), `drawings` and `he
 ### Dev companion server and its security
 
 `npm start` runs three processes: the generator in watch mode, `scripts/dev/server.mjs` and `ng serve`. The companion binds to 127.0.0.1 and `ng serve` proxies `/__slide-ng/*` to it (`proxy.conf.mjs`, WebSockets too).
-`npm start -- --remote[=password]` makes only `ng serve` listen on 0.0.0.0 (`--bind` changes the address, in remote mode only) and prints the LAN and presenter addresses (`cli/remote-info.mjs`). The password is optional; without one it prints a warning, and the Host, Origin, token and path checks below still apply.
+`npm start -- --remote[=password]` makes only `ng serve` listen on 0.0.0.0 (`--bind` changes the address, in remote mode only) and prints the LAN and presenter addresses (`cli/remote-info.mjs`). There is always a password (`--remote=secret`, `SLIDE_NG_PASSWORD`, a prompt on a terminal, or a random one that is printed), and the Host, Origin, token and path checks below still apply. The companion server refuses to start in remote mode without one.
 
 ```
 browser --/__slide-ng/*--> ng serve (0.0.0.0 with --remote) --proxy--> companion (127.0.0.1)

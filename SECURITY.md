@@ -22,6 +22,6 @@ This is a small project kept up in spare time, so there is no fixed response tim
 - Writes need the random session token and a JSON content type. With a password set, the login cookie is needed as well.
 - A request never names a file. Slides are found by number through the parser, drawings are `<integer>.svg`, and `{monaco-write}` files come from a list the generator wrote. Every path stays inside the deck folder; `..`, absolute paths and symlinks that leave it are refused.
 - Request bodies and WebSocket messages have size limits, and drawing markup is checked against a list of allowed shapes.
-- There is no HTTPS. Plain `--remote` has no password and prints a warning, so use it only on a network you trust.
+- There is no HTTPS. `--remote` always has a password (random when you give none) and says what it allows; use it only on a network you trust. `{monaco-write}` saves only into text-like files inside the deck, never setup, package, git or hidden files.
 
 Code that runs in a slide, such as `{monaco-run}`, runs in the browser's sandbox. A deck is code: do not build or serve a deck you do not trust.

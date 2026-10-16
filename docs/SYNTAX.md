@@ -371,6 +371,7 @@ console.log('runs on a click and the result appears');
 - `{monaco-run}`: an editor and a **Run** result below it. `autorun` is `true`, `false` or `'once'`; `showOutputAt:'+1'` shows the output after a click.
   The code runs in a sandboxed frame with no access to the slides, and stops after 5 seconds. TypeScript is turned into JavaScript for you. `import` is not supported.
 - `{monaco-write}`: use it on a snippet line, `<<< ./snippets/demo.ts {monaco-write}` (a whole file inside the deck's folder). While you run `npm start`, edits are saved into that file about half a second after you stop typing. A region, a plain code block or a static build gets a normal editor (the generator warns for the first two).
+  Only text-like files inside the deck's folder can be written: an extension from a fixed list (`.ts .js .json .css .html .md .txt .yaml .py` and similar, see `scripts/lib/monaco-targets.mjs`), never `setup/`, `layouts/`, `components/`, `theme/`, `.git/`, `node_modules/`, `package.json`, lock files, config files, hidden files or `.slide-ng/`. The generator warns and shows a normal editor for any other file, and the dev server checks the target again at every write.
 
 Keys typed in an editor do not trigger slide shortcuts.
 
@@ -601,11 +602,12 @@ A static build has none of this and makes no requests.
 
 ```sh
 npm start -- --remote=secret     # (or `slide-ng --remote=secret`) others on your network can open the deck and follow the presenter
-npm start -- --remote            # same without a password (the password is optional, as in Slidev); it prints a warning
+npm start -- --remote            # makes a random password and prints it (there is no remote mode without a password)
+SLIDE_NG_PASSWORD=secret npm start -- --remote   # keeps the password out of the process list; a terminal also gets a prompt
 ```
 
 It prints the public and private deck addresses and the presenter address (`/presenter/1?password=secret`). Use that address on the presenter's device; a viewer opens `http://<your address>:4230/1?password=secret`.
-The password lets a device sync and write; it is sent without encryption, so use it on a network you trust.
+The password lets a device sync and write (slides, drawings and the `{monaco-write}` files); it is sent without encryption, so use it on a network you trust. See [SECURITY-MODEL.md](SECURITY-MODEL.md).
 
 ## The page, export and build
 
