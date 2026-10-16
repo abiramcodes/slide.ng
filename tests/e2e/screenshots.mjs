@@ -13,7 +13,7 @@ const { server, port } = await serve('dist/showcase/browser');
 const browser = await launch();
 
 for (const scheme of ['light', 'dark']) {
-  const page = await browser.newPage({ viewport: { width: 960, height: 540 }, colorScheme: scheme });
+  const page = await browser.newPage({ viewport: { width: 980, height: 552 }, colorScheme: scheme });
   const open = async (path) => {
     await page.goto(`http://localhost:${port}${path}`);
     await page.waitForFunction(() => /clicks \d+\/\d+/.test(document.querySelector('#hud')?.innerText ?? ''));

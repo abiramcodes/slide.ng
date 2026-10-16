@@ -567,7 +567,7 @@ Put the element directly in the slide (not inside a positioned wrapper), as in S
 
 ```md
 ---
-canvasWidth: 960       # default 960
+canvasWidth: 980       # default 980, like Slidev
 aspectRatio: 16/9      # or 4/3, 1.6 ...
 zoom: 0.8              # all slides; a slide's own `zoom:` wins
 routerMode: hash       # addresses look like /#/3 (default: history)
@@ -634,7 +634,7 @@ addons: [./charts]
 
 A theme or addon can bring layouts, components, layers, CSS, public files, UnoCSS settings, default headmatter and Angular providers (for example shortcuts). Folders next to your `slides.md`
 (`layouts/`, `components/`, `layers/`, `styles/`, `public/`, `setup/`) work the same way and win over the theme. `slide-ng theme eject` copies the theme you use into `./theme`.
-A package name that is not installed gives a warning and the built-in look is used. The full contract is in THEMES.md, a walk-through in WRITING-A-THEME.md.
+A package name that is not installed stops the run with the command that installs it (in a terminal it asks first, like Slidev). The full contract is in THEMES.md, a walk-through in WRITING-A-THEME.md.
 
 ## Keys, mouse and the interface
 

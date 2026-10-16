@@ -294,3 +294,17 @@ plain Node.
 - Should an uninstalled theme be an error instead of a warning?
 - Add setup hooks for Shiki, KaTeX, Mermaid and Monaco, or keep themes to layouts, components, styles and providers?
 - PWA icons and an "available offline" indicator.
+
+## Owner decisions (align with Slidev)
+
+The owner decided "do it like Slidev" for every open choice. For each one, Slidev's source (v53) was read first; what it does is written here.
+
+1. **Canvas default is Slidev's: 980 wide, 16/9, height rounded up (552).** Slidev: `packages/parser/src/config.ts` (`canvasWidth: 980`, `aspectRatio: 16 / 9`),
+   `packages/client/env.ts` (`slideHeight = Math.ceil(width / aspect)`, so a printed page never gets an extra blank page). `readCanvasSize` (app) and `canvasSize`
+   (generator, dev server) follow the same rule; the saved drawing files and the drawing preview use the canvas size instead of a fixed 960x540. Tests: `canvas.spec.ts`,
+   `canvas-size.spec.ts`, `drawings.spec.ts`, the PDF page size (735x414 pt), PNG size, print page size and the 1:1 scale check in the browser tests.
+2. **A theme or addon that is not found is an error, like Slidev's resolver** (`packages/slidev/node/resolver.ts`, `createResolver`). Slidev looks for `name`, `@slidev/theme-name`,
+   `slidev-theme-name`; slide.ng looks for `slide-ng-theme-name`, then `name`. Not found: in a terminal it asks "install it now?" and runs the package manager; without a terminal it exits
+   with an error. slide.ng does the same and the error carries the install command (`npm install -D slide-ng-theme-x`, or `pnpm add -D` / `yarn add -D` / `bun add -d` by the lock file in the deck's
+   folder). The question is only asked on the first generator run (not in watch mode, not in CI). Also like Slidev: a name with a slash that does not start with `@` is a path, `@/x` is relative
+   to the deck's folder, and a name that is not a valid npm package name is refused. Tests: `roots.spec.ts`, `install-root.spec.ts`, `tests/export/theme.mjs` (the build stops, names the command, writes nothing).

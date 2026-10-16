@@ -17,8 +17,9 @@ addons:
 - `theme: default` (or `none`, or no `theme:`) is the built-in theme.
 - A name that is not a path is looked up in `node_modules` (from the deck's folder upwards) as `slide-ng-theme-<name>`, then as `<name>`.
   Addons use `slide-ng-addon-<name>`, then `<name>`.
-- A path that is not a folder is an error. A package name that is not installed is a **warning**, and the built-in theme is used,
-  so a deck written for another tool's theme still runs.
+- A path that is not a folder is an error, and so is a package name that is not installed, as in Slidev: the build stops with
+  `The theme "x" was not found. Install it with: npm install -D slide-ng-theme-x` (`pnpm add -D` or `yarn add -D` when the deck has that lock file).
+  In a terminal, `dev` and `build` ask first whether to install it now. A name with a slash (`themes/mine`) is a path, `@/themes/mine` is relative to the deck's folder.
 - `SLIDE_NG_THEME=<name|path>` in the environment overrides the headmatter (the generator reads it).
 - `slide-ng theme eject` copies the theme in use into `./theme` and sets `theme: ./theme` (see below).
 

@@ -4,6 +4,7 @@
 //   layouts/  components/  layers/  styles/  public/  setup/  uno.config.mjs  theme.json
 import { existsSync, readFileSync, realpathSync, statSync } from 'node:fs';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
+import { installCommand } from './install-root.mjs';
 
 /** What a theme can bring, as folders. `public` is merged, the others are copied under their root. */
 export const ROOT_FOLDERS = ['layouts', 'components', 'layers', 'styles', 'public', 'setup'];
@@ -13,23 +14,44 @@ const isDir = (path) => existsSync(path) && statSync(path).isDirectory();
 /** Folders named like `./theme` or `/abs/theme` are paths; anything else is a package name. */
 const isPath = (spec) => spec.startsWith('.') || isAbsolute(spec);
 
+/** A theme or addon package that is not installed. `pkg` is what to install, `command` is the line to run. */
+export class RootNotFoundError extends Error {
+  constructor(kind, spec, pkg, command) {
+    super(`The ${kind} "${spec}" was not found. Install it with: ${command}`);
+    this.name = 'RootNotFoundError';
+    this.kind = kind;
+    this.spec = spec;
+    this.pkg = pkg;
+    this.command = command;
+  }
+}
+
+// A scoped package name such as @scope/slide-ng-theme-x (the same rule as Slidev's resolver for the name).
+const SAFE_SCOPED = /^@[a-z0-9~-][a-z0-9._~-]*\/[a-z0-9~-][a-z0-9._~-]*$/;
+const SAFE_NAME = /^[a-z0-9~-][a-z0-9._~-]*$/;
+
 /**
  * Finds the folder of a theme or addon. `kind` is `theme` or `addon`: a package called `ocean` is looked for as
  * `slide-ng-theme-ocean` and then as `ocean`, in the `node_modules` folders from the deck's folder upwards.
+ * Like Slidev: `@/x` is relative to the deck's folder, a name with a slash that does not start with @ is a path,
+ * and a package that cannot be found throws a `RootNotFoundError` that carries the install command.
  */
 export function findRootDir(spec, kind, deckRoot) {
   if (typeof spec !== 'string' || !spec.trim()) throw new Error(`${kind}: expected a name or a path, got ${JSON.stringify(spec)}`);
+  if (spec.startsWith('@/')) spec = `./${spec.slice(2)}`;
+  else if (!spec.startsWith('@') && spec.includes('/') && !isAbsolute(spec)) spec = `./${spec.replace(/^\.\//, '')}`;
   if (isPath(spec)) {
     const dir = resolve(deckRoot, spec);
     if (!isDir(dir)) throw new Error(`${kind} "${spec}" is not a folder (looked for ${dir})`);
     return realpathSync(dir);
   }
-  const names = spec.startsWith('slide-ng-') ? [spec] : [`slide-ng-${kind}-${spec}`, spec];
+  if (!(spec.startsWith('@') ? SAFE_SCOPED : SAFE_NAME).test(spec)) throw new Error(`Invalid ${kind} name "${spec}". Only valid npm package names are allowed.`);
+  const names = spec.startsWith('slide-ng-') || spec.startsWith('@') ? [spec] : [`slide-ng-${kind}-${spec}`, spec];
   for (let dir = resolve(deckRoot); ; dir = dirname(dir)) {
     for (const name of names) if (isDir(join(dir, 'node_modules', name))) return realpathSync(join(dir, 'node_modules', name));
     if (dirname(dir) === dir) break;
   }
-  throw new Error(`${kind} "${spec}" was not found. Install it (npm i -D ${names[0]}) or use a path such as ./${spec}`);
+  throw new RootNotFoundError(kind, spec, names[0], installCommand(deckRoot, names[0]).command);
 }
 
 /**
@@ -55,21 +77,15 @@ const safeId = (text) => String(text).toLowerCase().replace(/[^a-z0-9]+/g, '-').
 /**
  * The roots of a deck, in order: theme, addons, deck. Built-in theme is not listed (it is the base everything sits on).
  * `themeOverride` is the `--theme` flag. `theme: default` (or `none`) means no extra theme.
- * A theme that is a package name and is not installed is reported with `warn` and the built-in theme is used, so a deck written
- * for a community theme still runs. A path that is not a folder is an error.
- * @param {{ deckRoot: string, headmatter: any, themeOverride?: string, warn?: (message: string) => void }} options
+ * A theme or addon that is not installed is an error (`RootNotFoundError`, with the install command), like in Slidev.
+ * @param {{ deckRoot: string, headmatter: any, themeOverride?: string }} options
  */
-export function resolveRoots({ deckRoot, headmatter, themeOverride, warn = () => {} }) {
+export function resolveRoots({ deckRoot, headmatter, themeOverride }) {
   const roots = [];
   const theme = themeOverride ?? headmatter.theme;
   if (theme && theme !== 'default' && theme !== 'none') {
-    try {
-      const dir = findRootDir(theme, 'theme', deckRoot);
-      roots.push({ id: `theme-${safeId(theme)}`, kind: 'theme', spec: theme, dir, manifest: readManifest(dir) });
-    } catch (e) {
-      if (isPath(String(theme))) throw e;
-      warn(`${e.message}. Using the built-in theme.`);
-    }
+    const dir = findRootDir(theme, 'theme', deckRoot);
+    roots.push({ id: `theme-${safeId(theme)}`, kind: 'theme', spec: theme, dir, manifest: readManifest(dir) });
   }
   const addons = Array.isArray(headmatter.addons) ? headmatter.addons : [];
   addons.forEach((spec, i) => {

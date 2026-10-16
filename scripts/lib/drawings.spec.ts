@@ -16,6 +16,15 @@ describe('svgDocument and svgInner', () => {
   });
 });
 
+describe('svgDocument size', () => {
+  it('uses the canvas size, 980x552 by default', () => {
+    expect(svgDocument('')).toContain('viewBox="0 0 980 552"');
+  });
+  it('follows the given size', () => {
+    expect(svgDocument('', { width: 640, height: 360 })).toContain('width="640" height="360"');
+  });
+});
+
 describe('readDrawings', () => {
   const root = mkdtempSync(join(tmpdir(), 'slide-ng-drawings-'));
   mkdirSync(join(root, '.slide-ng/drawings'), { recursive: true });

@@ -123,7 +123,7 @@ export async function run({ t, open, press, hud, pathOf, style, base, browser, p
   await page.locator('#scale-1').click();
   await page.waitForTimeout(200);
   const canvas = await page.locator('.canvas').boundingBox();
-  t.ok('1:1 scale shows the slide at its real size', Math.abs(canvas.width - 960) < 2, String(canvas.width));
+  t.ok('1:1 scale shows the slide at its real size', Math.abs(canvas.width - 980) < 2, String(canvas.width));
   await page.locator('#scale-fit').click();
   await page.mouse.click(1200, 100);
   await page.waitForTimeout(150);

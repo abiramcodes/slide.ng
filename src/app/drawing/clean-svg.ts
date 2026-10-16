@@ -2,7 +2,9 @@
 // <img onerror> or <script> hidden in it. So the text is parsed and rebuilt from the few
 // elements and attributes that drauu itself writes, and anything else is dropped.
 
-const ALLOWED = new Set(['g', 'path', 'line', 'ellipse', 'rect', 'circle', 'polygon', 'polyline', 'defs', 'marker']);
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../lib/canvas';
+
+const ALLOWED =new Set(['g', 'path', 'line', 'ellipse', 'rect', 'circle', 'polygon', 'polyline', 'defs', 'marker']);
 
 function clean(el: Element) {
   for (const child of Array.from(el.children)) {
@@ -28,6 +30,6 @@ export function cleanSvg(markup: string): string {
 
 /** A whole SVG image of a drawing (for the overview and the next-step picture). */
 export function drawingImageUrl(markup: string): string {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540">${markup}</svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CANVAS_WIDTH} ${CANVAS_HEIGHT}">${markup}</svg>`;
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }

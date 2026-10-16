@@ -106,7 +106,7 @@ The `<style>` text goes into the slide component's `styles`, wrapped in `slide-0
 | `lib/dark.ts`, `lib/fullscreen.ts`, `lib/idle-cursor.ts` | dark mode, fullscreen, hide idle cursor |
 | `lib/mount-slide.ts`, `lib/slide-context.ts` | create a slide component and tell it its number and where it is drawn |
 | `lib/toc-tree.ts` | pure functions: table of contents tree and its filters |
-| `lib/canvas.ts` | canvas size (960x540, or headmatter `canvasWidth` / `aspectRatio`), `zoom`, the scale formula `min(w/width, h/height)` |
+| `lib/canvas.ts` | canvas size (980x552, or headmatter `canvasWidth` / `aspectRatio`), `zoom`, the scale formula `min(w/width, h/height)` |
 | `lib/clicks.ts` | `ClicksContext`: per-slide click state (current, total, relative/absolute/range maths) |
 | `lib/v-click.ts`, `v-clicks.ts`, `v-click-gap.ts`, `v-switch.ts` | click directives and components |
 | `lib/slide-base.ts`, `slide-meta.ts` | base class of generated slides; type of an index entry |

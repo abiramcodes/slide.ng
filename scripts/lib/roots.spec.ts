@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { findRootDir, mergeHeadmatter, readManifest, resolveRoots } from './roots.mjs';
+import { RootNotFoundError, findRootDir, mergeHeadmatter, readManifest, resolveRoots } from './roots.mjs';
 
 const folder = () => mkdtempSync(join(tmpdir(), 'slide-ng-roots-'));
 const dirIn = (base: string, ...parts: string[]) => { const d = join(base, ...parts); mkdirSync(d, { recursive: true }); return d; };
@@ -23,7 +23,8 @@ describe('findRootDir', () => {
     expect(findRootDir('plain-name', 'addon', deck)).toContain('plain-name');
   });
   it('says what to do when nothing is found', () => {
-    expect(() => findRootDir('nope', 'theme', folder())).toThrow('npm i -D slide-ng-theme-nope');
+    expect(() => findRootDir('nope', 'theme', folder())).toThrow('Install it with: npm install -D slide-ng-theme-nope');
+    expect(() => findRootDir('nope', 'addon', folder())).toThrow(RootNotFoundError);
     expect(() => findRootDir('./nope', 'theme', folder())).toThrow('is not a folder');
     expect(() => findRootDir('', 'theme', folder())).toThrow('expected a name');
   });
@@ -62,13 +63,25 @@ describe('resolveRoots', () => {
     const ids = resolveRoots({ deckRoot: deck, headmatter: { theme: './t', addons: ['./a1', './a2'] } }).map((r) => r.id);
     expect(ids).toEqual(['theme-t', 'addon-1-a1', 'addon-2-a2', 'deck']);
   });
-  it('warns and uses the built-in theme for a package that is not installed, but fails for a missing path', () => {
+  it('fails for a theme package that is not installed, naming the install command (like Slidev), and for a missing path', () => {
     const deck = folder();
-    const warnings: string[] = [];
-    const roots = resolveRoots({ deckRoot: deck, headmatter: { theme: 'seriph' }, warn: (m: string) => warnings.push(m) });
-    expect(roots.map((r) => r.id)).toEqual(['deck']);
-    expect(warnings[0]).toContain('"seriph" was not found');
+    expect(() => resolveRoots({ deckRoot: deck, headmatter: { theme: 'seriph' } })).toThrow('The theme "seriph" was not found. Install it with: npm install -D slide-ng-theme-seriph');
     expect(() => resolveRoots({ deckRoot: deck, headmatter: { theme: './nope' } })).toThrow('is not a folder');
+  });
+  it('uses the package manager of the lock file in the install command', () => {
+    const deck = folder();
+    writeFileSync(join(deck, 'pnpm-lock.yaml'), '');
+    expect(() => resolveRoots({ deckRoot: deck, headmatter: { theme: 'seriph' } })).toThrow('pnpm add -D slide-ng-theme-seriph');
+  });
+  it('reads a name with a slash as a path and @/ as relative to the deck, like Slidev', () => {
+    const deck = folder();
+    dirIn(deck, 'themes', 'mine');
+    expect(findRootDir('themes/mine', 'theme', deck)).toContain('mine');
+    expect(findRootDir('@/themes/mine', 'theme', deck)).toContain('mine');
+  });
+  it('refuses names that are not npm package names', () => {
+    expect(() => findRootDir('@x', 'theme', folder())).toThrow('Invalid theme name');
+    expect(() => findRootDir('UPPER', 'theme', folder())).toThrow('Invalid theme name');
   });
   it('lets --theme win over the headmatter', () => {
     const deck = folder();

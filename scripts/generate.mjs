@@ -1,8 +1,10 @@
 // Reads slides.md and writes one Angular component per slide into
 // src/slides/generated/, plus an index.ts and uno.css (the CSS for the class names in use). Usage: node scripts/generate.mjs [--watch]
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, watch, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { offerInstall } from './lib/install-root.mjs';
 import { parseDeck } from './lib/parse-deck.mjs';
+import { RootNotFoundError } from './lib/roots.mjs';
 import { ROOT_FOLDERS } from './lib/roots.mjs';
 import { slideName, slideSource } from './lib/emit.mjs';
 import { indexSource } from './lib/index-source.mjs';
@@ -61,8 +63,21 @@ function writeIndexHtml(deck, base) {
   write(`${OUT}index.html`, renderIndexHtml(readFileSync('src/index.html', 'utf8'), parts, warn));
 }
 
+// A missing theme or addon: in a terminal the first run offers to install it (like Slidev); otherwise the error stops the run.
+let deckRead = false;
+async function readDeck() {
+  try {
+    return await parseDeck(INPUT, undefined, { theme: THEME });
+  } catch (e) {
+    if (!(e instanceof RootNotFoundError) || deckRead || process.argv.includes('--watch')) throw e;
+    if (!(await offerInstall(e, dirname(resolve(INPUT))))) throw e;
+    return parseDeck(INPUT, undefined, { theme: THEME });
+  }
+}
+
 async function generate() {
-  const deck = await parseDeck(INPUT, undefined, { theme: THEME });
+  const deck = await readDeck();
+  deckRead = true;
   const build = buildOptions();
   deck.problems.forEach((p) => console.warn(`[slides] ${p}`));
   // Options of `slide-ng build` (see lib/build-options.mjs).
