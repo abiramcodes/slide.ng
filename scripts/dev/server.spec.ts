@@ -94,6 +94,12 @@ function callOn(
     req.end(text);
   });
 }
+// A server that refuses a big body hangs up while it is still being sent, so the client may get a reset instead of the 413.
+const statusOf = (answer: Promise<Answer>) =>
+  answer.then(
+    (r) => r.status,
+    (e) => (['EPIPE', 'ECONNRESET'].includes(e.code) ? 413 : Promise.reject(e)),
+  );
 const drag = (body: unknown, headers = {}) =>
   call('POST', '/__slide-ng/slides/1/drag', body, headers);
 
@@ -233,7 +239,7 @@ describe('{monaco-write}', () => {
   });
   it('refuses huge text', async () => {
     expect(
-      (await call('PUT', '/__slide-ng/monaco/abc123', { content: 'x'.repeat(600_000) })).status,
+      await statusOf(call('PUT', '/__slide-ng/monaco/abc123', { content: 'x'.repeat(600_000) })),
     ).toBe(413);
   });
 });
@@ -279,7 +285,7 @@ describe('drawings', () => {
     expect((await drawing('1.svg', '<path/>')).status).toBe(404);
   });
   it('refuses huge drawings', async () => {
-    expect((await drawing(1, `<path d="${'M0 0'.repeat(200_000)}"/>`)).status).toBe(413);
+    expect(await statusOf(drawing(1, `<path d="${'M0 0'.repeat(200_000)}"/>`))).toBe(413);
   });
 });
 
