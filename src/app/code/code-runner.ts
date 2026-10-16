@@ -64,6 +64,8 @@ export class CodeRunner implements OnInit, OnDestroy {
   });
 
   private ranOnce = false;
+  // Numbers the runs, so an old run that ends late cannot replace a newer result.
+  private runId = 0;
 
   constructor() {
     // `autorun: true` runs on every change (after a pause, so typing does not run on every key),
@@ -93,8 +95,11 @@ export class CodeRunner implements OnInit, OnDestroy {
   }
 
   protected async run() {
+    const id = ++this.runId;
     this.running.set(true);
-    this.result.set(await this.execute()(this.code()));
+    const result = await this.execute()(this.code());
+    if (id !== this.runId) return;
+    this.result.set(result);
     this.running.set(false);
   }
 }
