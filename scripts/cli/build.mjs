@@ -1,6 +1,6 @@
 // The `build` command: a static copy of the deck that any web server can host.
 //   slide-ng build [slides.md] [--base /talk/] [--out dist] [--download] [--without-notes]
-import { copyFileSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { makeOffline } from '../build/offline.mjs';
 import { ogImagePlan, placeOgImage } from '../build/og-image.mjs';
@@ -15,6 +15,7 @@ import { serveDirectory } from '../export/static-server.mjs';
 import { parseDeck } from '../lib/parse-deck.mjs';
 import { applyThemeFlag, parseFlags } from './flags.mjs';
 import { checkClaimable, publishDirectory } from './safe-dir.mjs';
+import { checkToolDir, removeInside } from '../lib/tool-dir.mjs';
 import { buildDeck } from './runtime.mjs';
 
 export const BUILD_FLAGS = {
@@ -44,6 +45,7 @@ export async function buildCommand(argv) {
   applyThemeFlag(flags);
   const entry = resolve(positionals[0] ?? 'slides.md');
   const root = dirname(entry);
+  checkToolDir(root); // before anything is written or removed under .slide-ng
   const offline = Boolean(flags.offline);
   if (offline && flags.base)
     throw new Error('--offline builds a folder that works at any path, so it cannot take --base');
@@ -71,7 +73,7 @@ export async function buildCommand(argv) {
       `\nBuilt ${deck.slides.length} slides into ${out} (${offline ? `offline folder, open ${join(out, 'index.html')}` : `base ${base}`}).`,
     );
   } finally {
-    rmSync(workDir, { recursive: true, force: true }); // the folder this command made itself
+    removeInside(workDir, root); // the folder this command made itself
   }
 }
 

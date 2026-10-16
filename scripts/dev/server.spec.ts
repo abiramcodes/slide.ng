@@ -1,6 +1,13 @@
 // @vitest-environment node
 // The companion server, started for real on a temporary project and attacked over HTTP and WebSocket.
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { request } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -424,5 +431,36 @@ describe('--remote with a password', () => {
     expect(await connect({})).toBe('401');
     expect(await connect({ cookie: 'slide-ng-auth=wrong' })).toBe('401');
     expect(await connect({ cookie })).toBe('open');
+  });
+});
+
+describe('drawings with a symlinked .slide-ng', () => {
+  it('refuses to write through the link', async () => {
+    const victim = mkdtempSync(join(tmpdir(), 'slide-ng-victim-'));
+    const deck = mkdtempSync(join(tmpdir(), 'slide-ng-linkdeck-'));
+    writeFileSync(join(deck, 'slides.md'), SLIDES);
+    symlinkSync(victim, join(deck, '.slide-ng'));
+    const started = await startServer({ ...readConfig({ SLIDE_NG_TOKEN: 'tk' }, deck), port: 0 });
+    try {
+      const r = await new Promise<number>((resolve, reject) => {
+        const req = request(
+          {
+            host: '127.0.0.1',
+            port: started.port,
+            method: 'PUT',
+            path: '/__slide-ng/drawings/1',
+            headers: { 'content-type': 'application/json', 'x-slide-ng-token': 'tk' },
+          },
+          (res) => (res.resume(), resolve(res.statusCode!)),
+        );
+        req.on('error', reject);
+        req.end(JSON.stringify({ svg: '<path d="M0 0L1 1"/>' }));
+      });
+      expect(r).toBe(403);
+      expect(existsSync(join(victim, 'drawings'))).toBe(false);
+    } finally {
+      started.server.close();
+      started.hub.close();
+    }
   });
 });

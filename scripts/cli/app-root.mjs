@@ -5,6 +5,7 @@
 import { cpSync, existsSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join, resolve, sep } from 'node:path';
+import { checkToolDir, refuseLink, removeInside } from '../lib/tool-dir.mjs';
 import { packageRoot } from './package-root.mjs';
 
 /** True when the deck is part of this package's own folder (and not an installed copy in node_modules). */
@@ -41,17 +42,24 @@ const RUNTIME_FILES = [
  */
 export function prepareApp(entry) {
   const root = appRootFor(entry);
+  checkToolDir(dirname(resolve(entry))); // a symlinked .slide-ng would make the steps below write into another folder
   if (root === packageRoot) return root;
+  refuseLink(root);
 
   // Only these parts of the working folder are replaced; `.angular/cache` stays, so the second build is faster.
-  rmSync(join(root, 'src'), { recursive: true, force: true });
+  removeInside(join(root, 'src'), root);
+  removeInside(join(root, 'public'), root);
   mkdirSync(root, { recursive: true });
   cpSync(join(packageRoot, 'src'), join(root, 'src'), {
     recursive: true,
     filter: (from) => !from.endsWith(`${sep}slides${sep}generated`),
   });
   cpSync(join(packageRoot, 'public'), join(root, 'public'), { recursive: true });
-  for (const file of RUNTIME_FILES) cpSync(join(packageRoot, file), join(root, file));
+  for (const file of RUNTIME_FILES) {
+    rmSync(join(root, file), { force: true }); // a link here is removed, never written through
+    cpSync(join(packageRoot, file), join(root, file));
+  }
+  rmSync(join(root, 'package.json'), { force: true });
   writeFileSync(
     join(root, 'package.json'),
     '{ "name": "slide-ng-app", "private": true, "type": "module" }\n',

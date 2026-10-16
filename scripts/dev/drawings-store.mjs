@@ -5,6 +5,7 @@ import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { cleanDrawing } from '../lib/drawing-markup.mjs';
 import { DRAWINGS_DIR, svgDocument } from '../lib/drawings.mjs';
+import { checkToolDir } from '../lib/tool-dir.mjs';
 import { HttpError } from './http-error.mjs';
 
 export const MAX_DRAWING = 500_000;
@@ -16,6 +17,11 @@ export const isSafeMarkup = (markup) => cleanDrawing(markup, MAX_DRAWING) !== nu
 export function writeDrawing(ctx, no, markup, slideCount, size) {
   if (!Number.isInteger(no) || no < 1 || no > slideCount)
     throw new HttpError(400, 'bad slide number');
+  try {
+    checkToolDir(ctx.root); // a symlinked .slide-ng would send the file somewhere else
+  } catch (e) {
+    throw new HttpError(403, e.message);
+  }
   const dir = join(ctx.root, DRAWINGS_DIR);
   const file = join(dir, `${no}.svg`);
   if (typeof markup === 'string' && markup.trim() === '') {

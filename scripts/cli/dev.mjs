@@ -4,10 +4,10 @@
 //   3. the Angular dev server, which sends `/__slide-ng/*` to the companion (proxy.conf.mjs)
 //   slide-ng [dev] [slides.md] [--port 4230] [--open] [--remote[=password]] [--bind 0.0.0.0] [--log info] [--force]
 import { spawn, spawnSync } from 'node:child_process';
-import { rmSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { hostname, networkInterfaces } from 'node:os';
 import { join, resolve } from 'node:path';
+import { removeInside } from '../lib/tool-dir.mjs';
 import { randomPassword, randomSecret } from '../dev/config.mjs';
 import { ngBinary, prepareApp } from './app-root.mjs';
 import { applyThemeFlag, parseFlags } from './flags.mjs';
@@ -93,7 +93,7 @@ export async function devCommand(argv) {
   }
   applyThemeFlag(plan);
   const appRoot = prepareApp(plan.entry);
-  if (plan.force) rmSync(join(appRoot, '.angular', 'cache'), { recursive: true, force: true }); // the build cache is the only thing --force clears
+  if (plan.force) removeInside(join(appRoot, '.angular', 'cache'), appRoot); // the build cache is the only thing --force clears
   const companionPort = process.env.SLIDE_NG_DEV_PORT || String(await freePort());
 
   const env = {

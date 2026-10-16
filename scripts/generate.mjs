@@ -13,6 +13,7 @@ import { dirname, join, resolve } from 'node:path';
 import { offerInstall } from './lib/install-root.mjs';
 import { parseDeck } from './lib/parse-deck.mjs';
 import { RootNotFoundError } from './lib/roots.mjs';
+import { checkToolDir } from './lib/tool-dir.mjs';
 import { ROOT_FOLDERS } from './lib/roots.mjs';
 import { slideName, slideSource } from './lib/emit.mjs';
 import { indexSource } from './lib/index-source.mjs';
@@ -63,6 +64,7 @@ function writeMonacoTargets(root) {
   const targets = monacoWriteTargets();
   const file = `${root}/.slide-ng/monaco-files.json`;
   if (!Object.keys(targets).length && !existsSync(file)) return;
+  checkToolDir(root);
   mkdirSync(`${root}/.slide-ng`, { recursive: true });
   write(file, JSON.stringify(targets, null, 2) + '\n');
 }
