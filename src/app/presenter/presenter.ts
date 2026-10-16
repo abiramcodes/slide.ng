@@ -23,6 +23,7 @@ import { NextPreview } from './next-preview';
 import { NoteDisplay } from './note-display';
 import { PresenterPrefs } from './prefs';
 import { PresenterCursor } from './presenter-cursor';
+import { contextMenuEnabled } from '../lib/switches';
 import { ProgressBar } from './progress-bar';
 import { TimerBar } from './timer-bar';
 import { TimerInlined } from './timer-inlined';
@@ -105,7 +106,7 @@ export class Presenter {
 
   // Shift + right click keeps the browser's own menu.
   contextMenu(e: MouseEvent) {
-    if (e.shiftKey || e.defaultPrevented) return;
+    if (e.shiftKey || e.defaultPrevented || !contextMenuEnabled()) return;
     e.preventDefault();
     this.ui.contextMenu.set({ x: e.pageX, y: e.pageY });
   }

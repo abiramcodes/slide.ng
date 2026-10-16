@@ -44,7 +44,8 @@ folders listed below; the rest of it (your markdown, `node_modules`, ...) is nev
 | `layers/<name>.ts` | A layer component: `global-top`, `global-bottom`, `slide-top`, `slide-bottom` (default export). |
 | `styles/index.css` | CSS. Added after the app's styles, so it can override them. |
 | `public/` | Files served from the site root (`/logo.png`). Merged; the later root wins on the same name. |
-| `setup/providers.ts` | Angular providers (default export: an array). See "Setup hooks". |
+| `setup/*.ts` | Setup hooks: `shiki`, `katex`, `transformers`, `preparser`, `mermaid`, `monaco`, `code-runners`, `shortcuts`, `context-menu`, `main`, `root`. Written out in [SETUP.md](SETUP.md). |
+| `setup/providers.ts` | Angular providers (default export: an array; `setup/main.ts` is the newer way). See "Setup hooks". |
 | `uno.config.mjs` | UnoCSS settings (default export). Merged into the app's: `presets`, `rules`, `safelist`, `variants` are added; `shortcuts` and `theme` are merged key by key. |
 | `theme.json` | Name, default headmatter and layout inputs. See below. |
 
@@ -87,6 +88,8 @@ import { SHORTCUTS_SETUP } from 'slide-ng/lib/shortcuts';
   `classProp: true` sends the slide's `class` to the input `contentClass` instead of the tag.
 
 ## Setup hooks
+
+The hooks of a theme or addon work the same as in a deck and are listed, with examples, in [SETUP.md](SETUP.md); the deck's own file always runs last.
 
 `setup/providers.ts` default-exports an array of Angular providers. They are added to the application, so a theme can use any token the app injects:
 

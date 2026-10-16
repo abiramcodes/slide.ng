@@ -1,5 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { storedSignal } from '../lib/stored-signal';
+import { editorEnabled } from '../lib/switches';
 import { DevApi } from './dev-api';
 
 /** Is the side editor open, and is there a dev server to save to at all? */
@@ -14,7 +15,7 @@ export class SideEditorState {
 
   constructor() {
     const api = inject(DevApi);
-    if (api.enabled) void api.token().then((token) => this.available.set(!!token));
+    if (api.enabled && editorEnabled()) void api.token().then((token) => this.available.set(!!token));
   }
 
   toggle() { this.open.update((v) => !v); }

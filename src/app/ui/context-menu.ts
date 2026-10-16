@@ -2,6 +2,7 @@ import { Component, ElementRef, computed, effect, inject, signal, viewChild } fr
 import { Drawings } from '../drawing/drawings';
 import { Fullscreen } from '../lib/fullscreen';
 import { Nav } from '../lib/nav';
+import { presenterEnabled } from '../lib/switches';
 import { Ui } from '../lib/ui-state';
 import { CONTEXT_MENU_SETUP } from '../setup/tokens';
 
@@ -68,9 +69,9 @@ export class ContextMenu {
   protected items = computed(() => this.setup([
     ...(this.drawings.available ? [{ icon: 'i-carbon:pen', label: this.drawings.enabled() ? 'Hide drawing toolbar' : 'Show drawing toolbar', run: () => this.drawings.toggle(), disabled: false }] : []),
     { icon: 'i-carbon:apps', label: 'Show slide overview', run: () => this.ui.toggleOverview(), disabled: false },
-    this.nav.isPresenter
+    ...(presenterEnabled() ? [this.nav.isPresenter
       ? { icon: 'i-carbon:presentation-file', label: 'Exit Presenter Mode', run: () => this.nav.exitPresenter(), disabled: false }
-      : { icon: 'i-carbon:user-speaker', label: 'Enter Presenter Mode', run: () => this.nav.enterPresenter(), disabled: false },
+      : { icon: 'i-carbon:user-speaker', label: 'Enter Presenter Mode', run: () => this.nav.enterPresenter(), disabled: false }] : []),
     {
       icon: this.fullscreen.isFullscreen() ? 'i-carbon:minimize' : 'i-carbon:maximize',
       label: this.fullscreen.isFullscreen() ? 'Close fullscreen' : 'Enter fullscreen',

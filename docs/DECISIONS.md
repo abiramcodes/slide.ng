@@ -38,7 +38,7 @@ Short notes on choices made, and why. Newest at the bottom.
    updates). Writing the file only when its content changed gives 5 of 5. Output goes to
    `src/slides/generated/uno.css`, listed in `angular.json` `styles`. A PostCSS plugin was not tried.
 10. **Canvas is 960 x 540** (16:9) and scaled with CSS `transform`, using Slidev's formula `min(w/width, h/height)`.
-    Slidev's default is 980 wide; 960 is a rounder number and the exact value does not matter.
+    Slidev's default is 980 wide; 960 is a rounder number and the exact value does not matter. (Replaced by owner decision 1: 980, as Slidev.)
 11. **First slide defaults to `cover`**, like Slidev. `hide`/`disabled` remove a slide at generation time, so slide
     numbers in the URL count only visible slides.
 12. **Unit tests use the runner `ng new` sets up (Vitest)**, with `include` extended to `scripts/**/*.spec.ts` and
@@ -205,7 +205,7 @@ Nothing else: recording uses the browser's MediaRecorder, the wake lock uses the
 5. **Cursor and laser are drawn on the viewer's page** from the presenter's position in slide coordinates, throttled to one send per animation frame, newest position wins.
 6. **Drawings:** one `drauu` instance per page, markup kept in `SyncState.drawings` per slide. Persisted in `localStorage` (`slide-ng-drawings`); with `drawings.persist` the dev server also writes `.slide-ng/drawings/<n>.svg`, and the generator bakes those files into the build.
    `enabled` may be `dev` or `build`; `presenterOnly` hides drawing from viewers; `syncAll: false` keeps viewer drawings on the viewer's screen. Everything read from another window or a file is sanitised (`cleanSvg`, a tag whitelist) before it is shown. The saved SVG file has a fixed viewBox of 960x540 (not the headmatter canvas size).
-7. **Recording uses MediaRecorder** (webm, vp9 then vp8 then the browser's choice). `screen` records this tab through `getDisplayMedia`, `camera` records the camera; the microphone is added to both. One file per recording, downloaded when you stop. `fix-webm-duration` was **not** added: the file has no duration field, so some players show it only after a seek.
+7. **Recording uses MediaRecorder** (webm, vp9 then vp8 then the browser's choice). `screen` records this tab through `getDisplayMedia`, `camera` records the camera; the microphone is added to both. One file per recording, downloaded when you stop. `fix-webm-duration` was **not** added: the file has no duration field, so some players show it only after a seek. (Replaced by owner decision 5: the duration is written, as Slidev does.)
    `record: true | false | dev | build` (default `dev`, like Slidev) decides whether the camera, record buttons and device options exist at all.
 8. **The camera bubble and the screen mirror are small components** (`WebCamera`, `ScreenMirror`); the mirror hides the slide with `display: none`, never removes it, so the click state survives. Device choices are remembered under `slidev-camera`, `slidev-mic`.
 9. **Settings menu:** dark mode, slide scale, idle cursor, wake lock, presenter cursor and style, five colour filters (applied to the main slide only, not to thumbnails), camera options, and a **disabled** "Download as PDF" entry (export is not done). The wake lock follows headmatter `wakeLock: true` until the user chooses; the choice wins.
@@ -213,7 +213,7 @@ Nothing else: recording uses the browser's MediaRecorder, the wake lock uses the
     Forms: `v-drag="[x,y,w,h]"`, `v-drag="name"` (numbers in frontmatter `dragPos`), bare `v-drag` (starts where the layout put it, becomes absolute on the first move), `<v-drag pos="x,y,w,h">`, `<v-drag-arrow pos="x1,y1,x2,y2">`.
     Written back as `[x,y,w,NaN]` in the attribute form and `x,y,w,_` in `pos` and frontmatter (`NaN` / `_` = height follows the content), whole numbers only. Resizing ignores the rotation (it works in the unrotated frame). Arrow keys nudge 1 px, with Shift 10 px, and the arrows stop moving slides while an element is selected.
     A static build keeps a move only while the page stays open; it never writes.
-11. **`zoom`** scales the layout from the top left corner (width and height divided by the zoom, then `transform: scale`), frontmatter over headmatter. **The default canvas stays 960x540** (phase 1 choice; Slidev's is 980x552); `canvasWidth` and `aspectRatio` change it.
+11. **`zoom`** scales the layout from the top left corner (width and height divided by the zoom, then `transform: scale`), frontmatter over headmatter. **The default canvas stays 960x540** (phase 1 choice; Slidev's is 980x552; replaced by owner decision 1); `canvasWidth` and `aspectRatio` change it.
 12. **Layers are files:** `src/app/layers/{global-top,global-bottom,slide-top,slide-bottom}.ts`, each with `export default` of a standalone component. The generator imports those that exist into `generated/layers.ts`. Global layers sit once over or under the slides; slide layers are inside every slide. They let clicks through (`pointer-events: none`) and are not drawn in overview thumbnails or the next-step preview.
 13. **`routerMode: hash`** uses Angular's hash location; `history` (default) needs a host that sends every path to `index.html`.
 14. **The dev companion server is a separate process** (`scripts/dev/server.mjs`), started by `npm start`, bound to **127.0.0.1 only**. The Angular dev server proxies `/__slide-ng/*` to it (`proxy.conf.mjs`), WebSockets included, so the page uses one origin. Even with `--remote` it is only reachable through that proxy, with the same checks.
@@ -222,7 +222,7 @@ Nothing else: recording uses the browser's MediaRecorder, the wake lock uses the
     (g) body limits (slide edits 500 KB, drawings 500 KB, moves 2 KB) answer 413 and hang up; (h) the WebSocket hub passes only `{channel, data}` for three known channels, closes connections over 600 KB, and a bad client cannot stop it; (i) drawing markup must be drawing shapes only (no scripts, handlers, links).
 16. **`--remote` always has a password.** `--remote=secret` or, when none is given, a random one is made and printed with the LAN address and the presenter URL (`?password=...`). The page logs in with it, then removes it from the address bar. Without `?password=` the page asks once with a prompt. There is no HTTPS, so on an untrusted network the password and slides cross it in the clear.
 17. **`{monaco-write}`** works for `<<< ./file.ts {monaco-write}` (a whole file inside the deck's folder). The generator lists `{ id: path }` in `.slide-ng/monaco-files.json`; the page sends only the id. A region, a plain code block or a file outside the folder gets a warning and a normal editor. The text is saved 600 ms after typing stops.
-18. **The side editor is a plain textarea**, not Monaco: it needs no extra loading and cannot fail on a scaled canvas. It shows the raw slide (frontmatter, content, notes) and saves 600 ms after typing. It does not notice edits made elsewhere while it is open (reopen or change slide). Its open state is kept in the browser because a rebuild can reload the page.
+18. **The side editor is a plain textarea** (colouring added by owner decision 6), not Monaco: it needs no extra loading and cannot fail on a scaled canvas. It shows the raw slide (frontmatter, content, notes) and saves 600 ms after typing. It does not notice edits made elsewhere while it is open (reopen or change slide). Its open state is kept in the browser because a rebuild can reload the page.
 19. **Test decks:** `tests/e2e/phase3/slides.md` (presenter, sync, drawing, camera, settings, drag), `tests/e2e/phase3/layout/slides.md` (hash routing, canvas size, zoom and the four layers, which live in its own `layers/` folder), `tests/e2e/dev/slides.md` (copied to `work.md` for the dev-server test).
 
 
@@ -289,7 +289,7 @@ plain Node.
 ### Open decisions (for the person to settle)
 
 - Publish `slide-ng` to a registry (remove `private`, choose a version scheme)? Until then `create` writes `"slide-ng": "^0.0.0"`, which only resolves with a link or a local tarball.
-- Default canvas width: 960 (now) or Slidev's 980? Decks that care can set `canvasWidth: 980`.
+- Default canvas width: settled, it is Slidev's 980 (owner decision 1).
 - Default dev port: decided by the owner: 4230 (not Angular's 4200, not Slidev's 3030).
 - Should an uninstalled theme be an error instead of a warning?
 - Add setup hooks for Shiki, KaTeX, Mermaid and Monaco, or keep themes to layouts, components, styles and providers?
@@ -331,3 +331,15 @@ The owner decided "do it like Slidev" for every open choice. For each one, Slide
 7. **Initial bundle budget: 1.5 MB warning, 3 MB error** (was 1 MB / 2 MB). Slidev has no size budget, so this is only a guard. Measured first load (raw, before compression) of the test decks:
    default deck 453 kB, showcase 473 kB, phase 3 deck 448 kB, phase 4 deck 857 kB, phase 2 deck (Monaco, KaTeX, Mermaid) 945 kB, which sat 5% under the old warning. The new warning is about 1.5 times the largest
    deck we build, so a deck that adds setup hooks, an addon or more features does not warn, while a real jump (a second large library in the first load) still does. The side editor's highlighter adds nothing (it is lazy and dev only).
+8. **Setup hooks follow Slidev's `setup/` folder (docs/SETUP.md).** Read: `docs/custom/config-*.md`, `packages/slidev/node/setups/*.ts`, `packages/client/setup/*.ts`. A `setup/` folder in the deck, a theme or an addon;
+   one file per hook, each default-exporting a function that gets the kind of arguments Slidev passes where that means something here; roots run weakest first and the deck last. Node hooks (`shiki`, `katex`,
+   `transformers`, `preparser`) run while generating and are bundled with esbuild (`lib/setup/load-module.mjs`), because Node cannot read TypeScript inside `node_modules` and a theme there must keep its own imports;
+   esbuild and magic-string are now direct dependencies (they were already in the tree). Browser hooks (`main`, `root`, `shortcuts`, `context-menu`, `mermaid`, `monaco`, `code-runners`) are written into
+   `generated/setup.ts` as providers (`src/app/setup/`), so a deck without them pays nothing. How roots combine: options merge with the later root winning (shiki, katex, mermaid, monaco), lists are chained
+   (shortcuts, context menu) or joined (transformers: `pre` last root first, `codeblocks` first root first, as Slidev's `setups/transformers.ts`). Where it differs: shortcut and menu entry shapes are slide.ng's own
+   (`run` instead of `fn`), `main` returns Angular providers, `root` runs at start without a component, and `pre`, `preCodeblock`, `postCodeblock` are one pass. `setup/providers.ts` keeps working. Tests: `node-setups.spec.ts`,
+   `browser-setups.spec.ts`, `setup.spec.ts`, and `tests/e2e/phase5` (a deck with one file per hook; each check is about changed output).
+9. **Cheap leftovers of PARITY.md finished the Slidev way.** `fonts` (`lib/fonts.mjs`, a port of `resolveFonts`: sans, serif, mono, local, weights, italic, fallbacks, provider google, coollabs or none; the fonts are an @import
+   from the provider, as Slidev, not copied into the build); the `contextMenu`, `presenter` and `editor` headmatter switches (`true`, `false`, `dev`, `build`; `lib/switches.ts`); touch swipes with Slidev's thresholds
+   (`composables/useSwipeControls.ts`: 30% of the width or 75px for clicks, 40% of the height or 200px for slides, off while drawing). Left listed in PARITY.md: `selectable`, `themeConfig`, `TitleRenderer`, `notesAutoRuby`,
+   MDC, slide hooks, custom transition objects, `clickAnimation`, `preloadImages`; `--tunnel` stays refused.

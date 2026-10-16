@@ -1,6 +1,10 @@
 ---
 title: Setup deck
 colorSchema: light
+presenter: false
+fonts:
+  mono: Courier New
+  provider: none
 ---
 
 # Math, code and text

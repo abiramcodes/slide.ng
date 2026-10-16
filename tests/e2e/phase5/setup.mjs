@@ -20,6 +20,37 @@ export async function run({ t, open, press }) {
   t.ok('context menu: the entry runs', (await root('menu')) === 'clicked');
   await page.close();
 
+  page = await open('/1');
+  const swipe = (from, to) => page.evaluate(([a, b]) => {
+    const stage = document.querySelector('.stage');
+    const event = (type, x) => new PointerEvent(type, { pointerType: 'touch', clientX: x, clientY: 300, bubbles: true, pointerId: 1 });
+    stage.dispatchEvent(event('pointerdown', a));
+    stage.dispatchEvent(event('pointerup', b));
+  }, [from, to]);
+  await swipe(600, 560); // too short
+  await page.waitForTimeout(200);
+  t.ok('touch: a short swipe stays on the slide', new URL(page.url()).pathname === '/1');
+  await swipe(600, 300);
+  await page.waitForFunction(() => location.pathname === '/2');
+  t.ok('touch: a swipe to the left goes to the next slide', true);
+  await swipe(300, 600);
+  await page.waitForFunction(() => location.pathname === '/1');
+  t.ok('touch: a swipe to the right goes back', true);
+  await page.close();
+
+  // Headmatter `presenter: false`: no presenter page, no button, no menu entry.
+  page = await open('/presenter/1');
+  t.ok('presenter: false sends the presenter address to slide 1', new URL(page.url()).pathname === '/1', page.url());
+  t.ok('presenter: false hides the presenter button', !(await page.locator('#nav-presenter').isVisible()));
+  t.ok('presenter: false is not offered in the context menu', !(await page.locator('#context-menu').count()));
+  await page.locator('h1').click({ button: 'right', position: { x: 20, y: 10 } });
+  t.ok('presenter: false leaves no presenter entry in the context menu', !(await page.locator('#context-menu').innerText()).includes('Presenter'));
+  // Headmatter `fonts`: the mono list is the code font.
+  const mono = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--slidev-code-font-family'));
+  const used = await page.locator('pre.shiki').first().evaluate((e) => getComputedStyle(e).fontFamily);
+  t.ok('fonts: the mono font becomes the code font', mono.includes('Courier New') && used.startsWith('"Courier New"'), used);
+  await page.close();
+
   page = await open('/2');
   await page.waitForSelector('.mermaid > svg', { timeout: 20000 });
   const svg = await page.locator('.mermaid > svg').innerHTML();
