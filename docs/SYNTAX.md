@@ -584,10 +584,10 @@ A static build has none of this and makes no requests.
 
 ```sh
 npm start -- --remote=secret     # (or `slide-ng --remote=secret`) others on your network can open the deck and follow the presenter
-npm start -- --remote            # same, with a random password that is printed
+npm start -- --remote            # same without a password (the password is optional, as in Slidev); it prints a warning
 ```
 
-It prints the deck address and the presenter address (`/presenter/1?password=secret`). Use that address on the presenter's device; a viewer opens `http://<your address>:4230/1?password=secret`.
+It prints the public and private deck addresses and the presenter address (`/presenter/1?password=secret`). Use that address on the presenter's device; a viewer opens `http://<your address>:4230/1?password=secret`.
 The password lets a device sync and write; it is sent without encryption, so use it on a network you trust.
 
 ## The page, export and build

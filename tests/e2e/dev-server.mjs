@@ -208,6 +208,24 @@ try {
   t.ok('--remote: the viewer in another browser follows the presenter over the WebSocket', followed, await viewer.locator('#hud').innerText());
   await a.close();
   await b.close();
+  stop();
+  await sleep(2000);
+
+  // ===================================================================== --remote without a password (Slidev's default)
+  fresh();
+  const OPORT = 4222, obase = `http://127.0.0.1:${OPORT}`;
+  stop = startDev(OPORT, ['--remote']);
+  await waitFor(obase);
+  const osession = await api(OPORT, '/session');
+  t.ok('--remote without a password: the session needs no login', osession.status === 200 && typeof (await osession.json()).token === 'string');
+  t.ok('--remote without a password: a write without the token is refused', (await api(OPORT, '/slides/2/drag', { method: 'POST', body: { site: 0, pos: '1,2,3,4' } })).status === 403);
+  t.ok('--remote without a password: a foreign Origin is refused', (await api(OPORT, '/session', { headers: { origin: 'http://evil.example' } })).status === 403);
+  const c = await browser.newContext({ viewport: { width: 1000, height: 600 } });
+  const open2 = await c.newPage();
+  await open2.goto(`${obase}/1`);
+  await open2.waitForFunction(() => /clicks \d+\/\d+/.test(document.querySelector('#hud')?.innerText ?? ''), null, { timeout: 60000 });
+  t.ok('--remote without a password: the deck opens and has no password prompt', !(await open2.evaluate(() => document.body.innerText)).includes('Password'));
+  await c.close();
 } finally {
   await browser?.close();
   stop?.();

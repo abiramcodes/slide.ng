@@ -96,7 +96,7 @@ npm start -- --remote=secret
 ```
 
 Others on your network can open the deck and follow the presenter. It prints the addresses; the presenter's is `/presenter/1?password=secret`.
-Without `=secret` a random password is made and printed. There is no HTTPS: use it on a network you trust. Details and the security rules are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+The password is optional, as in Slidev: plain `--remote` listens on every address with no password, prints a warning, and still checks the address, origin and session token of every request. There is no HTTPS: use it on a network you trust. Details and the security rules are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Tests
 

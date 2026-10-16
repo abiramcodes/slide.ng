@@ -8,7 +8,7 @@ const parse = (md: string) => parseDeck('/deck/slides.md', { '/deck/slides.md': 
 
 const deck = `---
 title: My deck
-theme: whatever
+theme: default
 ---
 
 # One
@@ -38,7 +38,7 @@ describe('parseDeck', async () => {
     expect(slides.map((s) => s.title)).toEqual(['My deck', 'Two', 'Three']);
   });
   it('treats the first frontmatter as headmatter', () => {
-    expect(headmatter).toMatchObject({ title: 'My deck', theme: 'whatever' });
+    expect(headmatter).toMatchObject({ title: 'My deck', theme: 'default' });
   });
   it('carries the frontmatter of each slide, unknown keys included', () => {
     expect(slides[1].frontmatter).toEqual({ layout: 'center', class: 'text-red-500', unknownKey: 42 });

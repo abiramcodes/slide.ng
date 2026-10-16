@@ -7,7 +7,7 @@ export async function run({ t, open, style }) {
     [3, 'default', async (p) => (await style(p, 'sn-default', 'paddingLeft')) === '56px'],
     [4, 'center', async (p) => (await style(p, 'sn-center', 'display')) === 'grid' && (await style(p, 'sn-center', 'placeContent')).includes('center')],
     [5, 'fact', async (p) => (await style(p, 'sn-fact h1', 'fontSize')) === '96px' && (await style(p, 'sn-fact', 'textAlign')) === 'center'],
-    [6, 'full', async (p) => (await style(p, 'sn-full', 'paddingLeft')) === '0px'],
+    [6, 'full', async (p) => (await style(p, 'sn-full', 'paddingLeft')) === '56px' && (await style(p, 'sn-full', 'paddingTop')) === '40px'],
     [7, 'image', async (p) => (await style(p, 'sn-image', 'backgroundImage')).includes('data:image/svg+xml') && (await style(p, 'sn-image', 'backgroundSize')) === 'cover'],
     [8, 'image-left', async (p) => (await p.locator('sn-image-left > div').first().evaluate((e) => getComputedStyle(e).backgroundImage)).includes('svg') && (await p.locator('sn-image-left > .slidev-layout.content-class').count()) === 1],
     [9, 'image-right', async (p) => (await p.locator('sn-image-right > div').last().evaluate((e) => getComputedStyle(e).backgroundImage)).includes('svg') && (await p.locator('sn-image-right > .content-class').count()) === 1],

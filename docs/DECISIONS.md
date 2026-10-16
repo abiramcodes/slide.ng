@@ -308,3 +308,14 @@ The owner decided "do it like Slidev" for every open choice. For each one, Slide
    with an error. slide.ng does the same and the error carries the install command (`npm install -D slide-ng-theme-x`, or `pnpm add -D` / `yarn add -D` / `bun add -d` by the lock file in the deck's
    folder). The question is only asked on the first generator run (not in watch mode, not in CI). Also like Slidev: a name with a slash that does not start with `@` is a path, `@/x` is relative
    to the deck's folder, and a name that is not a valid npm package name is refused. Tests: `roots.spec.ts`, `install-root.spec.ts`, `tests/export/theme.mjs` (the build stops, names the command, writes nothing).
+3. **`--remote` works like Slidev's: the password is optional.** Slidev (`packages/slidev/node/cli.ts`): `--remote` is a string option; `--remote` alone means no password, `--remote=secret` sets one;
+   the host becomes `--bind` (default `0.0.0.0`) only in remote mode; the start-up message lists the public show, the private one (with `?password=`), the presenter and the network addresses.
+   slide.ng does the same (`cli/dev.mjs`, `cli/remote-info.mjs`). Remote mode without a password prints a warning (no password, no HTTPS) and keeps every other rule of the dev server: Host
+   must be localhost or an address, a present Origin must equal Host, every write and WebSocket needs the session token, a request never names a path and every path is confined to the deck's folder.
+   Where slide.ng is stricter than Slidev on purpose: with a password the whole companion server (sync and writes), not only the presenter pages, needs it. The random password of phase 3 is gone.
+   Tests: `dev.spec.ts`, `remote-info.spec.ts`, `server-remote.spec.ts`, and `tests/e2e/dev-server.mjs` (a real `--remote` server with no password: session without login, refused token-less write, refused foreign Origin).
+4. **The 21 layouts follow Slidev's root classes and CSS.** Read: `packages/client/layouts/*.vue`, the default theme's six layouts (`themes/packages/theme-default`), `layouts-base.css`. Differences found and fixed:
+   `full` kept padding 0 (Slidev: the normal `px-14 py-10`; its docs' "all the space" is only `w-full h-full`); `h1` was bold (Slidev's reset gives the normal weight; `fact`, `statement` set 700 themselves);
+   a `blockquote` had a margin (Slidev: none); the table and `kbd` border colour was grey 128 (Slidev's `border-main` is `rgb(156 163 175 / 0.2)`); `none` was an inline element (Slidev wraps in a div);
+   the `error` layout text now is Slidev's (terminal text with a dev server, network text in a build); `/image.png` in `image`, `image-left`, `image-right` and `cover` gets the deck's base in front, like `resolveAssetUrl`;
+   right-to-left rules added. Everything else matched. Test: `layout-classes.spec.ts` lists all 21 layouts with Slidev's classes; the showcase test checks `full` padding in the browser.
