@@ -1,4 +1,4 @@
-// The settings menu: dark mode, filters, cursor options, wake lock, camera options and the PDF stub.
+// The settings menu (Slidev's): filters, cursor style, scale, wake lock, idle cursor, then dark mode, camera options and the PDF stub.
 export async function run({ t, open }) {
   const page = await open('/presenter/1');
   await page.bringToFront();
@@ -10,13 +10,17 @@ export async function run({ t, open }) {
   const ids = await page.locator('#settings-menu [id]').evaluateAll((l) => l.map((e) => e.id));
   for (const id of [
     'settings-dark',
-    'scale-fit',
-    'hide-idle-cursor',
+    'filter-invert',
+    'filter-brightness',
+    'filter-contrast',
+    'filter-saturate',
+    'filter-sepia',
+    'filter-hueRotate',
+    'filter-hueRotate-number',
+    'cursor-style-cursor',
+    'cursor-style-laser',
     'wake-lock',
     'settings-cursor',
-    'cursor-style-laser',
-    'filter-brightness',
-    'filter-reset',
     'camera-select',
     'mic-select',
     'record-screen',
@@ -24,6 +28,28 @@ export async function run({ t, open }) {
   ]) {
     t.ok(`settings has #${id}`, ids.includes(id), ids.join());
   }
+  t.ok('Slidev has no Reset filters link', !ids.includes('filter-reset'));
+  t.ok(
+    'the presenter menu has no Slide Scale and no Hide Idle Cursor (as in Slidev)',
+    !ids.includes('scale-fit') && !ids.includes('hide-idle-cursor'),
+  );
+  const labels = (await page.locator('#settings-menu .slidev-form-title').allInnerTexts()).map(
+    (x) => x.trim(),
+  );
+  t.ok(
+    'labels and order follow Slidev',
+    labels.slice(0, 8).join('|') ===
+      'Invert|Brightness|Contrast|Saturation|Sepia|Hue Rotate|Cursor Style|Wake Lock',
+    labels.join('|'),
+  );
+  const nums = await page
+    .locator('#settings-menu input[type=number]')
+    .evaluateAll((l) => l.map((e) => `${e.value}:${e.min}:${e.max}:${e.step}`));
+  t.ok(
+    'defaults and ranges match Slidev',
+    nums.join(' ') === '1:0.5:1.5:0.02 1:0.5:1.5:0.02 1:0.5:1.5:0.02 0:-2:2:0.02 0:-180:180:0.1',
+    nums.join(' '),
+  );
   t.ok(
     'the PDF entry is disabled while the deck has no PDF next to it',
     await page.locator('#download-pdf').isDisabled(),
@@ -50,7 +76,7 @@ export async function run({ t, open }) {
       .first()
       .evaluate((e) => getComputedStyle(e).filter);
   t.ok('no filter at first', (await canvasFilter()) === 'none');
-  await page.locator('#filter-brightness').fill('150');
+  await page.locator('#filter-brightness').fill('1.5');
   await page.waitForTimeout(200);
   t.ok(
     'the brightness slider filters the slide',
@@ -58,12 +84,30 @@ export async function run({ t, open }) {
     await canvasFilter(),
   );
   t.ok(
-    'the choice is remembered',
-    (await page.evaluate(() => localStorage.getItem('slidev-filters'))).includes('150'),
+    'the number box follows the slider',
+    (await page.locator('#filter-brightness-number').inputValue()) === '1.5',
   );
-  await page.locator('#filter-reset').click();
+  await page.locator('#filter-hueRotate-number').fill('90');
+  await page.locator('#filter-invert').check();
+  await page.locator('#filter-sepia').fill('0.5');
   await page.waitForTimeout(200);
-  t.ok('Reset filters clears it', (await canvasFilter()) === 'none');
+  const f = await canvasFilter();
+  t.ok(
+    'hue rotate, sepia and invert filter the slide',
+    f.includes('hue-rotate(90deg)') && f.includes('sepia(0.5)') && f.includes('invert(1)'),
+    f,
+  );
+  t.ok(
+    'the choice is remembered',
+    (await page.evaluate(() => localStorage.getItem('slidev-viewer-css-filter'))).includes('1.5'),
+  );
+  await page.locator('#filter-brightness-number').fill('1');
+  await page.locator('#filter-hueRotate').dblclick({ position: { x: 5, y: 5 } });
+  await page.locator('#filter-hueRotate-number').fill('0');
+  await page.locator('#filter-sepia-number').fill('0');
+  await page.locator('#filter-invert').uncheck();
+  await page.waitForTimeout(200);
+  t.ok('setting the defaults again clears it', (await canvasFilter()) === 'none');
 
   // cursor options
   t.ok(
@@ -108,15 +152,43 @@ export async function run({ t, open }) {
     !(await page.locator('#wake-lock').isChecked()),
   );
 
-  // the play page has no presenter-only entries
+  // the play page: Slide Scale and Hide Idle Cursor appear, the presenter-only entry does not
   const play = await open('/1');
   await play.locator('#nav-settings').click();
   await play.waitForTimeout(250);
   t.ok(
-    'the play page hides the presenter cursor entries',
+    'the play page hides the presenter cursor entry and shows scale and idle cursor',
     (await play.locator('#settings-cursor').count()) === 0 &&
-      (await play.locator('#filter-contrast').count()) === 1,
+      (await play.locator('#scale-fit').count()) === 1 &&
+      (await play.locator('#hide-idle-cursor').count()) === 1,
   );
+  t.ok(
+    'Cursor Style starts on Cursor and Fit is the scale',
+    (await play.locator('#cursor-style-cursor').getAttribute('aria-pressed')) === 'true' &&
+      (await play.locator('#scale-fit').getAttribute('aria-pressed')) === 'true',
+  );
+  await play.locator('#cursor-style-laser').click();
+  await play.waitForTimeout(200);
+  await play.mouse.click(1200, 100); // closes the menu
+  await play.mouse.move(500, 300, { steps: 3 });
+  await play.waitForTimeout(300);
+  const dot = await play.locator('#laser-pointer').count();
+  t.ok('the laser dot follows the pointer on the slide in the main view', dot === 1);
+  t.ok(
+    'and the real cursor is hidden there',
+    (await play.evaluate(() => getComputedStyle(document.querySelector('.slide-show')).cursor)) ===
+      'none',
+  );
+  await play.reload();
+  await play.waitForFunction(() => document.querySelector('#hud'));
+  await play.mouse.move(500, 320, { steps: 3 });
+  await play.waitForTimeout(300);
+  t.ok(
+    'the cursor style is remembered after a reload',
+    (await play.evaluate(() => localStorage.getItem('slidev-cursor-style'))) === '"laser"' &&
+      (await play.locator('#laser-pointer').count()) === 1,
+  );
+  await play.evaluate(() => localStorage.removeItem('slidev-cursor-style'));
   await play.close();
   await page.close();
 }
