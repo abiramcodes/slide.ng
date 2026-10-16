@@ -18,16 +18,19 @@ command line as a package, themes and addons, an example theme, the MCP server a
    `examples/theme-minimal` (docs/THEMES.md, docs/WRITING-A-THEME.md). The example theme changes the rendered output and its component is used from slides (browser test).
 8. **MCP server** `slide-ng mcp`: seven tools, tested with a scripted client over stdio (initialize, tools/list, get, update, insert, move, remove, refusals, path confinement).
 9. **Polish**: the PDF button in the bar (enabled only when the PDF exists), `dev --open`, `--theme`, the side editor takes over outside edits, the next-step preview draws global layers, v-drag boxes were already drawn in thumbnails.
-10. **docs/PARITY.md**: 162 rows, a test found for each `done` row, and a ranked list of gaps.
+10. **docs/PARITY.md**: 162 rows (plus 5 for the offline work), a test found for each `done` row, and a ranked list of gaps.
+
+11. **Offline use** (docs/OFFLINE.md): `slide-ng build --offline` makes a folder that opens from disk in Chromium (classic script, hash routing, relative addresses, Monaco workers from blobs, no service worker);
+    window sync between `file://` pages; web fonts and remote pictures bundled (`fonts.selfHost`, on for `pwa` and `--offline`); `/public` addresses get the deck's base; the first-visit limit of the PWA is stated; a checklist for presenters.
 
 ## Test results (last run, Node 22.23.3, Chromium from `/opt/pw-browsers`)
 
 - `npm run build`: succeeds.
-- `npm test`: 68 files, **540** tests passed.
+- `npm test`: 86 files, **677** tests passed.
 - `npm run test:e2e`: starter deck **45**, showcase **144**, code and content **125**, phase 3 decks **152**, print route **24**; 0 failed.
 - `npm run test:dev`: live update **6**, dev server **36**; 0 failed.
-- `npm run test:export`: export command **33**, build **46**, theme **18**, scaffold **13**, MCP **22**; 0 failed.
-- Tests at the last full run: 629 unit tests; browser tests 45, 144, 125, 154, 24 and 24 checks (run, showcase, phase 2 to 5); dev server tests 6 and 46; export tests 123.
+- `npm run test:export`: export command **33**, build **47**, theme **18**, scaffold **13**, MCP **22**, offline folder from disk **40**, network off **13**; 0 failed.
+- Tests at the last full run: 677 unit tests; browser tests 45, 144, 125, 154, 24 and 24 checks (run, showcase, phase 2 to 5); dev server tests 6 and 46; export tests 33, 47, 18, 13, 22, 40 and 13.
 
 ## Not done
 
@@ -35,14 +38,23 @@ command line as a package, themes and addons, an example theme, the MCP server a
 - `export` takes one entry; no `--format pptx-editable`.
 - `dev --tunnel` (needs a tunnel service; refused with a message) and `dev --base` (refused with a message); `build --router-mode` (use `routerMode`).
 - VS Code extension, prettier plugin, Vue-syntax converter, community themes, browser exporter page, `overviewSnapshots` (out of scope).
-- Monaco type loading; fonts copied into the build; MDC/Comark; `notesAutoRuby`; slide hooks; custom transition objects; touch tuning for drawing and drag. The full list is in docs/PARITY.md.
-- PWA: remote pictures are not cached in dev. Icons are drawn with Chromium at build time (a build without one warns and has no icons).
+- Monaco type loading; MDC/Comark; `notesAutoRuby`; slide hooks; custom transition objects; touch tuning for drawing and drag. The full list is in docs/PARITY.md.
+- Offline: PlantUML, `<youtube>`, `<tweet>` and `<blue-sky>` need the network, also in an offline folder. A deck with Monaco and Mermaid becomes one large script in an offline folder (27 MB folder, 16 MB script for the phase 2 test deck).
+- PWA: the first visit must be online (a browser that never opened the deck cannot get it offline). Remote pictures are not cached in dev. Icons are drawn with Chromium at build time (a build without one warns and has no icons).
 - MCP: slide 1 cannot be removed or moved; insert, remove and move need all slides in the entry file.
 - The first load of a deck with Monaco and KaTeX is about 850 kB (budget 1.5 MB / 3 MB).
 - Recording: no separate camera file, no mp4 or mkv, no cloud upload. No HTTPS for `--remote` (as before).
 - Phase 2 and phase 3 lists still apply (Monaco and Mermaid limits, `v-motion` limits, footnote limits, resizing a rotated `v-drag` box, `{monaco-write}` limits, imported slides outside the deck's folder cannot be edited by the dev server).
 
 ## Problems found and fixed along the way
+
+- A normal build opened from disk was a blank page (module scripts and `import()` are refused over `file://`; `/` addresses point at the disk root): `build --offline`.
+- `new Worker('file://...')` is refused, so Monaco fell back to the main thread with errors: workers start from blobs in an offline folder.
+- A viewer on `file://` could not drive the presenter (the local-host rule did not know `file:`); fixed with a unit test and a browser test.
+- All `file://` pages share one storage and broadcast channel, so two offline decks mixed drawings and slide positions: both are per folder now.
+- `/public` addresses in slides (`![](/photo.png)`) ignored `--base` (a deck under `/talk/` asked the host root): the build puts the base in front; test in `tests/export/build.mjs`.
+- The PDF button on `file://` stayed disabled (a `HEAD` request cannot be made) and a click would have replaced the deck with the PDF: enabled, opens a new tab.
+- Web fonts were an `@import` from the provider, so they failed offline: `fonts.selfHost`.
 
 - `replaceSource` (side editor and MCP) dropped the blank line under a plain `---`, so a slide's text became frontmatter; fixed with a unit test.
 - `safeName('a/../b')` produced `a-.-b`; now `a-b`.
@@ -64,6 +76,7 @@ command line as a package, themes and addons, an example theme, the MCP server a
 - Export and build with Firefox or WebKit: only Chromium is used. PDF text, page sizes and outlines were checked with the poppler tools and the PPTX through its file structure; none was opened in PowerPoint, Keynote or Acrobat.
 - The Open Graph picture and the tags in a real crawler or chat application.
 - Hosting on GitHub Pages or Netlify (the files they read are written and the local static server was used).
-- The offline mode in browsers other than Chromium, and an update of a deck that is already cached.
+- The offline mode and the offline folder in browsers other than Chromium (Firefox treats each `file://` page as its own origin; window sync from a folder is probably broken there), and an update of a deck that is already cached.
+- Real Google Fonts for `fonts.selfHost` (only a local fake provider was used), camera, microphone, screen share and recording from `file://`, an offline folder on a network share or a USB stick, and Chromium-based browsers other than the bundled one.
 - The real screen-share picker, recording quality, the wake lock, `--remote` from a second physical device and over a real LAN, touch input (all as in phase 3).
 - Everything under the phase 1 and 2 NOT VERIFIED lists.
