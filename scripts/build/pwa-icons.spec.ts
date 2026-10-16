@@ -51,7 +51,7 @@ describe('iconSource', () => {
 describe('copyDefaultIcons', () => {
   it('writes every listed icon as a PNG of the listed size', () => {
     const out = mkdtempSync(join(tmpdir(), 'slide-ng-icons-out-'));
-    copyDefaultIcons(out);
+    copyDefaultIcons(out, join(process.cwd(), 'scripts/build/default-icons'));
     for (const { file, size } of ICONS) {
       const png = readFileSync(join(out, file));
       expect(png.subarray(1, 4).toString()).toBe('PNG');

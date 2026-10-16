@@ -43,9 +43,9 @@ export function iconSource(headmatter, deckRoot) {
   );
 }
 
-/** Writes the slide.ng icons into `distDir`. */
-export function copyDefaultIcons(distDir) {
-  for (const { file } of ICONS) copyFileSync(join(DEFAULT_ICONS, file), join(distDir, file));
+/** Writes the slide.ng icons into `distDir`. `from` is only given by tests. */
+export function copyDefaultIcons(distDir, from = DEFAULT_ICONS) {
+  for (const { file } of ICONS) copyFileSync(join(from, file), join(distDir, file));
 }
 
 // The source as a data address an <img> can show.
