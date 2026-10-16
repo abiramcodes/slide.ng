@@ -5,6 +5,7 @@ import {
   ElementRef,
   afterNextRender,
   booleanAttribute,
+  DestroyRef,
   computed,
   effect,
   inject,
@@ -14,6 +15,7 @@ import {
 } from '@angular/core';
 import { DevApi } from '../dev/dev-api';
 import { Dark } from '../lib/dark';
+import { Disposables } from '../lib/disposables';
 import { CodeRunner } from './code-runner';
 import { MONACO_SETUP } from '../setup/tokens';
 import { runJs } from './monaco/run-js';
@@ -77,6 +79,7 @@ export class MonacoEditor {
   private firstHeight = signal(0);
   private monaco?: typeof Monaco;
   private model?: Monaco.editor.ITextModel;
+  private disposables = new Disposables();
   private ready: Promise<void>;
   private markReady!: () => void;
   private setups = inject(MONACO_SETUP);
@@ -91,24 +94,36 @@ export class MonacoEditor {
   constructor() {
     this.ready = new Promise((resolve) => (this.markReady = resolve));
     afterNextRender(() => void this.start());
+    inject(DestroyRef).onDestroy(() => this.disposables.disposeAll());
     effect(() => this.monaco?.editor.setTheme(this.dark.isDark() ? 'vs-dark' : 'vs'));
   }
 
   private async start() {
     const text = (this.packed() ? await unpack<string>(this.packed()) : this.code0()).trimEnd();
     const modified = this.diff() ? (await unpack<string>(this.diff())).trimEnd() : null;
-    const { monaco } = await import('./monaco/setup');
+    let monaco: typeof Monaco;
+    try {
+      ({ monaco } = await import('./monaco/setup'));
+    } catch (e) {
+      console.error('slide.ng: Monaco could not be loaded', e);
+      this.loaded.set(true); // stop an exporter from waiting for an editor that will not come
+      return;
+    }
+    if (this.disposables.isDisposed) return; // the slide was left while Monaco loaded
     this.monaco = monaco;
     // setup/monaco.ts of the roots: they get `monaco`, and the options they return apply to every editor.
     const fromSetup: Monaco.editor.IStandaloneEditorConstructionOptions = {};
     for (const setup of this.setups) Object.assign(fromSetup, await setup(monaco));
+    if (this.disposables.isDisposed) return;
     const lang = LANGUAGES[this.lang()] ?? this.lang();
     const ext = EXTENSIONS[lang] ?? lang;
     const newModel = (value: string) =>
-      monaco.editor.createModel(
-        value,
-        lang,
-        monaco.Uri.parse(`file:///model-${++modelCounter}.${ext}`),
+      this.disposables.add(
+        monaco.editor.createModel(
+          value,
+          lang,
+          monaco.Uri.parse(`file:///model-${++modelCounter}.${ext}`),
+        ),
       );
 
     const model = (this.model = newModel(text));
@@ -137,10 +152,12 @@ export class MonacoEditor {
       this.contentHeight.set(height);
     };
     if (modified != null) {
-      const editor = monaco.editor.createDiffEditor(this.box().nativeElement, {
-        renderOverviewRuler: false,
-        ...options,
-      });
+      const editor = this.disposables.add(
+        monaco.editor.createDiffEditor(this.box().nativeElement, {
+          renderOverviewRuler: false,
+          ...options,
+        }),
+      );
       const changed = newModel(modified);
       editor.setModel({ original: model, modified: changed });
       const [a, b] = [editor.getOriginalEditor(), editor.getModifiedEditor()];
@@ -149,11 +166,13 @@ export class MonacoEditor {
       b.onDidContentSizeChange(resize);
       changed.onDidChangeContent(() => this.code.set(changed.getValue()));
     } else {
-      const editor = monaco.editor.create(this.box().nativeElement, {
-        model,
-        lineDecorationsWidth: 0,
-        ...options,
-      });
+      const editor = this.disposables.add(
+        monaco.editor.create(this.box().nativeElement, {
+          model,
+          lineDecorationsWidth: 0,
+          ...options,
+        }),
+      );
       editor.onDidContentSizeChange((e) => grow(e.contentHeight + 4));
     }
     model.onDidChangeContent(() => {
