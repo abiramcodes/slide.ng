@@ -18,6 +18,8 @@ export class Devices {
   /** The picture the bubble shows; null while the camera is off or not allowed. */
   readonly stream = signal<MediaStream | null>(null);
   readonly error = signal('');
+  // Counts the openings, so an answer that arrives after a newer request is dropped.
+  private ticket = 0;
   readonly available = recordEnabled() && !!navigator.mediaDevices;
 
   constructor() {
@@ -42,13 +44,14 @@ export class Devices {
 
   private async open(id: string) {
     this.error.set('');
+    const ticket = ++this.ticket;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: this.constraint(id),
         audio: false,
       });
-      // The switch may have been turned off while the browser was asking.
-      if (!this.cameraOn()) {
+      // The switch may have been turned off, or the device changed, while the browser was asking.
+      if (!this.cameraOn() || ticket !== this.ticket) {
         stream.getTracks().forEach((t) => t.stop());
         return;
       }
@@ -61,6 +64,7 @@ export class Devices {
   }
 
   private close() {
+    this.ticket++;
     this.stream()
       ?.getTracks()
       .forEach((t) => t.stop());
