@@ -11,6 +11,7 @@ html:not(.dark) .shiki span {
 }
 
 .slidev-code-wrapper {
+  display: block;
   margin: var(--slidev-code-margin) !important;
   scroll-padding: var(--slidev-code-padding);
 }

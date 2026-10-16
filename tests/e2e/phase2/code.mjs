@@ -44,6 +44,10 @@ export async function run({ t, open, press, hud }) {
       '60px,scroll',
   );
   t.ok(
+    'a code block is a block box, so its margin and border work',
+    (await box.evaluate((e) => getComputedStyle(e).display)) === 'block',
+  );
+  t.ok(
     'a line not in the range is dimmed',
     (await box.locator('.line.dishonored').count()) === 5 &&
       (await box.locator('.line.highlighted').count()) === 1,
