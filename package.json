@@ -1,6 +1,8 @@
 {
   "name": "slide-ng",
   "version": "0.0.0",
+  "description": "Slides written in markdown with Angular templates",
+  "private": true,
   "bin": {
     "slide-ng": "./bin/slide-ng.mjs"
   },
@@ -21,6 +23,10 @@
     "README.md",
     "docs"
   ],
+  "engines": {
+    "node": ">=22.22.3"
+  },
+  "packageManager": "npm@10.9.4",
   "scripts": {
     "ng": "ng",
     "generate": "node scripts/generate.mjs",
@@ -32,10 +38,9 @@
     "screenshots": "node tests/e2e/screenshots.mjs && node tests/e2e/screenshots-features.mjs && node tests/e2e/screenshots-phase3.mjs",
     "test:export": "node tests/export/run.mjs && node tests/export/build.mjs && node tests/export/theme.mjs && node tests/export/scaffold.mjs && node tests/export/mcp.mjs && node tests/export/offline.mjs && node tests/export/offline-net.mjs",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "lint": "eslint ."
   },
-  "private": true,
-  "packageManager": "npm@10.9.4",
   "dependencies": {
     "@angular/build": "^22.2.3",
     "@angular/cli": "^22.2.3",
@@ -77,14 +82,15 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^22.20.5",
     "@types/ws": "^8.18.2",
+    "angular-eslint": "^22.6.0",
+    "eslint": "^10.12.0",
+    "globals": "^17.13.0",
     "jsdom": "^30.0.0",
     "prettier": "^3.8.1",
+    "typescript-eslint": "^8.71.2",
     "vitest": "^5.0.0"
-  },
-  "description": "Slides written in markdown with Angular templates",
-  "engines": {
-    "node": ">=22.22.3"
   }
 }
