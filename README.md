@@ -1,10 +1,15 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme-banner-dark.png">
+  <img alt="slide.ng" src="docs/assets/readme-banner-light.png" width="800">
+</picture>
+
 # slide.ng
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-CC4209.svg)](LICENSE)
 [![Sponsor](https://img.shields.io/badge/sponsor-erkamyaman-db61a2?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/erkamyaman)
 
 Presentations written in markdown, with real Angular template syntax inside.
-Inspired by [Slidev](https://sli.dev), built for Angular.
+Inspired by [Slidev](https://sli.dev), built for Angular. slide.ng is a community project, not affiliated with the Angular team.
 
 You write one file, `slides.md`. Each slide in it becomes a small Angular
 component that is compiled ahead of time with the rest of your app.
