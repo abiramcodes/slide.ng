@@ -28,6 +28,12 @@ import { Ui } from '../lib/ui-state';
           type="text"
           class="outline-none bg-transparent w-full"
           placeholder="Goto..."
+          aria-label="Go to slide"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-controls="goto-results"
+          [attr.aria-expanded]="ui.goto() && results().length > 0"
+          [attr.aria-activedescendant]="results().length ? 'goto-result-' + selected() : null"
           [class.text-red-400]="text() && !results().length"
           [disabled]="!ui.goto()"
           [value]="text()"
@@ -41,10 +47,15 @@ import { Ui } from '../lib/ui-state';
       @if (ui.goto() && results().length) {
         <ul
           id="goto-results"
+          role="listbox"
+          aria-label="Slides"
           class="bg-main shadow mt-1 rounded border border-transparent dark:border-gray/20 overflow-auto max-h-80"
         >
           @for (r of results(); track r.no; let i = $index) {
             <li
+              role="option"
+              [id]="'goto-result-' + i"
+              [attr.aria-selected]="i === selected()"
               class="flex gap-3 px-4 py-2 cursor-pointer hover:op100"
               [class]="i === selected() ? 'bg-active op100' : 'op80'"
               (click)="open(r.no)"

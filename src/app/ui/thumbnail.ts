@@ -18,6 +18,8 @@ import { mountSlide } from '../lib/mount-slide';
   imports: [DrawingPreview],
   host: {
     class: 'block overflow-hidden relative pointer-events-none',
+    inert: '', // a picture only: nothing inside can take the focus
+    'aria-hidden': 'true',
     '[style.width.px]': 'width()',
     '[style.height.px]': 'height()',
   },

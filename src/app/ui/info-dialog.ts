@@ -1,5 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, ElementRef, inject, viewChild } from '@angular/core';
 import { HEADMATTER, INFO_HTML } from '../../slides/generated';
+import { focusWhileOpen } from '../lib/dialog-focus';
 import { Ui } from '../lib/ui-state';
 
 // The "info" dialog: the deck's `info:` text from the headmatter (markdown), or its title, plus a credit line.
@@ -10,7 +11,12 @@ import { Ui } from '../lib/ui-state';
       <div id="info-dialog" class="fixed inset-0 grid z-modal">
         <div class="absolute inset-0 -z-1 bg-black/80" (click)="ui.info.set(false)"></div>
         <div
-          class="slidev-layout m-auto rounded-md bg-main text-main shadow dark:border dark:border-gray/20 px-6 py-4 flex flex-col gap-4 text-base max-w-150"
+          #box
+          role="dialog"
+          aria-modal="true"
+          [attr.aria-label]="title"
+          tabindex="-1"
+          class="outline-none slidev-layout m-auto rounded-md bg-main text-main shadow dark:border dark:border-gray/20 px-6 py-4 flex flex-col gap-4 text-base max-w-150"
           style="height: auto"
         >
           @if (infoHtml) {
@@ -31,5 +37,10 @@ import { Ui } from '../lib/ui-state';
 export class InfoDialog {
   protected ui = inject(Ui);
   protected infoHtml = INFO_HTML;
+  private box = viewChild<ElementRef<HTMLElement>>('box');
   protected title = (HEADMATTER['title'] as string | undefined) ?? 'slide.ng';
+
+  constructor() {
+    focusWhileOpen(this.ui.info, () => this.box()?.nativeElement);
+  }
 }

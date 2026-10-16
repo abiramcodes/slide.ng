@@ -61,6 +61,7 @@ const WATCH_EVERY = 2000;
             }
             <textarea
               id="editor-text"
+              aria-label="Markdown of this slide"
               spellcheck="false"
               class="editor-text absolute inset-0 w-full h-full bg-transparent outline-none resize-none overflow-hidden"
               [class.highlighted]="!!html()"

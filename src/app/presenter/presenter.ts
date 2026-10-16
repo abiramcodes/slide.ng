@@ -108,7 +108,7 @@ import { TimerInlined } from './timer-inlined';
             [current]="nav.clicks()"
             [total]="nav.clicksTotal()"
             [start]="nav.ctx()?.clicksStart ?? 0"
-            (change)="nav.ctx()?.setCurrent($event)"
+            (picked)="nav.ctx()?.setCurrent($event)"
           />
         </div>
         <div class="relative grid-section next flex flex-col p-2 lg:p-4">

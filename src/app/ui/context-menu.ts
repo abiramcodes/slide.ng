@@ -20,6 +20,8 @@ import { CONTEXT_MENU_SETUP } from '../setup/tokens';
       <div
         #menu
         id="context-menu"
+        role="menu"
+        aria-label="Slide menu"
         class="slidev-glass-effect fixed z-context-menu w-60 flex flex-wrap justify-items-start p-1 rounded-md shadow overflow-hidden select-none text-main"
         [style.left.px]="left()"
         [style.top.px]="top()"
@@ -27,25 +29,32 @@ import { CONTEXT_MENU_SETUP } from '../setup/tokens';
         (click)="ui.contextMenu.set(null)"
       >
         @for (a of arrows(); track a.title) {
-          <div
+          <button
+            type="button"
+            role="menuitem"
             class="menu-small p-2 w-[40px] h-[40px] text-center cursor-pointer rounded flex"
             [class]="a.disabled ? 'op40' : 'hover:bg-active'"
             [title]="a.title"
-            (click)="a.run()"
+            [attr.aria-label]="a.title"
+            [attr.aria-disabled]="a.disabled"
+            (click)="press(a)"
           >
             <div [class]="a.icon + ' text-1.2em m-auto'"></div>
-          </div>
+          </button>
         }
         <div class="w-full my-1 border-t border-main"></div>
         @for (item of items(); track item.label) {
-          <div
-            class="slidev-menu-item w-full"
+          <button
+            type="button"
+            role="menuitem"
+            class="slidev-menu-item w-full text-left"
             [class.disabled]="item.disabled"
-            (click)="item.run()"
+            [attr.aria-disabled]="item.disabled"
+            (click)="press(item)"
           >
             <div class="mx-auto flex"><div [class]="item.icon + ' text-1.2em m-auto'"></div></div>
             <div>{{ item.label }}</div>
-          </div>
+          </button>
         }
         <div class="w-full my-1 border-t border-main"></div>
         <div class="w-full text-xs p-2 opacity-50">
@@ -134,6 +143,11 @@ export class ContextMenu {
       },
     ]),
   );
+
+  // A disabled entry only looks disabled to the mouse, so the keyboard is stopped here.
+  protected press(entry: { run: () => void; disabled?: boolean }) {
+    if (!entry.disabled) entry.run();
+  }
 
   // Keep the menu inside the window: if it would stick out, move it back by the overflow.
   private size = signal({ width: 0, height: 0 });

@@ -19,19 +19,23 @@ import { Component, computed, input, output } from '@angular/core';
       </div>
       <div class="relative flex-auto font-mono flex h-5">
         @for (i of cells(); track i) {
-          <div
+          <button
+            type="button"
             class="clicks-cell border-y border-main overflow-hidden relative flex items-center justify-center text-xs"
             [class.cursor-pointer]="!readonly()"
             [class.border-l]="i === start()"
             [class.border-r]="i === total()"
             [style.width.%]="100 / cells().length"
+            [disabled]="readonly()"
+            [attr.aria-label]="'Click ' + i"
+            [attr.aria-current]="i === current() ? 'step' : null"
             (click)="pick(i)"
           >
             <div class="absolute inset-0" [class]="i <= current() ? 'bg-primary op15' : ''"></div>
             <div class="z-1" [class]="i === current() ? 'text-primary font-bold' : 'op30'">
               {{ i }}
             </div>
-          </div>
+          </button>
         }
       </div>
     </div>
@@ -42,9 +46,8 @@ export class ClicksSlider {
   total = input.required<number>();
   start = input(0);
   readonly = input(false);
-  // `change` matches the event of a range input, which is how the slider is used in templates.
-  // eslint-disable-next-line @angular-eslint/no-output-native
-  change = output<number>();
+  /** The click the user chose. */
+  picked = output<number>();
   protected cells = computed(() =>
     Array.from(
       { length: Math.max(this.total() - this.start() + 1, 0) },
@@ -53,6 +56,6 @@ export class ClicksSlider {
   );
 
   protected pick(i: number) {
-    if (!this.readonly()) this.change.emit(i);
+    if (!this.readonly()) this.picked.emit(i);
   }
 }

@@ -74,6 +74,7 @@ import { BRUSH_COLORS, Drawings, ToolMode } from './drawings';
               </div>
               <input
                 id="stroke-range"
+                aria-label="Stroke width"
                 type="range"
                 min="1"
                 max="15"

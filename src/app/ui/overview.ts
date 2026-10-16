@@ -1,4 +1,5 @@
-import { Component, effect, inject, signal, untracked } from '@angular/core';
+import { Component, ElementRef, effect, inject, signal, untracked, viewChild } from '@angular/core';
+import { focusWhileOpen } from '../lib/dialog-focus';
 import { Nav } from '../lib/nav';
 import { Ui } from '../lib/ui-state';
 import { IconBtn } from './icon-btn';
@@ -13,8 +14,13 @@ import { Thumbnail } from './thumbnail';
   template: `
     @if (ui.overview()) {
       <div
+        #dialog
         id="overview"
-        class="fixed inset-0 z-modal bg-main bg-opacity-75! p-16 py-20 overflow-y-auto backdrop-blur-5px select-none text-main"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Slide overview"
+        tabindex="-1"
+        class="outline-none fixed inset-0 z-modal bg-main bg-opacity-75! p-16 py-20 overflow-y-auto backdrop-blur-5px select-none text-main"
         (click)="close()"
       >
         <div
@@ -23,10 +29,13 @@ import { Thumbnail } from './thumbnail';
         >
           @for (slide of nav.slides; track $index) {
             <div class="relative">
-              <div
-                class="overview-card inline-block border rounded overflow-hidden bg-main hover:border-primary transition cursor-pointer"
+              <button
+                type="button"
+                class="overview-card inline-block text-left border rounded overflow-hidden bg-main hover:border-primary transition cursor-pointer"
                 [class]="ui.overviewPage() === $index + 1 ? 'border-primary' : 'border-main'"
                 [attr.data-no]="$index + 1"
+                [attr.aria-label]="'Go to slide ' + ($index + 1)"
+                [attr.aria-current]="nav.no() === $index + 1 ? 'true' : null"
                 (click)="go($index + 1, $event)"
               >
                 @defer (on viewport) {
@@ -34,7 +43,7 @@ import { Thumbnail } from './thumbnail';
                 } @placeholder {
                   <div [style.width.px]="cardWidth" [style.height.px]="(cardWidth * 9) / 16"></div>
                 }
-              </div>
+              </button>
               <div class="absolute top-0 opacity-50" [style.left.px]="cardWidth + 5">
                 {{ $index + 1 }}
               </div>
@@ -55,8 +64,10 @@ export class Overview {
   protected nav = inject(Nav);
   protected width = signal(window.innerWidth);
   protected cardWidth = 300;
+  private dialog = viewChild<ElementRef<HTMLElement>>('dialog');
 
   constructor() {
+    focusWhileOpen(this.ui.overview, () => this.dialog()?.nativeElement);
     effect(() => {
       // Every time the overview opens, highlight the slide on screen, and tell the keys how wide a row is.
       if (!this.ui.overview()) return;
