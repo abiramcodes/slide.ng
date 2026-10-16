@@ -32,6 +32,7 @@ export async function run({ t, open, press }) {
   t.ok('shortcuts: the added key works', (await root('shortcut')) === 'pressed');
   t.ok('shortcuts: the default keys still work', new URL(page.url()).pathname === '/1');
   await page.locator('h1').click({ button: 'right', position: { x: 20, y: 10 } });
+  await page.locator('#context-menu .slidev-menu-item').last().waitFor({ timeout: 5000 });
   const labels = await page.locator('#context-menu .slidev-menu-item').allInnerTexts();
   t.ok(
     'context menu: the added entry follows the built-in ones',
