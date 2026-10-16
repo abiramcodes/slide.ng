@@ -8,6 +8,11 @@ describe('cleanDrawing', () => {
       '<g transform="translate(1 2)"><ellipse cx="1" cy="2" rx="3" ry="4" fill="none" stroke="#000"></ellipse></g>';
     expect(cleanDrawing(drawn)).toBe(drawn.replace('></ellipse>', '></ellipse>'));
   });
+  it('accepts the index attribute that drauu puts on every shape', () => {
+    const real = '<path fill="#ff595e" d="M 1 2 Z" data-drauu_index="0"></path>';
+    expect(cleanDrawing(real)).toBe(real);
+    expect(cleanDrawing('<path data-other="1"/>')).toBeNull();
+  });
   it('accepts white space between elements and single quotes, and writes double quotes', () => {
     expect(cleanDrawing('<path d=\'M0 0\'/>\n <rect x="1" y="2" width="3" height="4"/>')).toBe(
       '<path d="M0 0"/><rect x="1" y="2" width="3" height="4"/>',

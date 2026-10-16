@@ -445,6 +445,11 @@ try {
       null,
       { timeout: 60000 },
     );
+  // The login runs while the deck opens; on a slow machine the address is cleaned a moment after the HUD shows.
+  for (const p of [presenter, viewer])
+    await p
+      .waitForFunction(() => !location.search.includes('password'), null, { timeout: 15000 })
+      .catch(() => {});
   t.ok(
     '--remote: the password is removed from the address bar',
     !presenter.url().includes('password') && !viewer.url().includes('password'),
@@ -470,11 +475,20 @@ try {
 
   // ===================================================================== --remote without a password: a random one is made
   fresh();
-  const OPORT = 4222,
+  const OPORT = 4232,
     obase = `http://127.0.0.1:${OPORT}`;
   stop = startDev(OPORT, ['--remote'], true);
   await waitFor(obase);
   for (let i = 0; i < 40 && !/random one was made/.test(stop.output()); i++) await sleep(250);
+  // The proxy answers before the companion server is up; wait until /session is answered by the companion itself.
+  for (let i = 0; i < 80; i++) {
+    const status = await api(OPORT, '/session').then(
+      (r) => r.status,
+      () => 0,
+    );
+    if (status === 401) break;
+    await sleep(250);
+  }
   const made = /random one was made for this run: (\S+)/.exec(stop.output())?.[1] ?? '';
   t.ok(
     '--remote without a password: a random password of 16+ characters is printed',

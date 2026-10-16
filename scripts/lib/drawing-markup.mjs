@@ -14,13 +14,13 @@ const ATTRIBUTES = new Set([
   'transform', 'id', 'viewBox', 'fill', 'fill-opacity', 'fill-rule', 'opacity', 'stroke',
   'stroke-width', 'stroke-opacity', 'stroke-dasharray', 'stroke-dashoffset', 'stroke-linecap',
   'stroke-linejoin', 'stroke-miterlimit', 'marker-start', 'marker-mid', 'marker-end',
-  'markerWidth', 'markerHeight', 'markerUnits', 'refX', 'refY', 'orient',
+  'markerWidth', 'markerHeight', 'markerUnits', 'refX', 'refY', 'orient', 'data-drauu_index',
 ]); // prettier-ignore
 
 const MAX_DEPTH = 12;
 const MAX_ELEMENTS = 20_000;
 const NAME = /[A-Za-z][A-Za-z0-9]*/y;
-const ATTR_NAME = /[A-Za-z][A-Za-z0-9-]*/y;
+const ATTR_NAME = /[A-Za-z][A-Za-z0-9_-]*/y;
 const SPACE = /[ \t\r\n]+/y;
 
 // A value: no markup characters, no entities, and a url() only as a reference to an id in the same drawing.
