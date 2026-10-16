@@ -43,6 +43,18 @@ export function resolveRequest(root, base, pathname) {
   return existsSync(file) && statSync(file).isFile() ? file : null;
 }
 
+/** Streams a file as the answer. If it cannot be read (it vanished), the answer is a 500 and the server goes on. */
+export function sendFile(asset, res) {
+  const stream = createReadStream(asset);
+  stream.on('error', () => {
+    if (res.headersSent) return res.destroy();
+    res.removeHeader('content-type');
+    res.statusCode = 500;
+    res.end('could not read the file');
+  });
+  stream.pipe(res);
+}
+
 /** Starts the server on a free port of 127.0.0.1. Resolves `{ server, port, origin, close }`. */
 export function serveDirectory(root, base = '/') {
   const server = http.createServer((req, res) => {
@@ -56,7 +68,7 @@ export function serveDirectory(root, base = '/') {
       return res.end('not found');
     }
     res.setHeader('content-type', TYPES[extname(asset)] ?? 'application/octet-stream');
-    createReadStream(asset).pipe(res);
+    sendFile(asset, res);
   });
   return new Promise((resolvePromise) =>
     server.listen(0, '127.0.0.1', () => {
