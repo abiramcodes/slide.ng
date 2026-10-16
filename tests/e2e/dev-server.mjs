@@ -80,7 +80,7 @@ const open = async (browser, url) => {
   return page;
 };
 const api = (port, path, { method = 'GET', headers = {}, body } = {}) =>
-  fetch(`http://127.0.0.1:${port}/__slide-ng${path}`, {
+  fetch(`http://localhost:${port}/__slide-ng${path}`, {
     method,
     headers: { 'content-type': 'application/json', ...headers },
     body: body && JSON.stringify(body),
@@ -374,7 +374,7 @@ try {
   t.ok('nothing was written by the refused requests', read() === snapshot);
   const ws = (query, headers = {}) =>
     new Promise((resolve) => {
-      const s = new WebSocket(`ws://127.0.0.1:${PORT}/__slide-ng/ws${query}`, { headers });
+      const s = new WebSocket(`ws://localhost:${PORT}/__slide-ng/ws${query}`, { headers });
       s.on('open', () => {
         s.close();
         resolve('open');
