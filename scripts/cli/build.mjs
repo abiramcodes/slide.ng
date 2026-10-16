@@ -24,6 +24,8 @@ export const BUILD_FLAGS = {
   offline: { type: 'boolean' },
   'without-notes': { type: 'boolean' },
   'executable-path': { type: 'string' },
+  'no-sandbox': { type: 'boolean' },
+  'allow-local': { type: 'boolean' },
   timeout: { type: 'number' },
   theme: { type: 'string', alias: 't' },
 };
@@ -77,7 +79,12 @@ export async function buildCommand(argv) {
 async function afterBuild({ dist, deck, entry, root, base, workDir, download, flags, offline }) {
   const head = deck.headmatter;
   const routerMode = head.routerMode === 'hash' ? 'hash' : 'history';
-  const exportOptions = { 'executable-path': flags['executable-path'], timeout: flags.timeout };
+  const exportOptions = {
+    'executable-path': flags['executable-path'],
+    timeout: flags.timeout,
+    'no-sandbox': flags['no-sandbox'],
+    'allow-local': flags['allow-local'],
+  };
   const needsBrowser = ogImagePlan(head, root).kind === 'auto' || download;
   // The temporary server answers at its root; an offline folder has no base path (its addresses are relative).
   const serverBase = offline ? '/' : base;
@@ -137,16 +144,22 @@ async function afterBuild({ dist, deck, entry, root, base, workDir, download, fl
   copyFileSync(join(dist, 'index.html'), join(dist, '404.html'));
   writeFileSync(join(dist, '_redirects'), `${base}*    ${base}index.html   200\n`);
   if (pwaEnabled(head)) {
-    await makeIcons(head, root, dist, flags['executable-path'] ?? process.env.CHROME_PATH);
+    await makeIcons(
+      head,
+      root,
+      dist,
+      flags['executable-path'] ?? process.env.CHROME_PATH,
+      flags['no-sandbox'],
+    );
     console.log(`Offline support: ${writePwa(dist, head)} files for the service worker.`);
   }
 }
 
 // Install icons need a browser to draw them. Without one the deck still works offline, it just cannot be installed.
-async function makeIcons(head, root, dist, executablePath) {
+async function makeIcons(head, root, dist, executablePath, noSandbox) {
   let browser;
   try {
-    browser = await launchBrowser(executablePath);
+    browser = await launchBrowser(executablePath, { noSandbox });
     const source = await writeIcons(dist, head, root, browser);
     console.log(`Install icons from ${source.kind === 'file' ? source.path : 'the title'}.`);
   } catch (error) {

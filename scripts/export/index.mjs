@@ -5,9 +5,16 @@ import { parseRangeString } from '@slidev/parser/utils';
 import { launchBrowser } from './browser.mjs';
 import { screenshotPages, writePictures } from './images.mjs';
 import { writeMarkdown } from './markdown.mjs';
+import { installRequestFilter } from './request-filter.mjs';
 import { listPages, loadPrintPage, printQuery, printUrl } from './page.mjs';
 import { buildPdf, pagePdf } from './pdf.mjs';
 import { writePptx } from './pptx.mjs';
+
+// Pages other than the exporter's own server may not reach private addresses unless `--allow-local` says so (request-filter.mjs).
+const filterOptions = (options, served) => ({
+  ownOrigin: served.origin,
+  allowLocal: options.allowLocal,
+});
 
 const EXTENSION = { pdf: '.pdf', pptx: '.pptx', md: '.md', png: '' };
 
@@ -32,13 +39,16 @@ export async function exportSlides({
   const target = outBase + EXTENSION[options.format];
   await mkdir(dirname(outBase), { recursive: true });
 
-  const browser = await launchBrowser(options.executablePath);
+  const browser = await launchBrowser(options.executablePath, options);
   try {
     // The page size does not matter for the PDF, but it must hold a slide so that lazy content (iframes) loads.
     const context = await browser.newContext({
       viewport: { width: 1280, height: 720 },
       deviceScaleFactor: options.scale,
     });
+    await installRequestFilter(context, filterOptions(options, served), (m) =>
+      log(`warning: ${m}`),
+    );
     const page = await context.newPage();
     const batches = options.perSlide ? pages.map(String) : [options.range];
     const parts = [];
@@ -103,9 +113,13 @@ async function write(target, parts, { deck, options, outBase }) {
 export async function exportNotes({ options, served, routerMode, outBase, log = console.log }) {
   const target = outBase + '.pdf';
   await mkdir(dirname(outBase), { recursive: true });
-  const browser = await launchBrowser(options.executablePath);
+  const browser = await launchBrowser(options.executablePath, options);
   try {
-    const page = await (await browser.newContext()).newPage();
+    const context = await browser.newContext();
+    await installRequestFilter(context, filterOptions(options, served), (m) =>
+      log(`warning: ${m}`),
+    );
+    const page = await context.newPage();
     await page.emulateMedia({ media: 'screen' });
     await page.goto(printUrl({ ...served, routerMode, query: '', path: 'presenter/print' }), {
       waitUntil: options.waitUntil,

@@ -63,4 +63,13 @@ describe('resolveExportOptions', () => {
     expect(() => resolveExportOptions({ scale: 99 }, {})).toThrow('scale');
     expect(() => resolveExportOptions({ 'wait-until': 'soon' }, {})).toThrow('wait-until');
   });
+  it('--no-sandbox and --allow-local come from the command line only, never from the deck', () => {
+    expect(resolveExportOptions({}, {})).toMatchObject({ noSandbox: false, allowLocal: false });
+    expect(resolveExportOptions({ 'no-sandbox': true, 'allow-local': true }, {})).toMatchObject({
+      noSandbox: true,
+      allowLocal: true,
+    });
+    const head = { export: { noSandbox: true, allowLocal: true, 'no-sandbox': true } };
+    expect(resolveExportOptions({}, head)).toMatchObject({ noSandbox: false, allowLocal: false });
+  });
 });

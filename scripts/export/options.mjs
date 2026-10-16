@@ -10,6 +10,8 @@ export const EXPORT_FLAGS = {
   wait: { type: 'number' },
   'wait-until': { type: 'string' },
   'executable-path': { type: 'string' },
+  'no-sandbox': { type: 'boolean' }, // keep Chromium's sandbox off: for containers and root, trusted decks only
+  'allow-local': { type: 'boolean' }, // let the page reach loopback and private addresses (otherwise blocked)
   'per-slide': { type: 'boolean' },
   scale: { type: 'number' },
   'omit-background': { type: 'boolean' },
@@ -87,6 +89,8 @@ export function resolveExportOptions(flags, headmatter = {}) {
     wait,
     waitUntil: waitUntil === 'none' ? undefined : waitUntil,
     executablePath: flags['executable-path'] ?? process.env.CHROME_PATH, // CLI or environment only
+    noSandbox: Boolean(flags['no-sandbox']), // CLI only (SLIDE_NG_NO_SANDBOX=1 is read where Chromium starts)
+    allowLocal: Boolean(flags['allow-local']), // CLI only
     perSlide: Boolean(o.perSlide),
     scale,
     omitBackground: Boolean(o.omitBackground),

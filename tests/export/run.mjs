@@ -21,6 +21,8 @@ const scratch = mkdtempSync(join(tmpdir(), 'slide-ng-export-'));
 const env = {
   ...process.env,
   CHROME_PATH: process.env.CHROME_PATH ?? '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
+  // The tests run as root in containers, where Chromium cannot use its sandbox.
+  SLIDE_NG_NO_SANDBOX: '1',
 };
 
 // Build once into dist/export-test (the folder is ours: it is created by this test and may be emptied by it).
