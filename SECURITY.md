@@ -11,6 +11,8 @@ Use GitHub's private vulnerability reporting: open the repository's **Security**
 
 Say which version or commit you used, how you ran slide.ng (dev server, `--remote`, a built deck, the MCP server), what you did and what happened. A small reproduction helps.
 
+If you cannot use GitHub, email erkamyaman35@gmail.com with "Security" in the subject.
+
 This is a small project kept up in spare time, so there is no fixed response time. Expect an answer within a few days. A confirmed problem is fixed in the next release, and the advisory credits you unless you prefer not to be named.
 
 The trust model (who is trusted, what a person on your network, another website or a malicious deck, theme or addon can and cannot do, and what each flag changes) is in [docs/SECURITY-MODEL.md](docs/SECURITY-MODEL.md).
