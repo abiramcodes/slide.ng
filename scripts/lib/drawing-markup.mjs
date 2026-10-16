@@ -25,6 +25,7 @@ const SPACE = /[ \t\r\n]+/y;
 
 // A value: no markup characters, no entities, and a url() only as a reference to an id in the same drawing.
 function valueOk(value) {
+  // eslint-disable-next-line no-control-regex -- control characters in a value are refused on purpose
   if (/[<>&\\\u0000-\u0008\u000b-\u001f\u007f]/.test(value)) return false;
   if (/javascript:|data:|expression\s*\(|@import/i.test(value)) return false;
   for (const m of value.matchAll(/url\(([^)]*)\)/gi))
