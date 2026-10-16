@@ -10,8 +10,21 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 - `npm run test:skills` builds every code sample of the skill; `npm run check:skills` fails when a document that the skill was written from changed after the hash recorded in `skills/GENERATION.md` (`npm run update:skills-hash` records new hashes). Both run in CI.
 - `docs/AGENT-SKILL.md`.
 
+### Changed
+
+- `--remote` always has a password: when none is given (`--remote=secret`, `SLIDE_NG_PASSWORD`, or a prompt on a terminal), a random one is made and printed with the presenter address. There is no passwordless remote mode any more (this differs from Slidev). The start-up text says what the password allows. Wrong passwords are limited per client address and a login lasts 8 hours.
+- `{monaco-write}` saves only into text-like files inside the deck's folder; `setup/`, `layouts/`, `components/`, `.git/`, `node_modules/`, package, lock, config and hidden files are refused.
+- Snippets (`<<<`) and `src:` imports must be inside the deck's folder or a theme or addon folder, otherwise the build stops. `allowOutsideRoot: true` in the headmatter lifts that.
+- Build-time downloads (`remoteAssets`, `fonts.selfHost`) refuse non-public addresses, follow at most 3 redirects, cap the size, check the file's first bytes and no longer download SVG. `fonts.provider` must be `google`, `coollabs` or `none` unless `fonts.allowCustomProvider: true`.
+- `export` keeps Chromium's sandbox; as root or in a container pass `--no-sandbox` (or set `SLIDE_NG_NO_SANDBOX=1`). The exported page cannot reach private addresses unless `--allow-local`.
+
+### Added
+
+- `docs/SECURITY-MODEL.md`, and a non-blocking `npm audit` job in CI.
+
 ### Fixed
 
+- Symbolic links: `confine` checks the file itself, writes refuse links, and a symlinked `.slide-ng` is refused. The drawing filter on the server is a parser with an allowlist. The offline cache name changes when a file changes without changing its length.
 - `docs/SYNTAX.md` explained custom components, layers and shortcuts as changes inside `src/app`; a deck uses `components/`, `layers/` and `setup/shortcuts.ts`. `docs/PARITY.md` said 22 layouts; there are 21.
 
 ## [0.1.0] - unreleased
