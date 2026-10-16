@@ -10,12 +10,12 @@ describe('declarations', () => {
       @Component({ selector: 'my-box', template: '' })
       export class MyBox {}
       @Directive({
-        selector: '[v-glow]',
+        selector: '[my-glow]',
       })
       export class Glow {}`;
     expect(declarations(source)).toEqual([
       { selector: 'my-box', className: 'MyBox' },
-      { selector: '[v-glow]', className: 'Glow' },
+      { selector: '[my-glow]', className: 'Glow' },
     ]);
   });
   it('ignores classes that are not exported or not decorated', () => {
@@ -30,9 +30,9 @@ describe('selectorTest', () => {
     expect(selectorTest('my-box').test('<my-boxes>')).toBe(false);
   });
   it('matches an attribute', () => {
-    expect(selectorTest('[v-glow]').test('<p v-glow>')).toBe(true);
-    expect(selectorTest('[v-glow]').test('<p [v-glow]="x">')).toBe(true);
-    expect(selectorTest('[v-glow]').test('<p v-glowing>')).toBe(false);
+    expect(selectorTest('[my-glow]').test('<p my-glow>')).toBe(true);
+    expect(selectorTest('[my-glow]').test('<p [my-glow]="x">')).toBe(true);
+    expect(selectorTest('[my-glow]').test('<p my-glowing>')).toBe(false);
   });
 });
 

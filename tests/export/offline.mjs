@@ -57,7 +57,7 @@ fonts:
 
 # One
 
-<div id="c1" v-click>first click</div>
+<div id="c1" slide-ng-click>first click</div>
 
 <img id="remote" src="${pictures.origin}/pic.png" width="40">
 <img id="local" src="/local.png" width="40">

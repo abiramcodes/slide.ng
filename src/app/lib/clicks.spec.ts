@@ -57,7 +57,7 @@ describe('calculateSince', () => {
     ctx.register('b', b);
     expect([a.start, b.start, b.max]).toEqual([1, 2, 2]);
   });
-  it('relative +0 shares the click of the previous element (v-after)', () => {
+  it('relative +0 shares the click of the previous element (slide-ng-after)', () => {
     const ctx = make(0, false);
     ctx.register('a', ctx.calculateSince('+1'));
     expect(ctx.calculateSince('+0')!.start).toBe(1);

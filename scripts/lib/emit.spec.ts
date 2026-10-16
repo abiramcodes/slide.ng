@@ -77,22 +77,29 @@ describe('slideSource', () => {
   it('imports only the components the slide uses', () => {
     const plain = slideSource(slide({}, 'text'), 2);
     expect(plain).not.toContain('Counter');
-    expect(plain).not.toContain('VClick');
-    const rich = slideSource(slide({}, '<app-counter [start]="1" />\n\n<div v-click>a</div>'), 2);
-    expect(rich).toContain('imports: [DefaultLayout, VClick, Counter]');
+    expect(plain).not.toContain('SlideNgClick');
+    const rich = slideSource(
+      slide({}, '<app-counter [start]="1" />\n\n<div slide-ng-click>a</div>'),
+      2,
+    );
+    expect(rich).toContain('imports: [DefaultLayout, SlideNgClick, Counter]');
   });
   it('does not import a component that is only mentioned inside code', () => {
     const src = slideSource(
-      slide({}, '```html\n<app-counter />\n<div v-click>\n```\n\nand `<v-clicks>`'),
+      slide({}, '```html\n<app-counter />\n<div slide-ng-click>\n```\n\nand `<slide-ng-clicks>`'),
       2,
     );
     expect(src).toContain('imports: [DefaultLayout, CodeBlockWrapper]'); // the fence itself is a code block
     expect(src).not.toContain('Counter');
   });
-  it('detects v-clicks, [v-click] bindings and v-after', () => {
-    expect(slideSource(slide({}, '<v-clicks>\n\n- a\n\n</v-clicks>'), 2)).toContain('VClicks');
-    expect(slideSource(slide({}, '<div [v-click]="[1,2]">a</div>'), 2)).toContain('VClick');
-    expect(slideSource(slide({}, '<div v-after>a</div>'), 2)).toContain('VClick');
+  it('detects slide-ng-clicks, [slide-ng-click] bindings and slide-ng-after', () => {
+    expect(slideSource(slide({}, '<slide-ng-clicks>\n\n- a\n\n</slide-ng-clicks>'), 2)).toContain(
+      'SlideNgClicks',
+    );
+    expect(slideSource(slide({}, '<div [slide-ng-click]="[1,2]">a</div>'), 2)).toContain(
+      'SlideNgClick',
+    );
+    expect(slideSource(slide({}, '<div slide-ng-after>a</div>'), 2)).toContain('SlideNgClick');
   });
   it('provides clicksStart when the frontmatter sets it', () => {
     expect(slideSource(slide({ clicksStart: 2 }, 'x'), 2)).toContain(
@@ -186,20 +193,22 @@ describe('indexSource', () => {
 describe('slideSource: built-in components are imported when the slide uses them', () => {
   const imports = (md: string) => /imports: \[(.*)\]/.exec(slideSource(slide({}, md), 2))![1];
   it('finds each tag', () => {
-    expect(imports('<arrow x1="1" y1="1" x2="2" y2="2" />')).toContain('Arrow');
-    expect(imports('<auto-fit-text>x</auto-fit-text>')).toContain('AutoFitText');
-    expect(imports('<transform scale="0.5">x</transform>')).toContain('Transform');
-    expect(imports('<youtube id="a" />')).toContain('Youtube');
-    expect(imports('<slide-video v-click></slide-video>')).toContain('SlideVideo');
-    expect(imports('<tweet id="20" />')).toContain('Tweet');
-    expect(imports('<blue-sky uri="at://x" />')).toContain('BlueSky');
+    expect(imports('<slide-ng-arrow x1="1" y1="1" x2="2" y2="2" />')).toContain('Arrow');
+    expect(imports('<slide-ng-auto-fit-text>x</slide-ng-auto-fit-text>')).toContain('AutoFitText');
+    expect(imports('<slide-ng-transform scale="0.5">x</slide-ng-transform>')).toContain(
+      'Transform',
+    );
+    expect(imports('<slide-ng-youtube id="a" />')).toContain('Youtube');
+    expect(imports('<slide-ng-video slide-ng-click></slide-ng-video>')).toContain('SlideVideo');
+    expect(imports('<slide-ng-tweet id="20" />')).toContain('Tweet');
+    expect(imports('<slide-ng-blue-sky uri="at://x" />')).toContain('BlueSky');
   });
-  it('finds v-mark (with modifiers, or as a binding) and v-motion', () => {
-    expect(imports('<span v-mark.red="1">x</span>')).toContain('VMark');
-    expect(imports('<span [v-mark]="{ at: 2 }">x</span>')).toContain('VMark');
-    expect(imports('<div v-motion :enter="{ x: 0 }">x</div>')).toContain('VMotion');
+  it('finds slide-ng-mark (with modifiers, or as a binding) and slide-ng-motion', () => {
+    expect(imports('<span slide-ng-mark.red="1">x</span>')).toContain('SlideNgMark');
+    expect(imports('<span [slide-ng-mark]="{ at: 2 }">x</span>')).toContain('SlideNgMark');
+    expect(imports('<div slide-ng-motion :enter="{ x: 0 }">x</div>')).toContain('SlideNgMotion');
   });
-  it('does not mix <transform> up with the longer names or other words', () => {
+  it('does not mix <slide-ng-transform> up with the longer names or other words', () => {
     expect(imports('plain text about a transformation')).toBe('DefaultLayout');
   });
 });

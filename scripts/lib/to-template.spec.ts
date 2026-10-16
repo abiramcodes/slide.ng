@@ -41,8 +41,10 @@ describe('toTemplate: plain text is made safe', () => {
     expect(html).toContain('me&#64;example.com');
     expect(html).toContain('&#123;not a block&#125;');
   });
-  it('treats plain HTML attributes like v-click as normal markup', () => {
-    expect(toTemplate('<div v-click="2">hi</div>')).toContain('<div v-click="2">hi</div>');
+  it('treats plain HTML attributes like slide-ng-click as normal markup', () => {
+    expect(toTemplate('<div slide-ng-click="2">hi</div>')).toContain(
+      '<div slide-ng-click="2">hi</div>',
+    );
   });
 });
 
@@ -73,12 +75,12 @@ describe('toTemplate: code is literal', () => {
 });
 
 describe('toTemplate: highlighted code', () => {
-  it('wraps the highlighted block in a code-block-wrapper with its ranges and options', () => {
+  it('wraps the highlighted block in a slide-ng-code-block-wrapper with its ranges and options', () => {
     const html = toTemplate(
       "```ts [a.ts] {1|2} {lines:true,startLine:3,maxHeight:'80px'}\nlet a;\nlet b;\n```",
     );
     expect(html).toContain(
-      '<code-block-wrapper ranges="1|2" title="a.ts" lines="true" startLine="3" maxHeight="80px">',
+      '<slide-ng-code-block-wrapper ranges="1|2" title="a.ts" lines="true" startLine="3" maxHeight="80px">',
     );
     expect(html).toContain('class="shiki shiki-themes vitesse-light vitesse-dark slidev-code"');
     expect(html).toContain('--shiki-light:');
@@ -98,12 +100,12 @@ describe('toTemplate: highlighted code', () => {
     expect(warn.mock.calls[0][0]).toContain('"zzz"');
     warn.mockRestore();
   });
-  it('wraps a ::code-group in <code-group>', () => {
+  it('wraps a ::code-group in <slide-ng-code-group>', () => {
     const html = toTemplate(
       '::code-group\n\n```ts [a]\nlet a;\n```\n\n```ts [b]\nlet b;\n```\n\n::',
     );
-    expect(html.startsWith('<code-group><code-block-wrapper')).toBe(true);
-    expect(html.match(/<code-block-wrapper/g)).toHaveLength(2);
+    expect(html.startsWith('<slide-ng-code-group><slide-ng-code-block-wrapper')).toBe(true);
+    expect(html.match(/<slide-ng-code-block-wrapper/g)).toHaveLength(2);
   });
 });
 
@@ -115,7 +117,7 @@ describe('toTemplate: twoslash', () => {
     );
     expect(html.match(/twoslash-hover/g)!.length).toBeGreaterThan(1);
     expect(html.match(/<pre /g)).toHaveLength(2);
-    expect(html.split('<code-block-wrapper')[2]).not.toContain('twoslash-hover');
+    expect(html.split('<slide-ng-code-block-wrapper')[2]).not.toContain('twoslash-hover');
     expect(html).not.toMatch(/[{}@]/);
     await initHighlighter({ langs: ['ts', 'html', 'md'] }); // back to the plain setup for the other tests
     // The first twoslash run loads the TypeScript libraries, which is slow on a busy machine.

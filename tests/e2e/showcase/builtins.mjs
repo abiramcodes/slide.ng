@@ -17,7 +17,7 @@ export async function run({ t, open, press, hud, pathOf, style }) {
     (await page.locator('#toc-all .slidev-toc-list-level-1 > li').count()) === 3 &&
       (await page.locator('#toc-all .slidev-toc-list-level-2 > li').count()) === 3,
   );
-  t.ok('toc columns', (await style(page, '#toc-all > slide-toc', 'columnCount')) === '2');
+  t.ok('toc columns', (await style(page, '#toc-all > slide-ng-toc', 'columnCount')) === '2');
   t.ok(
     'toc maxDepth=1 and listClass',
     (await page.locator('#toc-top li').count()) === 3 &&
@@ -49,27 +49,27 @@ export async function run({ t, open, press, hud, pathOf, style }) {
   // ---- built-in components (slide 26) -------------------------------------------------
   page = await open('/26');
   t.ok(
-    'slide-current-no and slides-total',
+    'slide-ng-current-no and slide-ng-total',
     (await page.locator('#c-no').innerText()) === 'no 26 of 37',
     await page.locator('#c-no').innerText(),
   );
   t.ok(
-    'light-or-dark shows the light content in light mode',
+    'slide-ng-light-or-dark shows the light content in light mode',
     (await page.locator('#c-light').count()) === 1 && (await page.locator('#c-dark').count()) === 0,
   );
   await press(page, 'd');
   t.ok(
-    'light-or-dark switches with the colour mode',
+    'slide-ng-light-or-dark switches with the colour mode',
     (await page.locator('#c-dark').count()) === 1 && (await page.locator('#c-light').count()) === 0,
   );
   await press(page, 'd');
   t.ok(
-    'render-when slide shows its content on the slide, not the fallback',
+    'slide-ng-render-when slide shows its content on the slide, not the fallback',
     (await page.locator('#c-slide').count()) === 1 &&
       (await page.locator('#c-other').count()) === 0,
   );
   t.ok(
-    'v-switch and v-click-gap give 6 clicks',
+    'slide-ng-switch and slide-ng-click-gap give 6 clicks',
     (await hud(page)) === 'slide 26/37 clicks 0/6',
     await hud(page),
   );
@@ -89,7 +89,7 @@ export async function run({ t, open, press, hud, pathOf, style }) {
   for (let n = 0; n <= 6; n++) {
     if (n) await press(page, 'ArrowRight', 150);
     t.ok(
-      `v-switch click ${n} shows [${expected[n]}]`,
+      `slide-ng-switch click ${n} shows [${expected[n]}]`,
       (await shown()) === expected[n],
       await shown(),
     );
@@ -104,7 +104,7 @@ export async function run({ t, open, press, hud, pathOf, style }) {
   );
   await page.locator('#c-link a').click();
   await page.waitForTimeout(200);
-  t.ok('slide-link goes to a slide number', pathOf(page) === '/3', pathOf(page));
+  t.ok('slide-ng-link goes to a slide number', pathOf(page) === '/3', pathOf(page));
   await page.goto(page.url().replace('/3?', '/26?'));
   await page.waitForFunction(() =>
     /slide 26/.test(document.querySelector('#hud')?.innerText ?? ''),
@@ -112,7 +112,7 @@ export async function run({ t, open, press, hud, pathOf, style }) {
   await page.locator('#c-alias a').click();
   await page.waitForTimeout(200);
   t.ok(
-    'slide-link goes to a routeAlias, and the address uses the alias',
+    'slide-ng-link goes to a routeAlias, and the address uses the alias',
     pathOf(page) === '/the-alias' && (await hud(page)).startsWith('slide 27/'),
     pathOf(page) + ' ' + (await hud(page)),
   );
@@ -126,12 +126,12 @@ export async function run({ t, open, press, hud, pathOf, style }) {
   await card.scrollIntoViewIfNeeded();
   await page.waitForTimeout(600);
   t.ok(
-    'render-when shows the fallback in the overview',
+    'slide-ng-render-when shows the fallback in the overview',
     (await card.locator('#c-other').count()) === 1 &&
       (await card.locator('#c-slide').count()) === 0,
   );
   t.ok(
-    'slide-current-no inside a thumbnail knows its own slide',
+    'slide-ng-current-no inside a thumbnail knows its own slide',
     (await card.locator('#c-no').innerText()) === 'no 26 of 37',
   );
   await page.close();

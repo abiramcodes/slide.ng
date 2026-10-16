@@ -1,4 +1,4 @@
-// v-drag: boxes, a named position, a component, an arrow, a bare v-drag, handles and arrow keys (static build: nothing is written).
+// slide-ng-drag: boxes, a named position, a component, an arrow, a bare slide-ng-drag, handles and arrow keys (static build: nothing is written).
 export async function run({ t, open, press, hud }) {
   const page = await open('/4');
   const requests = [];
@@ -24,7 +24,7 @@ export async function run({ t, open, press, hud }) {
 
   // ---- placed from the slide text
   t.ok(
-    'v-drag="[x,y,w,h]" places the element',
+    'slide-ng-drag="[x,y,w,h]" places the element',
     (await style('#d1', 'left')) === '100px' &&
       (await style('#d1', 'top')) === '200px' &&
       (await style('#d1', 'width')) === '160px' &&
@@ -35,11 +35,11 @@ export async function run({ t, open, press, hud }) {
     (await style('#d2', 'left')) === '600px' && (await style('#d2', 'width')) === '100px',
   );
   t.ok(
-    '<v-drag pos> with automatic height',
+    '<slide-ng-drag pos> with automatic height',
     (await style('#d3', 'left')) === '500px' && (await style('#d3', 'height')) === 'auto',
   );
   t.ok(
-    'a bare v-drag stays where the layout puts it until it is moved',
+    'a bare slide-ng-drag stays where the layout puts it until it is moved',
     (await style('#d5', 'position')) === '',
   );
   t.ok('no frame before something is selected', (await page.locator('#drag-frame').count()) === 0);
@@ -119,12 +119,12 @@ export async function run({ t, open, press, hud }) {
     Math.abs(parseFloat(await style('#d1', 'left')) - (l2 - 10)) < 0.01,
   );
 
-  // ---- bare v-drag, component, arrow
+  // ---- bare slide-ng-drag, component, arrow
   const natural = await page.locator('#d5').boundingBox();
   await drag('#d5', 40, 20);
   const moved = await page.locator('#d5').boundingBox();
   t.ok(
-    'a bare v-drag starts from where it was and moves from there',
+    'a bare slide-ng-drag starts from where it was and moves from there',
     Math.abs(moved.x - natural.x - 40) < 2 &&
       Math.abs(moved.y - natural.y - 20) < 2 &&
       (await style('#d5', 'position')) === 'absolute',

@@ -36,7 +36,7 @@ fonts:
 
 # One
 
-<div v-click>a click</div>
+<div slide-ng-click>a click</div>
 
 <img id="remote" src="${pictures.origin}/pic.png" width="40">
 

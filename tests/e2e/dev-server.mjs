@@ -1,5 +1,5 @@
 // `npm run test:dev` (second part): starts the real dev server on a copy of a small deck and checks what the
-// companion server does: v-drag moves are written into the markdown (also for names and bare v-drag), drawings
+// companion server does: slide-ng-drag moves are written into the markdown (also for names and bare slide-ng-drag), drawings
 // and {monaco-write} edits are saved to files, bad requests are refused, and `--remote` needs its password.
 import { spawn } from 'node:child_process';
 import { copyFileSync, existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -105,19 +105,20 @@ try {
     typeof session.token === 'string' && session.token.length >= 32,
   );
 
-  // ---- v-drag write-back
+  // ---- slide-ng-drag write-back
   const before = read();
   await dragBy(page, '#b1', 60, 40);
   t.ok(
-    'moving a v-drag writes its new place into slides.md',
-    await waitForFile((s) => /id="b1" v-drag="\[(?!100,100,)\d+,\d+,160,60\]"/.test(s)),
+    'moving a slide-ng-drag writes its new place into slides.md',
+    await waitForFile((s) => /id="b1" slide-ng-drag="\[(?!100,100,)\d+,\d+,160,60\]"/.test(s)),
     read()
       .split('\n')
       .find((l) => l.includes('b1')),
   );
   t.ok(
     'and changes nothing else in the file',
-    read().replace(/v-drag="\[\d+,\d+,160,60\]"/, 'v-drag="[100,100,160,60]"') === before,
+    read().replace(/slide-ng-drag="\[\d+,\d+,160,60\]"/, 'slide-ng-drag="[100,100,160,60]"') ===
+      before,
   );
 
   await dragBy(page, '#b2', -50, 30);
@@ -126,18 +127,21 @@ try {
     await waitForFile((s) => /dragPos:\n {2}named: (?!300,200,)\d+,\d+,100,100\n/.test(s)),
     read().slice(0, 140),
   );
-  t.ok('the v-drag="named" tag itself is kept', read().includes('id="b2" v-drag="named"'));
+  t.ok(
+    'the slide-ng-drag="named" tag itself is kept',
+    read().includes('id="b2" slide-ng-drag="named"'),
+  );
 
   await dragBy(page, '#b3', 40, 20);
   t.ok(
-    'a bare v-drag becomes v-drag="[x,y,w,NaN]"',
-    await waitForFile((s) => /id="b3" v-drag="\[\d+,\d+,\d+,NaN\]"/.test(s)),
+    'a bare slide-ng-drag becomes slide-ng-drag="[x,y,w,NaN]"',
+    await waitForFile((s) => /id="b3" slide-ng-drag="\[\d+,\d+,\d+,NaN\]"/.test(s)),
     read()
       .split('\n')
       .find((l) => l.includes('b3')),
   );
 
-  const x0 = +/id="b1" v-drag="\[(\d+),/.exec(read())[1];
+  const x0 = +/id="b1" slide-ng-drag="\[(\d+),/.exec(read())[1];
   await page.keyboard.press('Escape');
   await dragBy(page, '#b1', 0, 0); // select without moving
   await page.keyboard.press('ArrowRight');
@@ -145,8 +149,8 @@ try {
   await page.keyboard.press('ArrowRight');
   t.ok(
     'arrow keys nudge and are saved once the keys rest',
-    await waitForFile((s) => +/id="b1" v-drag="\[(\d+),/.exec(s)?.[1] === x0 + 3),
-    `${x0} -> ${/id="b1" v-drag="\[(\d+),/.exec(read())?.[1]}`,
+    await waitForFile((s) => +/id="b1" slide-ng-drag="\[(\d+),/.exec(s)?.[1] === x0 + 3),
+    `${x0} -> ${/id="b1" slide-ng-drag="\[(\d+),/.exec(read())?.[1]}`,
   );
 
   // after the page reloads or hot-updates, the element is where the file says
@@ -156,7 +160,7 @@ try {
     null,
     { timeout: 60000 },
   );
-  const fileX = +/id="b1" v-drag="\[(\d+),/.exec(read())[1];
+  const fileX = +/id="b1" slide-ng-drag="\[(\d+),/.exec(read())[1];
   t.ok(
     'after the rebuild the element is at the written place',
     (await page.locator('#b1').evaluate((e) => parseFloat(e.style.left))) === fileX,

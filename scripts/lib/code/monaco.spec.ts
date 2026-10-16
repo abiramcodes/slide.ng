@@ -15,9 +15,11 @@ describe('monaco fences', () => {
     expect(isMonaco({ info: 'ts {monaco-run} {autorun:false}' })).toBe(true);
     expect(isMonaco({ info: 'ts {2,3}' })).toBe(false);
   });
-  it('writes <monaco> with the code packed (braces never reach the template)', () => {
+  it('writes <slide-ng-monaco> with the code packed (braces never reach the template)', () => {
     const html = renderMonaco({ info: 'ts {monaco}', code: 'const a = { b: `${1}` }' });
-    expect(html).toMatch(/^<monaco lang="ts" packed="[A-Za-z0-9+/=]+"><\/monaco>$/);
+    expect(html).toMatch(
+      /^<slide-ng-monaco lang="ts" packed="[A-Za-z0-9+/=]+"><\/slide-ng-monaco>$/,
+    );
     expect(unpack(html, 'packed')).toBe('const a = { b: `${1}` }');
   });
   it('splits a diff at the ~~~ line', () => {
@@ -37,7 +39,7 @@ describe('monaco fences', () => {
   });
   it('warns that {monaco-write} is not supported yet, and still draws the editor', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    expect(renderMonaco({ info: 'ts {monaco-write}', code: 'x' })).toContain('<monaco');
+    expect(renderMonaco({ info: 'ts {monaco-write}', code: 'x' })).toContain('<slide-ng-monaco');
     expect(warn.mock.calls[0][0]).toContain('monaco-write');
     warn.mockRestore();
   });
@@ -46,7 +48,7 @@ describe('monaco fences', () => {
 describe('feature detection for the editor', () => {
   it('sees the fence option, the tag and a snippet with the option', () => {
     expect(hasMonaco('```ts {monaco}\nx\n```')).toBe(true);
-    expect(hasMonaco('<monaco code="x" />')).toBe(true);
+    expect(hasMonaco('<slide-ng-monaco code="x" />')).toBe(true);
     expect(hasMonaco('<<< ./a.ts {monaco}')).toBe(true);
   });
   it('is false for plain code', () => {

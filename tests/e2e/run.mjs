@@ -138,7 +138,7 @@ for (const [n, items] of [
 ]) {
   if (n) await press(page, 'ArrowRight');
   t.ok(
-    `v-clicks click ${n} shows items ${items}`,
+    `slide-ng-clicks click ${n} shows items ${items}`,
     (await visibleItems(page)) === items,
     await visibleItems(page),
   );

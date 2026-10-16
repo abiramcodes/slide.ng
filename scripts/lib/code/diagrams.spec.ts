@@ -35,18 +35,18 @@ describe('diagram fences', () => {
     expect(isMermaid({ info: 'ts' })).toBe(false);
     expect(isPlantUml({ info: 'plantuml' })).toBe(true);
   });
-  it('writes <mermaid> with scale, theme, other options as JSON and the packed text', () => {
+  it('writes <slide-ng-mermaid> with scale, theme, other options as JSON and the packed text', () => {
     const html = renderMermaid({
       info: "mermaid {theme:'neutral', scale:0.8, look:'handDrawn'}",
       code: 'graph TD\nA{{b}}',
     });
     expect(html).toMatch(
-      /^<mermaid scale="0\.8" theme="neutral" config="&#123;&quot;look&quot;:&quot;handDrawn&quot;&#125;" packed="[A-Za-z0-9+/=]+"><\/mermaid>$/,
+      /^<slide-ng-mermaid scale="0\.8" theme="neutral" config="&#123;&quot;look&quot;:&quot;handDrawn&quot;&#125;" packed="[A-Za-z0-9+/=]+"><\/slide-ng-mermaid>$/,
     );
     expect(html).not.toContain('A{{b}}'); // the diagram text is packed, so no braces reach the template
     expect(html).not.toMatch(/\{\{/);
   });
-  it('writes <plant-uml> with the default server, or the headmatter one without a trailing slash', () => {
+  it('writes <slide-ng-plant-uml> with the default server, or the headmatter one without a trailing slash', () => {
     const fence = { info: 'plantuml', code: '@startuml\nA -> B\n@enduml' };
     expect(renderPlantUml(fence)).toContain(`server="${DEFAULT_PLANTUML_SERVER}"`);
     expect(

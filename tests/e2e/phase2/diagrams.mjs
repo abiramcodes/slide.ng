@@ -9,11 +9,11 @@ export async function run({ t, open, press }) {
   const page = await open('/9', undefined, slow);
   t.ok(
     'while the picture is pending the waitfor marker names what will exist',
-    (await page.locator('plant-uml').getAttribute('data-slide-ng-waitfor')) === 'img',
+    (await page.locator('slide-ng-plant-uml').getAttribute('data-slide-ng-waitfor')) === 'img',
   );
   await page.waitForFunction(() => document.querySelectorAll('.mermaid > svg').length === 2);
   t.ok(
-    'mermaid fence and <mermaid code="..."> both become an SVG',
+    'mermaid fence and <slide-ng-mermaid code="..."> both become an SVG',
     (await page.locator('#direct .mermaid > svg').count()) === 1,
   );
   t.ok(
@@ -22,7 +22,7 @@ export async function run({ t, open, press }) {
   );
   t.ok(
     'the mermaid marker is cleared once the SVG is there',
-    (await page.locator('mermaid[data-slide-ng-waitfor]').count()) === 0,
+    (await page.locator('slide-ng-mermaid[data-slide-ng-waitfor]').count()) === 0,
   );
   await page.waitForFunction(
     () => document.querySelectorAll('[data-slide-ng-waitfor]').length === 0,
@@ -38,7 +38,7 @@ export async function run({ t, open, press }) {
     'scale:0.8 sets the svg height to 0.8 x the viewBox height',
     Math.abs(+(await first.getAttribute('height')) - 0.8 * viewBoxHeight) < 0.01,
   );
-  const src = await page.locator('plant-uml img').getAttribute('src');
+  const src = await page.locator('slide-ng-plant-uml img').getAttribute('src');
   t.ok(
     'plantuml is an <img> at the server with the encoded diagram',
     /^\/plantuml\/svg\/[\w-]+$/.test(src),

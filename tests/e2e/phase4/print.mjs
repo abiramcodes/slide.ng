@@ -47,7 +47,7 @@ export async function run({ t, base, browser, problems }) {
     (await page.locator('.slidev-vclick-hidden').count()) === 0,
   );
   t.ok(
-    'render-when print shows its content, slide does not',
+    'slide-ng-render-when print shows its content, slide does not',
     (await page.locator('#only-print').count()) === 1 &&
       (await page.locator('#only-slide').count()) === 0,
   );
@@ -61,7 +61,10 @@ export async function run({ t, base, browser, problems }) {
     (await page.locator('.shiki-magic-move-container span').count()) > 0,
   );
   t.ok('the monaco editor exists', (await page.locator('.monaco-editor').count()) >= 1);
-  t.ok('the v-mark is drawn on paper', (await page.locator('svg.rough-annotation').count()) === 1);
+  t.ok(
+    'the slide-ng-mark is drawn on paper',
+    (await page.locator('svg.rough-annotation').count()) === 1,
+  );
   const paper = await page.evaluate(() =>
     [...document.styleSheets]
       .flatMap((s) => [...s.cssRules])

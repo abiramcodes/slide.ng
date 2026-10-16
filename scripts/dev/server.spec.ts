@@ -8,7 +8,7 @@ import { WebSocket } from 'ws';
 import { readConfig } from './config.mjs';
 import { startServer } from './server.mjs';
 
-const SLIDES = '---\ntitle: T\n---\n\n# One\n\n<img v-drag="[1,2,3,4]">\n\n---\n\n# Two\n';
+const SLIDES = '---\ntitle: T\n---\n\n# One\n\n<img slide-ng-drag="[1,2,3,4]">\n\n---\n\n# Two\n';
 let root: string, port: number, close: () => void, ctx: any;
 
 beforeAll(async () => {
@@ -92,7 +92,7 @@ describe('session', () => {
 });
 
 describe('writes to slides.md', () => {
-  it('moves a v-drag with the right token', async () => {
+  it('moves a slide-ng-drag with the right token', async () => {
     const r = await drag({ site: 0, pos: '10,20,30,_' });
     expect(r.status).toBe(200);
     expect(readFileSync(join(root, 'slides.md'), 'utf8')).toBe(

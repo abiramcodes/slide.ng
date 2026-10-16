@@ -162,13 +162,13 @@ hideInToc: false
 
 <div id="toc-all">
 
-<slide-toc columns="2" />
+<slide-ng-toc columns="2" />
 
 </div>
 
 <div id="toc-top">
 
-<slide-toc maxDepth="1" listClass="my-list" />
+<slide-ng-toc maxDepth="1" listClass="my-list" />
 
 </div>
 
@@ -196,7 +196,7 @@ hideInToc: false
 
 <div id="toc-current">
 
-<slide-toc mode="onlyCurrentTree" />
+<slide-ng-toc mode="onlyCurrentTree" />
 
 </div>
 
@@ -220,25 +220,25 @@ Level 2.
 
 # Components
 
-<p id="c-no">no <slide-current-no /> of <slides-total /></p>
+<p id="c-no">no <slide-ng-current-no /> of <slide-ng-total /></p>
 
-<light-or-dark><div dark id="c-dark">dark text</div><div light id="c-light">light text</div></light-or-dark>
+<slide-ng-light-or-dark><div dark id="c-dark">dark text</div><div light id="c-light">light text</div></slide-ng-light-or-dark>
 
-<render-when context="slide"><div id="c-slide">only on the slide</div><div fallback id="c-other">somewhere else</div></render-when>
+<slide-ng-render-when context="slide"><div id="c-slide">only on the slide</div><div fallback id="c-other">somewhere else</div></slide-ng-render-when>
 
-<slide-link to="3" id="c-link">to slide 3</slide-link> and <slide-link to="the-alias" id="c-alias">to the alias</slide-link>
+<slide-ng-link to="3" id="c-link">to slide 3</slide-ng-link> and <slide-ng-link to="the-alias" id="c-alias">to the alias</slide-ng-link>
 
 <div id="c-switch-wrap">
 
-<v-switch>
+<slide-ng-switch>
 <div at="1" id="sw1">switch one</div>
 <div at="2" id="sw2">switch two</div>
 <div at="3-4" id="sw3">switch three</div>
-</v-switch>
+</slide-ng-switch>
 
-<v-click-gap size="2" />
+<slide-ng-click-gap size="2" />
 
-<div id="after-gap" v-click>after the gap</div>
+<div id="after-gap" slide-ng-click>after the gap</div>
 
 </div>
 
@@ -256,7 +256,7 @@ clicks: 3
 
 # Clicks override
 
-<div v-click>one click only</div>
+<div slide-ng-click>one click only</div>
 
 ---
 
