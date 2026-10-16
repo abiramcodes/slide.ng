@@ -1,4 +1,4 @@
-// Turns what a slide wrote (`v-mark.red.circle="2"`, `[v-mark]="{ at: 2, color: '#234' }"`)
+// Turns what a slide wrote (`slide-ng-mark.red.circle="2"`, `[slide-ng-mark]="{ at: 2, color: '#234' }"`)
 // into one options object for rough-notation. Pure, so it is easy to test.
 // Port of the modifier tables in Slidev's modules/v-mark.ts.
 
@@ -44,7 +44,7 @@ const COLORS: Record<string, string> = {
   pink: '#ec4899',
 };
 
-/** @param value the `v-mark` value @param mods the dotted modifiers, like "red.circle.delay300" */
+/** @param value the `slide-ng-mark` value @param mods the dotted modifiers, like "red.circle.delay300" */
 export function markOptions(value: unknown, mods: string): MarkOptions {
   const fromValue =
     value && typeof value === 'object' && !Array.isArray(value)
@@ -61,7 +61,8 @@ export function markOptions(value: unknown, mods: string): MarkOptions {
     else if (opacity) fromMods.opacity = (opacity[1] ? +opacity[1] : 100) / 100;
     else unknown.push(mod);
   }
-  if (unknown.length) console.warn('[slide.ng] unknown v-mark modifiers:', unknown.join(', '));
+  if (unknown.length)
+    console.warn('[slide.ng] unknown slide-ng-mark modifiers:', unknown.join(', '));
   // Options written as an object win over modifiers.
   const options = { ...fromMods, ...fromValue } as MarkOptions;
   options.type ||= 'underline';

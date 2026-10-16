@@ -59,7 +59,7 @@ const c = 3;
 const d = 4;
 ```
 
-<div v-click id="after-code">after the code</div>
+<div slide-ng-click id="after-code">after the code</div>
 
 ---
 
@@ -104,7 +104,7 @@ console.log(add())
 ```
 ````
 
-<div v-click id="after-magic">after magic</div>
+<div slide-ng-click id="after-magic">after magic</div>
 
 ---
 
@@ -138,7 +138,7 @@ C -->|One| D[Result 1]
 C -->|Two| E{{Result 2}}
 ```
 
-<mermaid id="direct" code="pie title Pets&#10;&quot;Dogs&quot; : 3&#10;&quot;Cats&quot; : 2" />
+<slide-ng-mermaid id="direct" code="pie title Pets&#10;&quot;Dogs&quot; : 3&#10;&quot;Cats&quot; : 2" />
 
 ```plantuml
 @startuml
@@ -203,46 +203,46 @@ const plain = 'no twoslash here'
 
 # Components
 
-<arrow id="a1" x1="100" y1="300" x2="300" y2="400" color="green" width="3" />
-<arrow id="a2" x1="400" y1="300" x2="500" y2="300" two-way />
+<slide-ng-arrow id="a1" x1="100" y1="300" x2="300" y2="400" color="green" width="3" />
+<slide-ng-arrow id="a2" x1="400" y1="300" x2="500" y2="300" two-way />
 
-<transform id="t1" scale="0.5" origin="top left">
+<slide-ng-transform id="t1" scale="0.5" origin="top left">
 
 <div id="t1-inner" class="w-40 h-10 bg-gray-200">scaled</div>
 
-</transform>
+</slide-ng-transform>
 
-<auto-fit-text id="fit" class="w-60 h-20 bg-gray-100" min="10" max="60">Some text that should fit its box</auto-fit-text>
+<slide-ng-auto-fit-text id="fit" class="w-60 h-20 bg-gray-100" min="10" max="60">Some text that should fit its box</slide-ng-auto-fit-text>
 
-<youtube id="luoMHjh-XcQ" width="320" height="180" />
+<slide-ng-youtube id="luoMHjh-XcQ" width="320" height="180" />
 
 ---
 
 # Video and embeds
 
-<slide-video id="vid" v-click autoplay="true" autoreset="click" controls>
+<slide-ng-video id="vid" slide-ng-click autoplay="true" autoreset="click" controls>
   <source src="/missing.webm" type="video/webm" />
-</slide-video>
+</slide-ng-video>
 
-<slide-video id="vid-once" v-click autoplay="once"></slide-video>
+<slide-ng-video id="vid-once" slide-ng-click autoplay="once"></slide-ng-video>
 
-<tweet id="20" scale="0.5" />
+<slide-ng-tweet id="20" scale="0.5" />
 
-<blue-sky uri="at://did:plc:432mbsu2xucyvxl6sluohidu/app.bsky.feed.post/3lgwg2vy44s2q" />
+<slide-ng-blue-sky uri="at://did:plc:432mbsu2xucyvxl6sluohidu/app.bsky.feed.post/3lgwg2vy44s2q" />
 
 ---
 
 # Marks and motion
 
-<span id="m1" v-mark.red.circle="1">circled</span>
-<span id="m2" v-mark="{ at: 2, type: 'box', color: '#00f' }">boxed</span>
-<span id="m3" v-mark.underline>always underlined after the next click</span>
-<span id="m4" [v-mark]="[3, 4]">only at click 3</span>
-<span id="m5" v-mark.highlight.op50="true">always</span>
+<span id="m1" slide-ng-mark.red.circle="1">circled</span>
+<span id="m2" slide-ng-mark="{ at: 2, type: 'box', color: '#00f' }">boxed</span>
+<span id="m3" slide-ng-mark.underline>always underlined after the next click</span>
+<span id="m4" [slide-ng-mark]="[3, 4]">only at click 3</span>
+<span id="m5" slide-ng-mark.highlight.op50="true">always</span>
 
-<div id="mo" class="w-20 h-10 bg-blue-300" v-motion :initial="{ x: -80, opacity: 0 }" :enter="{ x: 0, opacity: 1 }" :click-4="{ y: 40 }" :leave="{ x: 80 }">motion</div>
+<div id="mo" class="w-20 h-10 bg-blue-300" slide-ng-motion :initial="{ x: -80, opacity: 0 }" :enter="{ x: 0, opacity: 1 }" :click-4="{ y: 40 }" :leave="{ x: 80 }">motion</div>
 
-<div id="mo2" class="w-20 h-10 bg-green-300" [v-click]="[5, 6]" v-motion :initial="{ x: -50 }" :enter="{ x: 0 }" :leave="{ x: 50 }">with v-click</div>
+<div id="mo2" class="w-20 h-10 bg-green-300" [slide-ng-click]="[5, 6]" slide-ng-motion :initial="{ x: -50 }" :enter="{ x: 0 }" :leave="{ x: 50 }">with slide-ng-click</div>
 
 ---
 

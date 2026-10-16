@@ -71,7 +71,7 @@ export async function run({ t, open, press, hud }) {
   }
   const hidden = () =>
     page.locator('#after-code').evaluate((e) => e.classList.contains('slidev-vclick-hidden'));
-  t.ok('v-click after the block waits for its own click', await hidden());
+  t.ok('slide-ng-click after the block waits for its own click', await hidden());
   await press(page, 'ArrowRight');
   t.ok('next click shows the element after the block', !(await hidden()));
   await page.close();

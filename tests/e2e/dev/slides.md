@@ -16,9 +16,9 @@ dragPos:
 
 # Two
 
-<div id="b1" v-drag="[100,100,160,60]" style="background:#fca5a5">Box</div>
-<div id="b2" v-drag="named" style="background:#93c5fd">Named</div>
-<div id="b3" v-drag style="width:90px;background:#fde68a">Bare</div>
+<div id="b1" slide-ng-drag="[100,100,160,60]" style="background:#fca5a5">Box</div>
+<div id="b2" slide-ng-drag="named" style="background:#93c5fd">Named</div>
+<div id="b3" slide-ng-drag style="width:90px;background:#fde68a">Bare</div>
 
 ---
 

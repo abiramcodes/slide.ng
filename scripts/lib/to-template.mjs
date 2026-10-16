@@ -38,7 +38,7 @@ export function toTemplate(markdown, ctx = {}) {
   const footnotes = extractFootnotes(md);
   md = footnotes.markdown;
 
-  // 2. Hide Angular syntax. Vue-style v-mark and v-motion, and icon tags, are rewritten into plain HTML first.
+  // 2. Hide Angular syntax. The Vue-like forms of slide-ng-mark and slide-ng-motion, and icon tags, are rewritten into plain HTML first.
   md = rewriteIcons(rewriteDirectives(md));
   md = md.replace(/^[ \t]*(\}[ \t]*)?(@\w+.*\{|\})[ \t]*$/gm, hide); // @if (..) {   }   } @else {
   md = md.replace(/^[ \t]*@let\s.*;[ \t]*$/gm, hide); // @let x = 1;

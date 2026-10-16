@@ -20,7 +20,7 @@ import { SlideLink } from './slide-link';
             [class.slidev-toc-item-active]="item.active"
             [class.slidev-toc-item-parent-active]="item.activeParent"
           >
-            <slide-link [to]="item.path">{{ item.title }}</slide-link>
+            <slide-ng-link [to]="item.path">{{ item.title }}</slide-ng-link>
             <app-toc-list
               [list]="item.children"
               [level]="level() + 1"
@@ -52,10 +52,10 @@ export class TocList {
   protected style = computed(() => [this.listStyle()].flat()[this.level() - 1] || null);
 }
 
-// <slide-toc /> is the table of contents, built from the slides' titles and levels (Slidev's <Toc />).
+// <slide-ng-toc /> is the table of contents, built from the slides' titles and levels (Slidev's <Toc />).
 //   columns, listClass, start, listStyle, minDepth, maxDepth, mode = all | onlyCurrentTree | onlySiblings
 @Component({
-  selector: 'slide-toc',
+  selector: 'slide-ng-toc',
   imports: [TocList],
   host: { class: 'slidev-toc block', '[style.column-count]': 'columns()' },
   template: `<app-toc-list

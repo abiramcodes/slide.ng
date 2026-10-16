@@ -35,7 +35,7 @@ Things to know:
 - **The PDF button** opens `<exportFilename>.pdf` in a new tab (a page opened from disk cannot make the browser save a file); save it from the PDF viewer.
 - **Two decks in one browser.** All `file://` pages share one storage and one broadcast channel. Drawings and window sync are therefore kept per folder (the folder's path is part of the key), so an old deck that is still open does not follow the new one.
 - **Several windows** (presenter and audience) sync with a `BroadcastChannel`. They must be windows of the same browser profile, opened from the same folder. Open the presenter page with the button in the bar or at `index.html#/presenter/1`, and the audience page in a second window at `index.html#/1`. From a folder, the audience window may also drive the presenter (it is on this machine by definition).
-- **Not offline by nature:** PlantUML (a picture from a PlantUML server), `<youtube>`, `<tweet>`, `<blue-sky>`, and any picture or font you reference by address and that could not be downloaded at build time (the build warns). Check the build output for `could not download` lines.
+- **Not offline by nature:** PlantUML (a picture from a PlantUML server), `<slide-ng-youtube>`, `<slide-ng-tweet>`, `<slide-ng-blue-sky>`, and any picture or font you reference by address and that could not be downloaded at build time (the build warns). Check the build output for `could not download` lines.
 - Camera, screen share and recording on `file://` were not tried (see the end).
 
 ### If you do not want a special build

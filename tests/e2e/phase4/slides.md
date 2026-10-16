@@ -14,11 +14,11 @@ First slide
 
 # Clicks
 
-<div id="c1" v-click>one</div>
-<div id="c2" v-click>two</div>
+<div id="c1" slide-ng-click>one</div>
+<div id="c2" slide-ng-click>two</div>
 
-<render-when context="print"><p id="only-print">printing</p></render-when>
-<render-when context="slide"><p id="only-slide">on screen</p></render-when>
+<slide-ng-render-when context="print"><p id="only-print">printing</p></slide-ng-render-when>
+<slide-ng-render-when context="slide"><p id="only-slide">on screen</p></slide-ng-render-when>
 
 <!-- note two [click] with a click -->
 
@@ -52,7 +52,7 @@ clicksStart: 1
 
 # Starts at one
 
-<div id="s2" v-click="2">after two</div>
+<div id="s2" slide-ng-click="2">after two</div>
 
 ---
 
@@ -66,7 +66,7 @@ const answer = 42
 
 # Marks
 
-<span id="mk" v-mark.red.circle="1">circled</span>
+<span id="mk" slide-ng-mark.red.circle="1">circled</span>
 
 ---
 

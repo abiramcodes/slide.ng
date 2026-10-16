@@ -1,4 +1,4 @@
-// A Mermaid diagram:  ```mermaid {theme:'neutral', scale:0.8}  or  <mermaid code="graph TD; A-->B" />
+// A Mermaid diagram:  ```mermaid {theme:'neutral', scale:0.8}  or  <slide-ng-mermaid code="graph TD; A-->B" />
 // Mermaid is large, so it is loaded with import() the first time a diagram is drawn.
 // While the drawing is pending the host has `data-slide-ng-waitfor` (the selector that will exist when it is
 // done), like Slidev's `data-waitfor`, so an exporter can wait for it.
@@ -38,7 +38,7 @@ async function draw(code: string, config: Record<string, unknown>): Promise<stri
 }
 
 @Component({
-  selector: 'mermaid',
+  selector: 'slide-ng-mermaid',
   host: {
     class: 'block',
     '[attr.data-slide-ng-waitfor]': 'pending() ? ".mermaid > svg, .mermaid-error" : null',

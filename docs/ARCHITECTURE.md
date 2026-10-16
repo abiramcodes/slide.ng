@@ -22,34 +22,35 @@ dist/slide-ng/browser
 
 ## The generator (`scripts/`)
 
-| file                                                                                   | job                                                                                                                          |
-| -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `generate.mjs`                                                                         | entry point: read the deck, write the generated files, optional `--watch`. `SLIDES_FILE=path` builds another deck (tests do) |
-| `dev.mjs`                                                                              | `npm start`: the same as `slide-ng dev` (`cli/dev.mjs`)                                                                      |
-| `lib/parse-deck.mjs`                                                                   | read the deck with `@slidev/parser` (`load`: follows `src:` imports), merge headmatter `defaults`                            |
-| `lib/layouts.mjs`                                                                      | table of the 21 layouts (component, props, slots) and `layoutName` (fallback with a warning)                                 |
-| `lib/slots.mjs`                                                                        | `::name::` slot sugar: cut a slide's markdown into slots                                                                     |
-| `lib/scoped-style.mjs`                                                                 | pull `<style>` blocks out of a slide and scope them to the slide                                                             |
-| `lib/to-template.mjs`                                                                  | one piece of markdown -> Angular template string                                                                             |
-| `lib/emit.mjs`                                                                         | TypeScript source of one slide component                                                                                     |
-| `lib/index-source.mjs`                                                                 | TypeScript source of `index.ts`                                                                                              |
-| `lib/registry.mjs`                                                                     | table of components that slides can use (and re-export of the layouts)                                                       |
-| `lib/make-css.mjs`                                                                     | build UnoCSS output for the class names found (deck, generated slides and `src/app`)                                         |
-| `lib/fences.mjs`                                                                       | line scanner that finds code fences, `<<<` snippet lines and `::code-group`, and leaves a placeholder for each               |
-| `lib/code/meta.mjs`                                                                    | reads a fence's info string: language, `[title]`, `{ranges}`, `{options}`                                                    |
-| `lib/code/highlighter.mjs`, `render-code.mjs`                                          | Shiki (both themes as CSS variables) and the HTML of one highlighted block (with Twoslash)                                   |
-| `lib/code/render-fence.mjs`                                                            | decides what a fence becomes: code, group, magic move, mermaid, plantuml or Monaco                                           |
-| `lib/code/snippet.mjs`, `magic-move.mjs`, `diagrams.mjs`, `plantuml.mjs`, `monaco.mjs` | one job each; see the file headers                                                                                           |
-| `lib/math.mjs`                                                                         | cuts `$...$` and `$$...$$` out of the markdown and renders them with KaTeX                                                   |
-| `lib/features.mjs`                                                                     | scans the deck for what it uses (languages, math, Monaco, Magic Move, Twoslash)                                              |
-| `lib/directives.mjs`, `icons.mjs`, `alerts.mjs`, `footnotes.mjs`                       | Vue-style `v-mark` / `v-motion` attributes, icon tags, GitHub alerts and footnotes                                           |
-| `lib/pack.mjs`                                                                         | JSON -> deflate -> base64, so text with `{{ }}` can travel in an attribute (the browser has `code/unpack.ts`)                |
-| `lib/protect.mjs`                                                                      | the entity escaping for `{ } @` and the `attr()` helpers                                                                     |
-| `lib/roots.mjs`                                                                        | the roots of a deck (theme, addons, deck folder): find them, read `theme.json`, merge default headmatter                     |
-| `lib/scan-roots.mjs`, `sync-roots.mjs`, `theme-files.mjs`                              | find layouts and components in the roots, copy the roots into `generated/roots`, write `layers.ts`, `setup.ts`, `theme.css`  |
-| `lib/head.mjs`                                                                         | tags for `<head>` from the headmatter (title, description, Open Graph, favicon, `htmlAttrs`), escaped                        |
-| `lib/remote-assets.mjs`, `build-options.mjs`                                           | download remote pictures for a build; read the `SLIDE_NG_*` variables that `slide-ng build` sets                             |
-| `lib/frontmatter-edit.mjs`                                                             | set one key in a deck's headmatter and keep the rest of the file (`theme eject` uses it)                                     |
+| file                                                                                   | job                                                                                                                                     |
+| -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `generate.mjs`                                                                         | entry point: read the deck, write the generated files, optional `--watch`. `SLIDES_FILE=path` builds another deck (tests do)            |
+| `dev.mjs`                                                                              | `npm start`: the same as `slide-ng dev` (`cli/dev.mjs`)                                                                                 |
+| `lib/parse-deck.mjs`                                                                   | read the deck with `@slidev/parser` (`load`: follows `src:` imports), merge headmatter `defaults`                                       |
+| `lib/layouts.mjs`                                                                      | table of the 21 layouts (component, props, slots) and `layoutName` (fallback with a warning)                                            |
+| `lib/slots.mjs`                                                                        | `::name::` slot sugar: cut a slide's markdown into slots                                                                                |
+| `lib/scoped-style.mjs`                                                                 | pull `<style>` blocks out of a slide and scope them to the slide                                                                        |
+| `lib/to-template.mjs`                                                                  | one piece of markdown -> Angular template string                                                                                        |
+| `lib/emit.mjs`                                                                         | TypeScript source of one slide component                                                                                                |
+| `lib/index-source.mjs`                                                                 | TypeScript source of `index.ts`                                                                                                         |
+| `lib/registry.mjs`                                                                     | table of components that slides can use (and re-export of the layouts)                                                                  |
+| `lib/renamed.mjs`                                                                      | old names of the built-ins (`v-click`, `<slide-toc>`, ...); a slide that uses one fails with `renamed to slide-ng-...` (see RENAMES.md) |
+| `lib/make-css.mjs`                                                                     | build UnoCSS output for the class names found (deck, generated slides and `src/app`)                                                    |
+| `lib/fences.mjs`                                                                       | line scanner that finds code fences, `<<<` snippet lines and `::code-group`, and leaves a placeholder for each                          |
+| `lib/code/meta.mjs`                                                                    | reads a fence's info string: language, `[title]`, `{ranges}`, `{options}`                                                               |
+| `lib/code/highlighter.mjs`, `render-code.mjs`                                          | Shiki (both themes as CSS variables) and the HTML of one highlighted block (with Twoslash)                                              |
+| `lib/code/render-fence.mjs`                                                            | decides what a fence becomes: code, group, magic move, mermaid, plantuml or Monaco                                                      |
+| `lib/code/snippet.mjs`, `magic-move.mjs`, `diagrams.mjs`, `plantuml.mjs`, `monaco.mjs` | one job each; see the file headers                                                                                                      |
+| `lib/math.mjs`                                                                         | cuts `$...$` and `$$...$$` out of the markdown and renders them with KaTeX                                                              |
+| `lib/features.mjs`                                                                     | scans the deck for what it uses (languages, math, Monaco, Magic Move, Twoslash)                                                         |
+| `lib/directives.mjs`, `icons.mjs`, `alerts.mjs`, `footnotes.mjs`                       | `slide-ng-mark` / `slide-ng-motion` modifiers and props, icon tags, GitHub alerts and footnotes                                         |
+| `lib/pack.mjs`                                                                         | JSON -> deflate -> base64, so text with `{{ }}` can travel in an attribute (the browser has `code/unpack.ts`)                           |
+| `lib/protect.mjs`                                                                      | the entity escaping for `{ } @` and the `attr()` helpers                                                                                |
+| `lib/roots.mjs`                                                                        | the roots of a deck (theme, addons, deck folder): find them, read `theme.json`, merge default headmatter                                |
+| `lib/scan-roots.mjs`, `sync-roots.mjs`, `theme-files.mjs`                              | find layouts and components in the roots, copy the roots into `generated/roots`, write `layers.ts`, `setup.ts`, `theme.css`             |
+| `lib/head.mjs`                                                                         | tags for `<head>` from the headmatter (title, description, Open Graph, favicon, `htmlAttrs`), escaped                                   |
+| `lib/remote-assets.mjs`, `build-options.mjs`                                           | download remote pictures for a build; read the `SLIDE_NG_*` variables that `slide-ng build` sets                                        |
+| `lib/frontmatter-edit.mjs`                                                             | set one key in a deck's headmatter and keep the rest of the file (`theme eject` uses it)                                                |
 
 ### Why placeholders in `to-template.mjs`
 
@@ -62,7 +63,7 @@ Remaining `{`, `}` and `@` in normal text become HTML entities.
 ### Code, math and other fences
 
 Fences are cut out first (`fences.mjs`) and written back last (`code/render-fence.mjs`). Syntax is coloured by Shiki while generating,
-so the browser gets finished HTML inside `<code-block-wrapper>`. That component only adds behaviour: line numbers, the copy button, and the
+so the browser gets finished HTML inside `<slide-ng-code-block-wrapper>`. That component only adds behaviour: line numbers, the copy button, and the
 highlight ranges, which are an attribute (`ranges="2-3|5"`) turned into classes by the current click. `RangedBlock` is the base class that code and
 math blocks share. Anything with text that Angular would read as a binding (Magic Move steps, Mermaid, Monaco) is passed `pack()`ed.
 
@@ -73,8 +74,8 @@ The starter test checks that the output of a deck without them contains none of 
 
 ### Rewrites before markdown
 
-Before the markdown converter runs, `to-template.mjs` rewrites Vue-style syntax into plain Angular: `v-mark.red="1"` becomes
-`mark-mods="red" v-mark="1"`, the `:initial` / `:click-N` attributes of `v-motion` become one `[v-motion]="{ ... }"` binding (Angular has no
+Before the markdown converter runs, `to-template.mjs` rewrites the Vue-like forms into plain Angular: `slide-ng-mark.red="1"` becomes
+`mark-mods="red" slide-ng-mark="1"`, the `:initial` / `:click-N` attributes of `slide-ng-motion` become one `[slide-ng-motion]="{ ... }"` binding (Angular has no
 dynamic input names), and `<carbon-apps />` becomes `<span class="i-carbon:apps"></span>`. After it: alerts are found in the HTML, and footnotes are listed at the end.
 
 ### Layout wrapping and slots
@@ -94,34 +95,34 @@ The `<style>` text goes into the slide component's `styles`, wrapped in `slide-0
 
 ## The app (`src/app/`)
 
-| file                                                             | job                                                                                                                                                                                                       |
-| ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `deck.ts`                                                        | the route `/:no`: stage and canvas, keys, mouse, `?clicks=` in the URL; hosts the controls                                                                                                                |
-| `lib/nav.ts`                                                     | `Nav`: current slide, next/prev/go, table of contents, address -> slide (number or `routeAlias`)                                                                                                          |
-| `lib/stage.ts`                                                   | puts slides on the canvas and plays transitions (two slides in the page while it runs)                                                                                                                    |
-| `lib/transitions.ts`                                             | which transition applies, and the animation of each (Web Animations)                                                                                                                                      |
-| `lib/shortcuts.ts`                                               | list of `{ name, key, run, when }`, the default keys, `SHORTCUTS_SETUP` to change them                                                                                                                    |
-| `lib/actions.ts`                                                 | connects shortcut names to what they do                                                                                                                                                                   |
-| `lib/ui-state.ts`                                                | `Ui`: which dialog or menu is open, slide scale, overview highlight                                                                                                                                       |
-| `lib/dark.ts`, `lib/fullscreen.ts`, `lib/idle-cursor.ts`         | dark mode, fullscreen, hide idle cursor                                                                                                                                                                   |
-| `lib/mount-slide.ts`, `lib/slide-context.ts`                     | create a slide component and tell it its number and where it is drawn                                                                                                                                     |
-| `lib/toc-tree.ts`                                                | pure functions: table of contents tree and its filters                                                                                                                                                    |
-| `lib/canvas.ts`                                                  | canvas size (980x552, or headmatter `canvasWidth` / `aspectRatio`), `zoom`, the scale formula `min(w/width, h/height)`                                                                                    |
-| `lib/clicks.ts`                                                  | `ClicksContext`: per-slide click state (current, total, relative/absolute/range maths)                                                                                                                    |
-| `lib/v-click.ts`, `v-clicks.ts`, `v-click-gap.ts`, `v-switch.ts` | click directives and components                                                                                                                                                                           |
-| `lib/slide-base.ts`, `slide-meta.ts`                             | base class of generated slides; type of an index entry                                                                                                                                                    |
-| `code/*.ts`                                                      | `code-block-wrapper`, `code-group`, `magic-move`, `katex-block`, `mermaid`, `plant-uml`, `monaco-editor` (+ `code-runner`); `monaco/` holds the lazy Monaco setup, its two workers and the sandbox runner |
-| `lib/v-mark.ts`, `mark-options.ts`                               | `v-mark` directive (rough-notation, lazy) and the pure option reader                                                                                                                                      |
-| `lib/v-motion.ts`, `motion-style.ts`                             | `v-motion` directive and the pure variant maths                                                                                                                                                           |
-| `builtin/*.ts` (phase 2)                                         | `arrow`, `transform`, `auto-fit-text`, `youtube`, `slide-video`, `tweet`, `blue-sky`                                                                                                                      |
-| `layouts/*.ts`                                                   | one small component per layout (`background.ts` and `frame.ts` are helpers)                                                                                                                               |
-| `builtin/*.ts`                                                   | `slide-toc`, `slide-link`, `slide-current-no`, `slides-total`, `light-or-dark`, `render-when`                                                                                                             |
-| `ui/*.ts`                                                        | nav bar, context menu, overview and thumbnail, goto box, info dialog, settings menu, icon button                                                                                                          |
+| file                                                                                         | job                                                                                                                                                                                                                                  |
+| -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `deck.ts`                                                                                    | the route `/:no`: stage and canvas, keys, mouse, `?clicks=` in the URL; hosts the controls                                                                                                                                           |
+| `lib/nav.ts`                                                                                 | `Nav`: current slide, next/prev/go, table of contents, address -> slide (number or `routeAlias`)                                                                                                                                     |
+| `lib/stage.ts`                                                                               | puts slides on the canvas and plays transitions (two slides in the page while it runs)                                                                                                                                               |
+| `lib/transitions.ts`                                                                         | which transition applies, and the animation of each (Web Animations)                                                                                                                                                                 |
+| `lib/shortcuts.ts`                                                                           | list of `{ name, key, run, when }`, the default keys, `SHORTCUTS_SETUP` to change them                                                                                                                                               |
+| `lib/actions.ts`                                                                             | connects shortcut names to what they do                                                                                                                                                                                              |
+| `lib/ui-state.ts`                                                                            | `Ui`: which dialog or menu is open, slide scale, overview highlight                                                                                                                                                                  |
+| `lib/dark.ts`, `lib/fullscreen.ts`, `lib/idle-cursor.ts`                                     | dark mode, fullscreen, hide idle cursor                                                                                                                                                                                              |
+| `lib/mount-slide.ts`, `lib/slide-context.ts`                                                 | create a slide component and tell it its number and where it is drawn                                                                                                                                                                |
+| `lib/toc-tree.ts`                                                                            | pure functions: table of contents tree and its filters                                                                                                                                                                               |
+| `lib/canvas.ts`                                                                              | canvas size (980x552, or headmatter `canvasWidth` / `aspectRatio`), `zoom`, the scale formula `min(w/width, h/height)`                                                                                                               |
+| `lib/clicks.ts`                                                                              | `ClicksContext`: per-slide click state (current, total, relative/absolute/range maths)                                                                                                                                               |
+| `lib/slide-ng-click.ts`, `slide-ng-clicks.ts`, `slide-ng-click-gap.ts`, `slide-ng-switch.ts` | click directives and components                                                                                                                                                                                                      |
+| `lib/slide-base.ts`, `slide-meta.ts`                                                         | base class of generated slides; type of an index entry                                                                                                                                                                               |
+| `code/*.ts`                                                                                  | `slide-ng-code-block-wrapper`, `slide-ng-code-group`, `magic-move`, `katex-block`, `mermaid`, `slide-ng-plant-uml`, `monaco-editor` (+ `code-runner`); `monaco/` holds the lazy Monaco setup, its two workers and the sandbox runner |
+| `lib/slide-ng-mark.ts`, `mark-options.ts`                                                    | `slide-ng-mark` directive (rough-notation, lazy) and the pure option reader                                                                                                                                                          |
+| `lib/slide-ng-motion.ts`, `motion-style.ts`                                                  | `slide-ng-motion` directive and the pure variant maths                                                                                                                                                                               |
+| `builtin/*.ts` (phase 2)                                                                     | `arrow`, `transform`, `slide-ng-auto-fit-text`, `youtube`, `slide-ng-video`, `tweet`, `slide-ng-blue-sky`                                                                                                                            |
+| `layouts/*.ts`                                                                               | one small component per layout (`background.ts` and `frame.ts` are helpers)                                                                                                                                                          |
+| `builtin/*.ts`                                                                               | `slide-ng-toc`, `slide-ng-link`, `slide-ng-current-no`, `slide-ng-total`, `slide-ng-light-or-dark`, `slide-ng-render-when`                                                                                                           |
+| `ui/*.ts`                                                                                    | nav bar, context menu, overview and thumbnail, goto box, info dialog, settings menu, icon button                                                                                                                                     |
 
 ### Clicks
 
 Every slide component lists `ClicksContext` in its `providers`, so each slide has its own state.
-Every element with `v-click` registers itself when it is created. Angular creates directives in template
+Every element with `slide-ng-click` registers itself when it is created. Angular creates directives in template
 order, and that order is what makes `+1` (relative) work: each element asks "what is the sum of the
 steps before me?". When the slide has rendered, the context knows the largest click number: the
 slide's `total` (or the `clicks:` frontmatter value). `current` is a signal clamped between `clicksStart` and `total`,
@@ -134,7 +135,7 @@ inside it) can inject them. The URL is the state: `/7?clicks=2`. When the route 
 to show the slide: the old slide is removed (or animated away), a new component is created with a fresh `ClicksContext`.
 `?clicks=N` is read when the slide is created and written back with `history.replaceState` as clicks change.
 Slides get their number and render context (`slide`, `overview`) from two injection tokens, which is how
-`<slide-current-no>` and `<render-when>` know where they are.
+`<slide-ng-current-no>` and `<slide-ng-render-when>` know where they are.
 
 ### Overview
 
@@ -156,7 +157,7 @@ the running one at once.
 | `presenter/`   | `/presenter/:no` and `/notes` pages, timer, notes with click markers, next-step preview, clicks slider, presenter cursor and laser, `PresenterPrefs`                                                      |
 | `drawing/`     | drauu wrapper `Drawings`, toolbar, layer, sanitiser, persistence (localStorage, dev files)                                                                                                                |
 | `record/`      | `Devices`, `Recorder` (MediaRecorder), camera bubble, recording buttons, screen mirror                                                                                                                    |
-| `drag/`        | `v-drag` directive, `<v-drag>`, `<v-drag-arrow>`, the handles (`drag-controls.ts`), pure math (`drag-math.ts`)                                                                                            |
+| `drag/`        | `slide-ng-drag` directive, `<slide-ng-drag>`, `<slide-ng-drag-arrow>`, the handles (`drag-controls.ts`), pure math (`drag-math.ts`)                                                                       |
 | `dev/`         | only active in a dev build: `DevApi`, WebSocket transport, side editor, drawing upload                                                                                                                    |
 | `scripts/dev/` | the companion server (below)                                                                                                                                                                              |
 
@@ -192,9 +193,9 @@ with a password the cookie is needed too; a request never names a file (slide nu
 (`..`, absolute paths and symlinks out are refused); bodies and WebSocket messages have size limits; drawing markup is checked against a shape whitelist.
 Writes run one after another so two quick edits cannot overwrite each other. The generator watches the markdown, so a written change comes back as a rebuild.
 
-### v-drag, layers and canvas
+### slide-ng-drag, layers and canvas
 
-The generator numbers every `v-drag` (`drag-sites.mjs`) and adds `drag-site="N"`. In the browser the directive reads the place (inline text, or a name looked up in the slide's frontmatter `dragPos`),
+The generator numbers every `slide-ng-drag` (`drag-sites.mjs`) and adds `drag-site="N"`. In the browser the directive reads the place (inline text, or a name looked up in the slide's frontmatter `dragPos`),
 puts the element at it and, on a move, tells `DragState`, which keeps the place for this visit and hands it to the dev server's saver. `generated/layers.ts` imports the layer files that exist;
 `app-slide-layer` shows one. `zoom` is a CSS variable on the slide element and one rule in `styles.css`.
 
@@ -210,7 +211,7 @@ any other deck gets a working copy of the app in `<deck>/.slide-ng/app` (a fresh
 installed package is never written to. The package is one package with a `bin` entry and a `template/` folder for `create` (not a monorepo; see DECISIONS.md).
 
 **Print route.** `/print` (and `/presenter/print` for notes) draws every slide as `.print-slide-container` with the id `<slideNo>-<clickN>`; `?print=clicks` makes one page per click
-step. It sets `data-slide-ng-print="ready"` when done. Components that load late (Mermaid, PlantUML, Monaco, Magic Move, `v-mark`, code runners) put `data-slide-ng-waitfor` on
+step. It sets `data-slide-ng-print="ready"` when done. Components that load late (Mermaid, PlantUML, Monaco, Magic Move, `slide-ng-mark`, code runners) put `data-slide-ng-waitfor` on
 themselves until they are drawn, and the exporter waits for none to be left.
 
 **Export** (`scripts/export/`). `cli/export.mjs` builds the deck (or uses `--dist` or `--url`), serves it with `static-server.mjs` (base path, SPA fallback, path confinement) and
@@ -246,6 +247,6 @@ reset and `src/styles/` (variables, the layouts' typography ported from Slidev's
   (`code`, `magic`, `math`, `diagrams`, `monaco`, `twoslash`, `components`, `mark`, `markdown`). `node tests/e2e/phase2.mjs mark` runs one topic.
   It answers the PlantUML server and the tweet / Bluesky scripts with stand-ins, so no network is needed.
 - `tests/e2e/phase3.mjs` + `phase3/`: builds `tests/e2e/phase3/slides.md` and `layout/slides.md`, one file per topic (`sync`, `presenter`, `laser`, `drawing`, `camera`, `settings`, `drag`, `layout`), with Chromium's fake camera and microphone.
-- `tests/e2e/dev-hmr.mjs`: dev server live-update check. `tests/e2e/dev-server.mjs`: starts the real dev server on a small deck: v-drag write-back, drawings, side editor, `{monaco-write}`, refused requests, and `--remote` with a password (HTTP, WebSocket, two browsers).
+- `tests/e2e/dev-hmr.mjs`: dev server live-update check. `tests/e2e/dev-server.mjs`: starts the real dev server on a small deck: slide-ng-drag write-back, drawings, side editor, `{monaco-write}`, refused requests, and `--remote` with a password (HTTP, WebSocket, two browsers).
 - `tests/e2e/phase4.mjs` + `phase4/`: the print route (`print.mjs`). `tests/export/` (`npm run test:export`): `run.mjs` (the export command on a deck: PDF, PNG, MD, PPTX, notes, outline, refusals), `build.mjs` (build, head tags, Open Graph picture, remote assets, download, offline worker, sub-path hosting, refusals), `theme.mjs` (the example theme, eject, `--theme`), `scaffold.mjs` (`create`, then format and build the new deck), `mcp.mjs` (a scripted client over stdio).
 - `tests/e2e/screenshots.mjs` and `screenshots-features.mjs`: not tests; write `docs/screenshots/` (layouts, controls, and every feature slide).

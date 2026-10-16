@@ -5,11 +5,11 @@ import { Box, formatBox, moveBox, parseBox } from './drag-math';
 import { DragState, DragTarget } from './drag-state';
 import { resolvePos } from './resolve-pos';
 
-// `<img v-drag="[x, y, w, h]">` or `v-drag="name"` (with `dragPos: { name: x,y,w,h }` in the frontmatter) or just `v-drag`.
+// `<img slide-ng-drag="[x, y, w, h]">` or `slide-ng-drag="name"` (with `dragPos: { name: x,y,w,h }` in the frontmatter) or just `slide-ng-drag`.
 // The element is put at that place on the slide, and can be moved with the mouse. The numbers are
-// slide pixels. The generator adds `drag-site="N"`, which says which v-drag of the slide this is.
+// slide pixels. The generator adds `drag-site="N"`, which says which slide-ng-drag of the slide this is.
 @Directive({
-  selector: '[v-drag]',
+  selector: '[slide-ng-drag]',
   host: {
     '(pointerdown)': 'down($event)',
     '(pointermove)': 'move($event)',
@@ -17,8 +17,8 @@ import { resolvePos } from './resolve-pos';
     '(pointercancel)': 'up($event)',
   },
 })
-export class VDrag implements Extract<DragTarget, { kind: 'box' }> {
-  readonly text = input('', { alias: 'v-drag' });
+export class SlideNgDrag implements Extract<DragTarget, { kind: 'box' }> {
+  readonly text = input('', { alias: 'slide-ng-drag' });
   readonly site = input<string | null>(null, { alias: 'drag-site' });
 
   readonly kind = 'box' as const;

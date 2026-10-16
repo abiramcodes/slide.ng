@@ -4,7 +4,7 @@ import { Component, computed, input, signal } from '@angular/core';
 import { optionalNumber } from '../lib/attrs';
 
 @Component({
-  selector: 'plant-uml',
+  selector: 'slide-ng-plant-uml',
   host: { class: 'inline-block', '[attr.data-slide-ng-waitfor]': 'pending() ? "img" : null' },
   template: `<img
     [src]="url()"

@@ -30,7 +30,7 @@ export interface ShortcutActions {
   /** The drawing toolbar is on: it owns d, o, g, Escape, ... (Slidev disables the shortcuts then). */
   drawingEnabled(): boolean;
   toggleDrawing(): void;
-  /** A v-drag element is selected: the arrow keys nudge it instead of moving through the slides. */
+  /** A slide-ng-drag element is selected: the arrow keys nudge it instead of moving through the slides. */
   dragActive(): boolean;
 }
 
@@ -42,7 +42,7 @@ export const SHORTCUTS_SETUP = new InjectionToken<
 });
 
 export function defaultShortcuts(a: ShortcutActions): Shortcut[] {
-  const play = () => !a.overviewOpen() && !a.dragActive(); // arrow keys move through the overview while it is open, and nudge a selected v-drag
+  const play = () => !a.overviewOpen() && !a.dragActive(); // arrow keys move through the overview while it is open, and nudge a selected slide-ng-drag
   const overview = () => a.overviewOpen();
   const notDrawing = () => !a.drawingEnabled();
   return [

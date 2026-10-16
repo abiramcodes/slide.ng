@@ -60,5 +60,5 @@ export function renderMath({ block, latex, ranges, options }) {
     finally: o.finally,
     startLine: o.startLine,
   });
-  return `<katex-block-wrapper${a}><div ngNonBindable>${drawn}</div></katex-block-wrapper>`;
+  return `<slide-ng-katex-block-wrapper${a}><div ngNonBindable>${drawn}</div></slide-ng-katex-block-wrapper>`;
 }

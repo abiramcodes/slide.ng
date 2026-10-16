@@ -1,11 +1,11 @@
-// A simple arrow:  <arrow x1="10" y1="20" x2="100" y2="200" color="green" width="3" two-way />
+// A simple arrow:  <slide-ng-arrow x1="10" y1="20" x2="100" y2="200" color="green" width="3" two-way />
 // Port of Slidev's Arrow.vue (without its drag events). The svg is placed at the top left of the slide.
 import { Component, booleanAttribute, input } from '@angular/core';
 
 let counter = 0;
 
 @Component({
-  selector: 'arrow',
+  selector: 'slide-ng-arrow',
   host: { class: 'absolute left-0 top-0 pointer-events-none' },
   template: `
     <svg [attr.width]="Math.max(+x1(), +x2()) + 50" [attr.height]="Math.max(+y1(), +y2()) + 50">

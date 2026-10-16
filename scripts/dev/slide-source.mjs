@@ -64,7 +64,7 @@ function setFrontmatter(text, slide, path, value) {
 }
 
 /**
- * Write a new place for drag site number `site`. A site that uses a name (`v-drag="square"`) is written to the
+ * Write a new place for drag site number `site`. A site that uses a name (`slide-ng-drag="square"`) is written to the
  * frontmatter's `dragPos`; the others are written into the markdown tag. Returns { text } or { error }.
  */
 export function dragEdit(text, slide, site, pos) {
@@ -72,7 +72,7 @@ export function dragEdit(text, slide, site, pos) {
     const name = dragName(slide.content, site);
     if (name) return setFrontmatter(t, slide, ['dragPos', name], toPlainStyle(pos));
     const updated = setDragPosition(slide.content, site, pos);
-    if (updated === null) return { error: 'no such v-drag, or the position is not numbers' };
+    if (updated === null) return { error: 'no such slide-ng-drag, or the position is not numbers' };
     // `content` is the body without its trailing notes: find it inside the body lines.
     const body = t.split('\n').slice(slide.contentStart, slide.end).join('\n');
     const at = body.indexOf(slide.content);

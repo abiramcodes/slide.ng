@@ -1,4 +1,4 @@
-import { parseSlots } from './v-switch';
+import { parseSlots } from './slide-ng-switch';
 
 const items = (...ats: string[]) => ats.map((at) => ({ el: document.createElement('div'), at }));
 const range = (s: { start: number; end: number }) => [s.start, s.end];

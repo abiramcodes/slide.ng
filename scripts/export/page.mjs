@@ -23,7 +23,7 @@ export async function loadPrintPage(page, { url, dark, timeout, waitUntil, wait,
   await page.goto(url, { waitUntil, timeout });
   await page.locator('[data-slide-ng-print="ready"]').waitFor({ state: 'attached', timeout });
 
-  // Mermaid, Monaco, Magic Move, v-mark and the code runner mark themselves with `data-slide-ng-waitfor` until done.
+  // Mermaid, Monaco, Magic Move, slide-ng-mark and the code runner mark themselves with `data-slide-ng-waitfor` until done.
   try {
     await page.waitForFunction(() => !document.querySelector('[data-slide-ng-waitfor]'), null, {
       timeout,

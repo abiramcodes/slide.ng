@@ -30,24 +30,24 @@ The summary is imperative ("add", not "added"), starts in lower case, has no per
 
 The scope says which part changed. It can be left out when a change spans several parts.
 
-| scope        | part                                                    |
-| ------------ | ------------------------------------------------------- |
-| `generator`  | `scripts/generate.mjs` and `scripts/lib`                |
-| `layouts`    | layout components in `src/app/layouts`                  |
-| `components` | built-in components and directives (`v-click`, ...)     |
-| `themes`     | themes, addons and the example theme                    |
-| `app`        | the rest of `src/app` (navigation, overview, code, ...) |
-| `presenter`  | presenter view, drawing, recording and sync             |
-| `cli`        | `bin/` and `scripts/cli`                                |
-| `dev`        | the dev server in `scripts/dev`                         |
-| `export`     | PDF, PNG, PPTX and Markdown export                      |
-| `build`      | `slide-ng build` (hosting, PWA, offline folders)        |
-| `offline`    | offline use                                             |
-| `mcp`        | the MCP server                                          |
-| `tests`      | test helpers and suites                                 |
-| `docs`       | pages in `docs/` and the README                         |
-| `deps`       | dependency updates                                      |
-| `ci`         | `.github`, `.githooks` and linting setup                |
+| scope        | part                                                       |
+| ------------ | ---------------------------------------------------------- |
+| `generator`  | `scripts/generate.mjs` and `scripts/lib`                   |
+| `layouts`    | layout components in `src/app/layouts`                     |
+| `components` | built-in components and directives (`slide-ng-click`, ...) |
+| `themes`     | themes, addons and the example theme                       |
+| `app`        | the rest of `src/app` (navigation, overview, code, ...)    |
+| `presenter`  | presenter view, drawing, recording and sync                |
+| `cli`        | `bin/` and `scripts/cli`                                   |
+| `dev`        | the dev server in `scripts/dev`                            |
+| `export`     | PDF, PNG, PPTX and Markdown export                         |
+| `build`      | `slide-ng build` (hosting, PWA, offline folders)           |
+| `offline`    | offline use                                                |
+| `mcp`        | the MCP server                                             |
+| `tests`      | test helpers and suites                                    |
+| `docs`       | pages in `docs/` and the README                            |
+| `deps`       | dependency updates                                         |
+| `ci`         | `.github`, `.githooks` and linting setup                   |
 
 ## Rules
 

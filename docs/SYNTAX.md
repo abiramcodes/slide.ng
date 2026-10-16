@@ -1,5 +1,7 @@
 # Writing slides
 
+Every built-in element and attribute starts with `slide-ng-` (`slide-ng-click`, `<slide-ng-clicks>`, `<slide-ng-toc />`); see [RENAMES.md](RENAMES.md) for the rule and the old names.
+
 All slides live in one file, `slides.md`.
 
 ## Slides and frontmatter
@@ -31,7 +33,7 @@ Keys slide.ng understands:
 | `class`                                                                | extra CSS (UnoCSS) classes on the layout (on the content for layouts that have a `class` prop, see Layouts)    |
 | `title`                                                                | slide title (otherwise the first `#` heading); used in the browser tab, the table of contents and the goto box |
 | `level`                                                                | depth in the table of contents (otherwise the number of `#` in the first heading)                              |
-| `hideInToc`                                                            | leave this slide out of `<slide-toc>`                                                                          |
+| `hideInToc`                                                            | leave this slide out of `<slide-ng-toc>`                                                                       |
 | `routeAlias`                                                           | an extra address: `routeAlias: intro` makes `/intro` open this slide                                           |
 | `hide`, `disabled`                                                     | the slide is left out of the deck completely                                                                   |
 | `clicksStart`                                                          | first click number of the slide (default 0)                                                                    |
@@ -165,31 +167,31 @@ The duration is the CSS variable `--slidev-transition-duration` (0.5s). While a 
 Clicks reveal things step by step. Add these to any HTML element:
 
 ```md
-<div v-click>Shows on the next click</div>
-<div v-click="3">Shows at click 3 (a number means "the click with this number")</div>
-<div v-click="+2">Shows two clicks after the previous element</div>
-<div [v-click]="[2, 4]">Shows from click 2 until click 4, then hides</div>
-<div v-after>Shows together with the element before it</div>
-<div v-click="2" v-click-hide>Visible first, hides at click 2</div>
+<div slide-ng-click>Shows on the next click</div>
+<div slide-ng-click="3">Shows at click 3 (a number means "the click with this number")</div>
+<div slide-ng-click="+2">Shows two clicks after the previous element</div>
+<div [slide-ng-click]="[2, 4]">Shows from click 2 until click 4, then hides</div>
+<div slide-ng-after>Shows together with the element before it</div>
+<div slide-ng-click="2" slide-ng-click-hide>Visible first, hides at click 2</div>
 ```
 
 Two forms exist because of how Angular reads attributes:
 
-- `v-click="3"` or `v-click="+2"` is plain text; slide.ng turns it into a number or a relative step.
-- `[v-click]="[2, 4]"` is an Angular binding; use it for ranges and for any value you compute.
+- `slide-ng-click="3"` or `slide-ng-click="+2"` is plain text; slide.ng turns it into a number or a relative step.
+- `[slide-ng-click]="[2, 4]"` is an Angular binding; use it for ranges and for any value you compute.
 
 List items one by one:
 
 ```md
-<v-clicks>
+<slide-ng-clicks>
 
 - first
 - second
 
-</v-clicks>
+</slide-ng-clicks>
 ```
 
-Leave an empty line after `<v-clicks>` and before `</v-clicks>`, otherwise markdown does not
+Leave an empty line after `<slide-ng-clicks>` and before `</slide-ng-clicks>`, otherwise markdown does not
 turn the list into HTML. Options: `depth="2"` (include nested lists), `every="2"` (items per click),
 `at="3"` (first click), `hide` (items hide instead of show).
 
@@ -197,25 +199,25 @@ turn the list into HTML. Options: `depth="2"` (include nested lists), `every="2"
 
 Available in every slide without importing anything.
 
-| tag                                                                                                                           | what it does                                                                                                                                                                                                              |
-| ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `<slide-toc />`                                                                                                               | table of contents from the slides' `title` and `level`. Options: `columns="2"`, `listClass="..."`, `start="1"`, `listStyle="..."`, `minDepth`, `maxDepth`, `mode="all\|onlyCurrentTree\|onlySiblings"`                    |
-| `<slide-current-no />`                                                                                                        | the number of the slide it is on                                                                                                                                                                                          |
-| `<slides-total />`                                                                                                            | the number of slides                                                                                                                                                                                                      |
-| `<slide-link to="3">text</slide-link>`                                                                                        | a link to slide 3, or to a `routeAlias`. (Called `slide-link` because `link` is a built-in HTML tag.)                                                                                                                     |
-| `<light-or-dark>`                                                                                                             | shows `<div dark>...</div>` in dark mode and `<div light>...</div>` in light mode                                                                                                                                         |
-| `<render-when context="slide">`                                                                                               | content only where the slide is drawn: `slide`, `presenter`, `print`, `overview`, or `main` (slide or presenter). `[context]="['slide','overview']"` takes several. Content marked `<div fallback>` shows everywhere else |
-| `<v-switch>`                                                                                                                  | one child per click: `<v-switch><div at="1">a</div><div at="2">b</div><div at="3-5">c</div></v-switch>` (a number lasts until the next one starts, `3-5` is explicit)                                                     |
-| `<v-click-gap size="2" />`                                                                                                    | leaves two clicks empty                                                                                                                                                                                                   |
-| `<v-clicks>`, `v-click`, `v-after`                                                                                            | see Clicks                                                                                                                                                                                                                |
-| `<arrow x1="10" y1="20" x2="100" y2="200" color="red" width="2" two-way />`                                                   | an arrow on the slide (SVG, positions in slide pixels). `two-way` adds a head at the start                                                                                                                                |
-| `<transform scale="0.5" origin="top left">`                                                                                   | scales what is inside                                                                                                                                                                                                     |
-| `<auto-fit-text min="10" max="60" class="w-60 h-20">text</auto-fit-text>`                                                     | the biggest font size (between `min` and `max`) that fits the box. `multi-line="false"` keeps it on one line                                                                                                              |
-| `<youtube id="luoMHjh-XcQ" width="560" height="315" />`                                                                       | an embedded YouTube video (`id` is the video id; no start time or playlist options)                                                                                                                                       |
-| `<slide-video autoplay="true" autoreset="click" controls poster="...">`                                                       | a video that plays when its slide (or its `v-click`) comes. `autoplay="once"` plays once; `timestamp` starts at a second. Put `<source>` tags inside                                                                      |
-| `<tweet id="20" scale="0.8" conversation="none" cards="hidden" />`                                                            | an embedded tweet (loads Twitter's script, needs the network)                                                                                                                                                             |
-| `<blue-sky uri="at://did:.../app.bsky.feed.post/..." scale="0.8" />`                                                          | an embedded Bluesky post (needs the network). `uri` can also be the post's web address                                                                                                                                    |
-| `<code-group>`, `<code-block-wrapper>`, `<shiki-magic-move>`, `<katex-block-wrapper>`, `<mermaid>`, `<plant-uml>`, `<monaco>` | written by the generator for code fences and math; you normally use the markdown forms below                                                                                                                              |
+| tag                                                                                                                                                                                    | what it does                                                                                                                                                                                                              |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `<slide-ng-toc />`                                                                                                                                                                     | table of contents from the slides' `title` and `level`. Options: `columns="2"`, `listClass="..."`, `start="1"`, `listStyle="..."`, `minDepth`, `maxDepth`, `mode="all\|onlyCurrentTree\|onlySiblings"`                    |
+| `<slide-ng-current-no />`                                                                                                                                                              | the number of the slide it is on                                                                                                                                                                                          |
+| `<slide-ng-total />`                                                                                                                                                                   | the number of slides                                                                                                                                                                                                      |
+| `<slide-ng-link to="3">text</slide-ng-link>`                                                                                                                                           | a link to slide 3, or to a `routeAlias`. (Called `slide-ng-link` because `link` is a built-in HTML tag.)                                                                                                                  |
+| `<slide-ng-light-or-dark>`                                                                                                                                                             | shows `<div dark>...</div>` in dark mode and `<div light>...</div>` in light mode                                                                                                                                         |
+| `<slide-ng-render-when context="slide">`                                                                                                                                               | content only where the slide is drawn: `slide`, `presenter`, `print`, `overview`, or `main` (slide or presenter). `[context]="['slide','overview']"` takes several. Content marked `<div fallback>` shows everywhere else |
+| `<slide-ng-switch>`                                                                                                                                                                    | one child per click: `<slide-ng-switch><div at="1">a</div><div at="2">b</div><div at="3-5">c</div></slide-ng-switch>` (a number lasts until the next one starts, `3-5` is explicit)                                       |
+| `<slide-ng-click-gap size="2" />`                                                                                                                                                      | leaves two clicks empty                                                                                                                                                                                                   |
+| `<slide-ng-clicks>`, `slide-ng-click`, `slide-ng-after`                                                                                                                                | see Clicks                                                                                                                                                                                                                |
+| `<slide-ng-arrow x1="10" y1="20" x2="100" y2="200" color="red" width="2" two-way />`                                                                                                   | an arrow on the slide (SVG, positions in slide pixels). `two-way` adds a head at the start                                                                                                                                |
+| `<slide-ng-transform scale="0.5" origin="top left">`                                                                                                                                   | scales what is inside                                                                                                                                                                                                     |
+| `<slide-ng-auto-fit-text min="10" max="60" class="w-60 h-20">text</slide-ng-auto-fit-text>`                                                                                            | the biggest font size (between `min` and `max`) that fits the box. `multi-line="false"` keeps it on one line                                                                                                              |
+| `<slide-ng-youtube id="luoMHjh-XcQ" width="560" height="315" />`                                                                                                                       | an embedded YouTube video (`id` is the video id; no start time or playlist options)                                                                                                                                       |
+| `<slide-ng-video autoplay="true" autoreset="click" controls poster="...">`                                                                                                             | a video that plays when its slide (or its `slide-ng-click`) comes. `autoplay="once"` plays once; `timestamp` starts at a second. Put `<source>` tags inside                                                               |
+| `<slide-ng-tweet id="20" scale="0.8" conversation="none" cards="hidden" />`                                                                                                            | an embedded tweet (loads Twitter's script, needs the network)                                                                                                                                                             |
+| `<slide-ng-blue-sky uri="at://did:.../app.bsky.feed.post/..." scale="0.8" />`                                                                                                          | an embedded Bluesky post (needs the network). `uri` can also be the post's web address                                                                                                                                    |
+| `<slide-ng-code-group>`, `<slide-ng-code-block-wrapper>`, `<slide-ng-magic-move>`, `<slide-ng-katex-block-wrapper>`, `<slide-ng-mermaid>`, `<slide-ng-plant-uml>`, `<slide-ng-monaco>` | written by the generator for code fences and math; you normally use the markdown forms below                                                                                                                              |
 
 The table of contents lists every slide that has a title and is not `hideInToc`. A slide whose level is higher than the one
 before it becomes its child: `# A`, `## A.1`, `## A.2`, `# B` gives A (with A.1, A.2) and B. In `mode="onlyCurrentTree"` only the path to
@@ -336,7 +338,7 @@ A[Text] --> B{Decision}
 
 `theme` defaults to `dark` or `default` following the colour mode. Any other key is passed to Mermaid's own `initialize`. While a diagram is being drawn its
 element has `data-slide-ng-waitfor`; the attribute goes away when the picture is there (an exporter can wait for that).
-`<mermaid code="..." />` works as a tag too.
+`<slide-ng-mermaid code="..." />` works as a tag too.
 
 PlantUML is a picture from a PlantUML server (the browser needs the network):
 
@@ -393,13 +395,13 @@ const count = Math.max(1, 2);
 
 ## Marks and motion
 
-`v-mark` draws a hand-made mark on an element at a click (rough-notation, loaded only when used). It works like `v-click`:
+`slide-ng-mark` draws a hand-made mark on an element at a click (rough-notation, loaded only when used). It works like `slide-ng-click`:
 
 ```md
-<span v-mark.red.circle="1">circled at click 1</span>
-<span v-mark.underline>underlined at the next click</span>
-<span v-mark="{ at: 3, type: 'box', color: '#234' }">boxed at click 3</span>
-<span v-mark="[2, 4]">shown at clicks 2 and 3 only</span>
+<span slide-ng-mark.red.circle="1">circled at click 1</span>
+<span slide-ng-mark.underline>underlined at the next click</span>
+<span slide-ng-mark="{ at: 3, type: 'box', color: '#234' }">boxed at click 3</span>
+<span slide-ng-mark="[2, 4]">shown at clicks 2 and 3 only</span>
 ```
 
 Modifiers: type `underline` (default), `circle`, `highlight`, `box`, `bracket`, `strike-through` (`strike`, `line-through`), `crossed-off` (`cross`);
@@ -407,10 +409,10 @@ colour `red`, `blue`, `green`, `orange`, `yellow`, `pink`, `purple`, `teal`, `cy
 `.op50` (opacity). In the object form any rough-notation option works (`strokeWidth`, `padding`, `iterations`, `animationDuration`, `brackets`, `multiline`).
 `true` shows the mark from the start, `false` never.
 
-`v-motion` moves an element between named states. It is a small substitute for Slidev's (CSS transitions, no spring physics):
+`slide-ng-motion` moves an element between named states. It is a small substitute for Slidev's (CSS transitions, no spring physics):
 
 ```md
-<div v-motion
+<div slide-ng-motion
   :initial="{ x: -80, opacity: 0 }"
   :enter="{ x: 0, opacity: 1 }"
   :click-1="{ y: 30 }"
@@ -421,7 +423,7 @@ colour `red`, `blue`, `green`, `orange`, `yellow`, `pink`, `purple`, `teal`, `cy
 ```
 
 `initial` is before the slide, `enter` while it is shown, `click-N` from click N on (`click-N-M`: from N up to M, later clicks win), `leave` after the slide.
-Put `v-click` on the same element and it uses `initial` before its click and `enter` after. Properties: `x`, `y` (px), `scale`, `scaleX`, `scaleY`, `rotate` (deg),
+Put `slide-ng-click` on the same element and it uses `initial` before its click and `enter` after. Properties: `x`, `y` (px), `scale`, `scaleX`, `scaleY`, `rotate` (deg),
 `opacity`, and any other CSS property (camelCase); `transition: { duration, delay, ease }` (ms, ms, CSS timing function, default 500 / 0 / `ease-out`).
 Not supported: springs, `hovered`, `tapped`, `focused`, `visible`, keyframe lists, presets.
 
@@ -563,14 +565,14 @@ The presenter page has a **Screen Mirror** switch that shows a shared window ins
 Dark mode, slide scale, hide idle cursor, keep the screen awake (headmatter `wakeLock: true` starts it on), presenter cursor and its style, colour filters for the slide, camera options.
 "Download as PDF" is a disabled placeholder: export is not done.
 
-## Moving things: `v-drag`
+## Moving things: `slide-ng-drag`
 
 ```md
-<img v-drag="[100, 200, 300, 150]" src="/pic.png"> <!-- x, y, width, height, in slide pixels -->
-<div v-drag="square">named: numbers in the frontmatter</div>
-<div v-drag>starts where it is and can be moved</div>
-<v-drag pos="100,200,300,_">height follows the content</v-drag>
-<v-drag-arrow pos="100,100,300,200" color="red" [width]="3" />
+<img slide-ng-drag="[100, 200, 300, 150]" src="/pic.png"> <!-- x, y, width, height, in slide pixels -->
+<div slide-ng-drag="square">named: numbers in the frontmatter</div>
+<div slide-ng-drag>starts where it is and can be moved</div>
+<slide-ng-drag pos="100,200,300,_">height follows the content</slide-ng-drag>
+<slide-ng-drag-arrow pos="100,100,300,200" color="red" [width]="3" />
 ```
 
 ```md
@@ -600,7 +602,7 @@ Layers: add any of `layers/global-top.ts`, `global-bottom.ts`, `slide-top.ts`, `
 
 ## Dev-only extras and remote use
 
-While `npm start` runs: the **edit** button in the bar opens a side editor with the current slide's markdown (saved as you type), v-drag and drawings are written to files, and `{monaco-write}` saves.
+While `npm start` runs: the **edit** button in the bar opens a side editor with the current slide's markdown (saved as you type), slide-ng-drag and drawings are written to files, and `{monaco-write}` saves.
 A static build has none of this and makes no requests.
 
 ```sh
@@ -653,7 +655,7 @@ A build (`slide-ng build`) writes files of `public/` that slides name with a lea
 
 `export:` takes `format`, `range`, `withClicks`, `dark`, `timeout`, `wait`, `waitUntil`, `withToc`, `perSlide`, `scale` and `omitBackground`. It cannot name an output folder or
 a browser program: a deck may come from someone else, so those only come from the command line or the environment.
-In an exported PDF a slide that has clicks shows its last state, unless `--with-clicks` makes a page for every click step. `render-when context="print"` shows content only on paper.
+In an exported PDF a slide that has clicks shows its last state, unless `--with-clicks` makes a page for every click step. `slide-ng-render-when context="print"` shows content only on paper.
 
 ## Themes and addons
 

@@ -1,4 +1,4 @@
-// The pure part of v-motion: which variants apply, and how a variant becomes CSS.
+// The pure part of slide-ng-motion: which variants apply, and how a variant becomes CSS.
 // A variant is a plain object like { x: 40, opacity: 0.5, transition: { duration: 300 } }.
 export type Variant = Record<string, unknown>;
 export type Variants = Record<string, Variant | undefined>;

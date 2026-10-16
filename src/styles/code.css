@@ -196,7 +196,7 @@ html:not(.dark) .shiki {
   overflow: visible;
 }
 
-/* v-mark: rough-notation draws in screen pixels, but the slide is scaled. Undo the scale on the drawing. */
+/* slide-ng-mark: rough-notation draws in screen pixels, but the slide is scaled. Undo the scale on the drawing. */
 svg.rough-annotation {
   transform-origin: 0 0;
   transform: scale(calc(1 / var(--slidev-slide-scale, 1)));

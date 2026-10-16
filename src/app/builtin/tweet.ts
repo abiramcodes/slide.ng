@@ -1,4 +1,4 @@
-// An embedded post from X (Twitter):  <tweet id="20" />   <tweet url="https://x.com/jack/status/20" />
+// An embedded post from X (Twitter):  <slide-ng-tweet id="20" />   <slide-ng-tweet url="https://x.com/jack/status/20" />
 // It uses X's own widget script (loaded when the component starts), as Slidev does.
 import { Component, ElementRef, OnInit, inject, input, signal, viewChild } from '@angular/core';
 import { Dark } from '../lib/dark';
@@ -13,10 +13,10 @@ interface Twitter {
 }
 
 @Component({
-  selector: 'tweet',
+  selector: 'slide-ng-tweet',
   imports: [Transform],
   template: `
-    <transform [scale]="scale() || 1">
+    <slide-ng-transform [scale]="scale() || 1">
       <div #box class="tweet slidev-tweet">
         @if (!loaded() || notFound()) {
           <div class="w-30 h-30 my-10px bg-gray-400 bg-opacity-10 rounded-lg flex opacity-50">
@@ -29,7 +29,7 @@ interface Twitter {
           </div>
         }
       </div>
-    </transform>
+    </slide-ng-transform>
   `,
   styles: ['.slidev-tweet iframe { border-radius: 12px; overflow: hidden; }'],
 })

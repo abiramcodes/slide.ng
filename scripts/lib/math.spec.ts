@@ -37,9 +37,9 @@ describe('renderMath', () => {
   it('keeps {{ in a formula as text', () => {
     expect(renderMath({ block: false, latex: 'a^{{b}}' })).not.toContain('{{');
   });
-  it('wraps a block in katex-block-wrapper with its ranges', () => {
+  it('wraps a block in slide-ng-katex-block-wrapper with its ranges', () => {
     const html = renderMath({ block: true, latex: 'a', ranges: '1|all' });
-    expect(html).toContain('<katex-block-wrapper ranges="1|all"><div ngNonBindable>');
+    expect(html).toContain('<slide-ng-katex-block-wrapper ranges="1|all"><div ngNonBindable>');
     expect(html).toContain('katex-display');
   });
   it('shows the source when KaTeX cannot draw it, without throwing', () => {

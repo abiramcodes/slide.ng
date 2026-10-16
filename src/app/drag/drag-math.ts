@@ -1,4 +1,4 @@
-// The arithmetic of v-drag, without any browser code, so it can be tested on its own.
+// The arithmetic of slide-ng-drag, without any browser code, so it can be tested on its own.
 // All numbers are canvas pixels (the slide canvas), never screen pixels: the caller divides pointer movement by the scale.
 
 /** A box on the slide. `h` is NaN when the height follows the content. `rot` is degrees. */
@@ -55,7 +55,7 @@ const round = (v: number) => Math.round(v);
 const auto = (v: number, mark: string) => (Number.isNaN(v) ? mark : String(round(v)));
 
 /**
- * The text written into slides.md. `array` is the `v-drag="[x,y,w,h]"` spelling (NaN for automatic height),
+ * The text written into slides.md. `array` is the `slide-ng-drag="[x,y,w,h]"` spelling (NaN for automatic height),
  * `plain` is `pos="x,y,w,h"` and the frontmatter spelling (`_`). The rotation is only written when there is one.
  */
 export function formatBox(b: Box, style: 'array' | 'plain'): string {

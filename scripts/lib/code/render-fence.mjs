@@ -6,7 +6,7 @@ import { isMermaid, isPlantUml, renderMermaid, renderPlantUml } from './diagrams
 
 // A `::code-group` is tabs, one per fence; the tab names are the fences' [titles].
 function renderGroup(fences, ctx) {
-  return `<code-group>${fences.map((f) => renderCode(f, ctx)).join('')}</code-group>`;
+  return `<slide-ng-code-group>${fences.map((f) => renderCode(f, ctx)).join('')}</slide-ng-code-group>`;
 }
 
 // `codeblocks` of setup/transformers.ts: the first that returns a string decides what the block becomes (it is template markup).

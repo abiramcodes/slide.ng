@@ -1,5 +1,5 @@
 // Text that picks the biggest font size that fits its box (like a PowerPoint text box):
-//   <auto-fit-text class="w-60 h-20" min="30" max="100">Some text</auto-fit-text>
+//   <slide-ng-auto-fit-text class="w-60 h-20" min="30" max="100">Some text</slide-ng-auto-fit-text>
 // Slidev uses the `fitty` package; this tries sizes between min and max by halving, which is enough
 // for a box with a size, and needs no dependency.
 import {
@@ -28,7 +28,7 @@ export function biggestFit(min: number, max: number, fits: (size: number) => boo
 }
 
 @Component({
-  selector: 'auto-fit-text',
+  selector: 'slide-ng-auto-fit-text',
   host: { class: 'slidev-auto-fit-text block overflow-hidden' },
   template: `<div #inner class="slidev-auto-fit-text-inner">
     <ng-content>{{ modelValue() }}</ng-content>

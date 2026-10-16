@@ -1,10 +1,10 @@
 import { Component, inject, input } from '@angular/core';
 import { Nav, findSlide } from '../lib/nav';
 
-// A link to another slide of the deck: <slide-link to="3">go to slide 3</slide-link>.
+// A link to another slide of the deck: <slide-ng-link to="3">go to slide 3</slide-ng-link>.
 // `to` is a slide number or a `routeAlias`. (The name is not `link`, which is a built-in HTML tag.)
 @Component({
-  selector: 'slide-link',
+  selector: 'slide-ng-link',
   template: `<a [href]="'/' + to()" (click)="go($event)"><ng-content /></a>`,
 })
 export class SlideLink {

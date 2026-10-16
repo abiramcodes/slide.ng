@@ -1,4 +1,4 @@
-// Arrow, transform, auto-fit-text, youtube, slide-video, tweet and blue-sky.
+// Arrow, transform, slide-ng-auto-fit-text, youtube, slide-ng-video, tweet and slide-ng-blue-sky.
 export async function run({ t, open, press, hud }) {
   let page = await open('/13');
   const attr = (sel, name) => page.locator(sel).first().getAttribute(name);
@@ -32,7 +32,7 @@ export async function run({ t, open, press, hud }) {
       return i.scrollWidth <= box.clientWidth && i.offsetHeight <= box.clientHeight;
     });
   t.ok(
-    'auto-fit-text picks a size between min and max that fits the box',
+    'slide-ng-auto-fit-text picks a size between min and max that fits the box',
     (await size()) >= 10 && (await size()) <= 60 && (await inside()),
     String(await size()),
   );
@@ -40,15 +40,16 @@ export async function run({ t, open, press, hud }) {
   await page.locator('#fit').evaluate((e) => (e.style.height = '40px'));
   await page.waitForTimeout(200);
   t.ok(
-    'auto-fit-text fits again when the box gets smaller',
+    'slide-ng-auto-fit-text fits again when the box gets smaller',
     (await size()) < before && (await inside()),
     `${before} -> ${await size()}`,
   );
   t.ok(
     'youtube is an iframe of the video with its size',
-    (await attr('youtube iframe', 'src')) === 'https://www.youtube.com/embed/luoMHjh-XcQ' &&
-      (await attr('youtube iframe', 'width')) === '320' &&
-      (await attr('youtube iframe', 'height')) === '180',
+    (await attr('slide-ng-youtube iframe', 'src')) ===
+      'https://www.youtube.com/embed/luoMHjh-XcQ' &&
+      (await attr('slide-ng-youtube iframe', 'width')) === '320' &&
+      (await attr('slide-ng-youtube iframe', 'height')) === '180',
   );
   await page.close();
 
@@ -86,23 +87,24 @@ export async function run({ t, open, press, hud }) {
   );
   t.ok(
     'tweet is scaled',
-    (await page.locator('tweet transform').evaluate((e) => getComputedStyle(e).transform)) ===
-      'matrix(0.5, 0, 0, 0.5, 0, 0)',
+    (await page
+      .locator('slide-ng-tweet slide-ng-transform')
+      .evaluate((e) => getComputedStyle(e).transform)) === 'matrix(0.5, 0, 0, 0.5, 0, 0)',
   );
   await page.waitForFunction(() => window.__scanned);
   const uri = 'at://did:plc:432mbsu2xucyvxl6sluohidu/app.bsky.feed.post/3lgwg2vy44s2q';
   t.ok(
-    'blue-sky writes the embed blockquote with the post address and lets the script scan it',
+    'slide-ng-blue-sky writes the embed blockquote with the post address and lets the script scan it',
     (await attr('blockquote.bluesky-embed', 'data-bluesky-uri')) === uri &&
       (await page.evaluate(() => window.__scanned)) === uri,
   );
   t.ok(
-    'blue-sky passes the colour mode to the embed',
+    'slide-ng-blue-sky passes the colour mode to the embed',
     (await attr('blockquote.bluesky-embed', 'data-bluesky-embed-color-mode')) === 'light',
   );
 
   t.ok(
-    'two videos with v-click make two clicks',
+    'two videos with slide-ng-click make two clicks',
     (await hud(page)).endsWith('clicks 0/2'),
     await hud(page),
   );

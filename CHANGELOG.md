@@ -21,6 +21,20 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 ### Added
 
 - `docs/SECURITY-MODEL.md`, and a non-blocking `npm audit` job in CI.
+- **Built-in names have the library prefix `slide-ng-`.** The Vue-style `v-*` names and the short element names are gone, with no aliases. The generator stops with `renamed to slide-ng-...` when a slide still uses an old one. The rule and the full table are in `docs/RENAMES.md`.
+
+  | old                                                                                                                           | new                                                                                                                                                                                    |
+  | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `v-click`, `v-after`, `v-click-hide`                                                                                          | `slide-ng-click`, `slide-ng-after`, `slide-ng-click-hide`                                                                                                                              |
+  | `v-mark`, `v-motion`, `v-drag`                                                                                                | `slide-ng-mark`, `slide-ng-motion`, `slide-ng-drag`                                                                                                                                    |
+  | `<v-clicks>`, `<v-click-gap>`, `<v-switch>`                                                                                   | `<slide-ng-clicks>`, `<slide-ng-click-gap>`, `<slide-ng-switch>`                                                                                                                       |
+  | `<v-drag>`, `<v-drag-arrow>`                                                                                                  | `<slide-ng-drag>`, `<slide-ng-drag-arrow>`                                                                                                                                             |
+  | `<slide-toc>`, `<slide-current-no>`, `<slides-total>`, `<slide-link>`, `<slide-video>`                                        | `<slide-ng-toc>`, `<slide-ng-current-no>`, `<slide-ng-total>`, `<slide-ng-link>`, `<slide-ng-video>`                                                                                   |
+  | `<light-or-dark>`, `<render-when>`, `<arrow>`, `<transform>`, `<auto-fit-text>`                                               | `<slide-ng-light-or-dark>`, `<slide-ng-render-when>`, `<slide-ng-arrow>`, `<slide-ng-transform>`, `<slide-ng-auto-fit-text>`                                                           |
+  | `<youtube>`, `<tweet>`, `<blue-sky>`                                                                                          | `<slide-ng-youtube>`, `<slide-ng-tweet>`, `<slide-ng-blue-sky>`                                                                                                                        |
+  | `<mermaid>`, `<plant-uml>`, `<monaco>`, `<code-group>`, `<code-block-wrapper>`, `<shiki-magic-move>`, `<katex-block-wrapper>` | `<slide-ng-mermaid>`, `<slide-ng-plant-uml>`, `<slide-ng-monaco>`, `<slide-ng-code-group>`, `<slide-ng-code-block-wrapper>`, `<slide-ng-magic-move>`, `<slide-ng-katex-block-wrapper>` |
+
+  Layout names, frontmatter keys, CSS classes, `$clicks`-style variables and the `::code-group` block are unchanged. The runtime classes and files follow (`VClick` is `SlideNgClick`).
 
 ### Fixed
 

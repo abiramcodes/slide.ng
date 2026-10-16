@@ -1,5 +1,5 @@
-// The v-click directive: <div v-click>, <div v-click="3">, <div [v-click]="[2,4]">,
-// <div v-after>, <div v-click-hide>. Port of Slidev's v-click / v-after directives.
+// The slide-ng-click directive: <div slide-ng-click>, <div slide-ng-click="3">, <div [slide-ng-click]="[2,4]">,
+// <div slide-ng-after>, <div slide-ng-click-hide>. Port of Slidev's slide-ng-click / slide-ng-after directives.
 import {
   Directive,
   OnDestroy,
@@ -28,7 +28,7 @@ export function stateOf(ctx: ClicksContext, info: () => ClickInfo | null, hide: 
 }
 
 @Directive({
-  selector: '[v-click], [v-after], [v-click-hide]',
+  selector: '[slide-ng-click], [slide-ng-after], [slide-ng-click-hide]',
   host: {
     '[class.slidev-vclick-target]': 'info() !== null',
     '[class.slidev-vclick-hidden]': 'state.hidden()',
@@ -38,10 +38,10 @@ export function stateOf(ctx: ClicksContext, info: () => ClickInfo | null, hide: 
     '[attr.data-slidev-clicks-end]': 'endAttr()',
   },
 })
-export class VClick implements OnInit, OnDestroy {
-  at = input<RawAt>(undefined, { alias: 'v-click' });
-  after = input(false, { alias: 'v-after', transform: booleanAttribute });
-  hide = input(false, { alias: 'v-click-hide', transform: booleanAttribute });
+export class SlideNgClick implements OnInit, OnDestroy {
+  at = input<RawAt>(undefined, { alias: 'slide-ng-click' });
+  after = input(false, { alias: 'slide-ng-after', transform: booleanAttribute });
+  hide = input(false, { alias: 'slide-ng-click-hide', transform: booleanAttribute });
 
   private ctx = inject(ClicksContext);
   info = signal<ClickInfo | null>(null);
@@ -58,7 +58,7 @@ export class VClick implements OnInit, OnDestroy {
   // Inputs are set before ngOnInit, and ngOnInit runs in template order.
   // That order is what makes relative clicks ("+1") work.
   ngOnInit() {
-    const at = this.at() ?? (this.after() ? '+0' : undefined); // v-after = same click as the element before
+    const at = this.at() ?? (this.after() ? '+0' : undefined); // slide-ng-after = same click as the element before
     const info = this.ctx.calculate(at);
     this.info.set(info);
     this.ctx.register(this, info);

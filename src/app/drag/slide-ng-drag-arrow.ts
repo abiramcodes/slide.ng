@@ -5,10 +5,10 @@ import { Arrow, formatArrow, moveArrow, parseArrow } from './drag-math';
 import { DragState, DragTarget } from './drag-state';
 import { resolvePos } from './resolve-pos';
 
-// `<v-drag-arrow pos="x1,y1,x2,y2" />`: an arrow between two points of the slide. Drag it by its line; its
+// `<slide-ng-drag-arrow pos="x1,y1,x2,y2" />`: an arrow between two points of the slide. Drag it by its line; its
 // two ends get handles (see drag-controls.ts). `pos` may also be a name from the frontmatter's `dragPos`.
 @Component({
-  selector: 'v-drag-arrow',
+  selector: 'slide-ng-drag-arrow',
   host: { style: 'position: absolute; inset: 0; pointer-events: none; display: block' },
   template: `
     @if (arrow(); as a) {
@@ -55,7 +55,7 @@ import { resolvePos } from './resolve-pos';
     }
   `,
 })
-export class VDragArrow implements Extract<DragTarget, { kind: 'arrow' }> {
+export class SlideNgDragArrow implements Extract<DragTarget, { kind: 'arrow' }> {
   readonly pos = input('');
   readonly site = input<string | null>(null, { alias: 'drag-site' });
   readonly color = input('currentColor');

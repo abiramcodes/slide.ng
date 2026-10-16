@@ -1,4 +1,4 @@
-// ```ts {monaco}, {monaco-diff} and {monaco-run} -> <monaco> editor component (src/app/code/monaco-editor.ts).
+// ```ts {monaco}, {monaco-diff} and {monaco-run} -> <slide-ng-monaco> editor component (src/app/code/monaco-editor.ts).
 // The code travels packed, because code is full of braces and quotes.
 import { parseMonacoInfo } from './meta.mjs';
 import { createHash } from 'node:crypto';
@@ -64,5 +64,5 @@ export function renderMonaco(fence, ctx = {}) {
     showOutputAt: options.showOutputAt,
   });
   const diff = modified === undefined ? '' : ` diff="${pack(modified)}"`;
-  return `<monaco${a} packed="${pack(original)}"${diff}></monaco>`;
+  return `<slide-ng-monaco${a} packed="${pack(original)}"${diff}></slide-ng-monaco>`;
 }

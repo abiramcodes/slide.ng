@@ -17,7 +17,7 @@ describe('magic move', () => {
   });
   it('writes the component with title, duration, step ranges and packed steps', () => {
     const html = renderMagicMove(fence());
-    expect(html).toContain('<shiki-magic-move title="a.js" duration="300" steps="');
+    expect(html).toContain('<slide-ng-magic-move title="a.js" duration="300" steps="');
     expect(html).toContain('stepRanges="[[&quot;*&quot;,&quot;1&quot;],[]]"');
     expect(html).not.toContain('{');
   });

@@ -24,7 +24,7 @@ export default defineConfig([
     languageOptions: { globals: globals.browser },
     processor: angular.processInlineTemplates,
     rules: {
-      // Directives such as v-click and v-drag need an attribute name that differs from the input.
+      // Directives such as slide-ng-click and slide-ng-drag need an attribute name that differs from the input.
       '@angular-eslint/no-input-rename': 'off',
       // A name that starts with an underscore is unused on purpose.
       '@typescript-eslint/no-unused-vars': [

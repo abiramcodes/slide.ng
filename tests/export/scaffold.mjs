@@ -101,7 +101,7 @@ await page.keyboard.press('ArrowDown');
 await page.waitForFunction(() => document.querySelector('#hud')?.innerText.startsWith('slide 2/'));
 t.ok(
   'the next slide has the click elements',
-  (await page.locator('[v-click], .slidev-vclick-target').count()) >= 2,
+  (await page.locator('[slide-ng-click], .slidev-vclick-target').count()) >= 2,
 );
 t.ok('no console errors or warnings', problems.length === 0, problems.join('|'));
 await browser.close();

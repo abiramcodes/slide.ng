@@ -67,27 +67,27 @@ This slide has `class: text-center`.
 
 # Click variants
 
-<div id="a" v-click>A: v-click (click 1)</div>
+<div id="a" slide-ng-click>A: slide-ng-click (click 1)</div>
 
-<div id="b" v-click="+1">B: relative +1 (click 2)</div>
+<div id="b" slide-ng-click="+1">B: relative +1 (click 2)</div>
 
-<div id="r" [v-click]="[3,4]">R: range [3,4], only at click 3</div>
+<div id="r" [slide-ng-click]="[3,4]">R: range [3,4], only at click 3</div>
 
-<div id="h" v-click="2" v-click-hide>H: hide variant, visible until click 2</div>
+<div id="h" slide-ng-click="2" slide-ng-click-hide>H: hide variant, visible until click 2</div>
 
-<div id="af" v-after>AF: v-after, shows together with B (click 2)</div>
+<div id="af" slide-ng-after>AF: slide-ng-after, shows together with B (click 2)</div>
 
 ---
 
-# v-clicks
+# slide-ng-clicks
 
-<v-clicks>
+<slide-ng-clicks>
 
 - item one
 - item two
 - item three
 
-</v-clicks>
+</slide-ng-clicks>
 
 ---
 hide: true
@@ -107,4 +107,4 @@ Some **bold** text and `inline code`.
 
 # The end
 
-<div id="x1" v-click>last-click-one</div>
+<div id="x1" slide-ng-click>last-click-one</div>

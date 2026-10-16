@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { readConfig } from './config.mjs';
 import { startServer } from './server.mjs';
 
-const SLIDES = '---\ntitle: T\n---\n\n# One\n\n<img v-drag="[1,2,3,4]">\n\n---\n\n# Two\n';
+const SLIDES = '---\ntitle: T\n---\n\n# One\n\n<img slide-ng-drag="[1,2,3,4]">\n\n---\n\n# Two\n';
 let root: string, port: number, stop: () => void;
 
 function ask(

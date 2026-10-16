@@ -1,4 +1,4 @@
-// ````md magic-move  with several ```code``` blocks inside -> <shiki-magic-move>.
+// ````md magic-move  with several ```code``` blocks inside -> <slide-ng-magic-move>.
 // Each block is one step. We tokenise every step here and send the tokens (compressed) to the
 // component, which animates between the steps with @shikijs/magic-move.
 import { toKeyedTokens } from '@shikijs/magic-move/core';
@@ -48,5 +48,5 @@ export function renderMagicMove(fence, ctx = {}) {
     duration: options.duration ?? head.magicMoveDuration,
     noCopy: head.codeCopy === false || head.magicMoveCopy === false || undefined,
   });
-  return `<shiki-magic-move${a} steps="${packed}" stepRanges="${attr(JSON.stringify(ranges))}"></shiki-magic-move>`;
+  return `<slide-ng-magic-move${a} steps="${packed}" stepRanges="${attr(JSON.stringify(ranges))}"></slide-ng-magic-move>`;
 }

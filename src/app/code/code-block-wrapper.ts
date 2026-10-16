@@ -15,7 +15,7 @@ import { RangedBlock } from './ranged-block';
 import { highlightLines } from './ranges';
 
 @Component({
-  selector: 'code-block-wrapper',
+  selector: 'slide-ng-code-block-wrapper',
   host: {
     class: 'slidev-code-wrapper relative group',
     '[class.slidev-code-line-numbers]': 'lines()',

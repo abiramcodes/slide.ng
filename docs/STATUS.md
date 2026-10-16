@@ -17,7 +17,7 @@ command line as a package, themes and addons, an example theme, the MCP server a
 7. **Themes and addons**: `theme:`, `addons:`, `--theme`, folders in the deck, layouts, components, layers, styles, public, UnoCSS settings, default headmatter, the `setup/` hooks (docs/SETUP.md), `theme eject`,
    `examples/theme-minimal` (docs/THEMES.md, docs/WRITING-A-THEME.md). The example theme changes the rendered output and its component is used from slides (browser test).
 8. **MCP server** `slide-ng mcp`: seven tools, tested with a scripted client over stdio (initialize, tools/list, get, update, insert, move, remove, refusals, path confinement).
-9. **Polish**: the PDF button in the bar (enabled only when the PDF exists), `dev --open`, `--theme`, the side editor takes over outside edits, the next-step preview draws global layers, v-drag boxes were already drawn in thumbnails.
+9. **Polish**: the PDF button in the bar (enabled only when the PDF exists), `dev --open`, `--theme`, the side editor takes over outside edits, the next-step preview draws global layers, slide-ng-drag boxes were already drawn in thumbnails.
 10. **Official themes**: `seriph`, `shibainu`, `bricks` and `apple-basic` are npm packages `@slide-ng/theme-<name>` in the separate slide.ng-themes repository (DECISIONS.md 10), with the layouts, components, fonts,
     READMEs, showcase decks, NOTICE and tests. This package resolves `theme: <name>` from `node_modules` like Slidev (`@slide-ng/theme-<name>`, `slide-ng-theme-<name>`, `<name>`); `default` is the built-in look.
     A missing official theme stops the build with `npm install -D @slide-ng/theme-<name>`. A fake `@slide-ng/theme-demo` package (a copy of `examples/theme-minimal`) is built end to end in `tests/export/theme.mjs`.
@@ -41,13 +41,13 @@ command line as a package, themes and addons, an example theme, the MCP server a
 - `dev --tunnel` (needs a tunnel service; refused with a message) and `dev --base` (refused with a message); `build --router-mode` (use `routerMode`).
 - VS Code extension, prettier plugin, Vue-syntax converter, community themes, browser exporter page, `overviewSnapshots` (out of scope).
 - Monaco type loading; MDC/Comark; `notesAutoRuby`; slide hooks; custom transition objects; touch tuning for drawing and drag. The full list is in docs/PARITY.md.
-- Offline: PlantUML, `<youtube>`, `<tweet>` and `<blue-sky>` need the network, also in an offline folder. A deck with Monaco and Mermaid becomes one large script in an offline folder (27 MB folder, 16 MB script for the phase 2 test deck).
+- Offline: PlantUML, `<slide-ng-youtube>`, `<slide-ng-tweet>` and `<slide-ng-blue-sky>` need the network, also in an offline folder. A deck with Monaco and Mermaid becomes one large script in an offline folder (27 MB folder, 16 MB script for the phase 2 test deck).
 - PWA: the first visit must be online (a browser that never opened the deck cannot get it offline). Remote pictures are not cached in dev. Icons are drawn with Chromium at build time (a build without one warns and has no icons).
 - MCP: slide 1 cannot be removed or moved; insert, remove and move need all slides in the entry file.
 - The first load of a deck with Monaco and KaTeX is about 850 kB (budget 1.5 MB / 3 MB).
 - Security fixes (docs/SECURITY-MODEL.md, decisions "Made while fixing the security review"): tested with unit tests and local servers only. NOT VERIFIED: a real LAN with a second device; the request filter of the exporter against a DNS name whose answer changes after the check; real Google Fonts with the new provider rules; `npm audit` output (no network when this was written); the password prompt on a real terminal.
 - Recording: no separate camera file, no mp4 or mkv, no cloud upload. No HTTPS for `--remote` (as before).
-- Phase 2 and phase 3 lists still apply (Monaco and Mermaid limits, `v-motion` limits, footnote limits, resizing a rotated `v-drag` box, `{monaco-write}` limits, imported slides outside the deck's folder cannot be edited by the dev server).
+- Phase 2 and phase 3 lists still apply (Monaco and Mermaid limits, `slide-ng-motion` limits, footnote limits, resizing a rotated `slide-ng-drag` box, `{monaco-write}` limits, imported slides outside the deck's folder cannot be edited by the dev server).
 - Agent skill: the samples prove that decks generate and compile, not that they look right. In the combined build only the `theme`, `addons` and `codeAliases` of the samples' headmatter are applied; other headmatter keys are checked by the generator alone (`--each` builds every sample alone, slow, run by hand). Features that need a network, a browser or a device are described in the skill, not run. The skill is written by hand; the drift guard only notices that a document changed, not whether the skill was updated well.
 
 ## Problems found and fixed along the way

@@ -1,8 +1,8 @@
-// Scales (or just moves the origin of) what is inside:  <transform scale="0.5" origin="top center">...</transform>
+// Scales (or just moves the origin of) what is inside:  <slide-ng-transform scale="0.5" origin="top center">...</slide-ng-transform>
 import { Component, computed, input } from '@angular/core';
 
 @Component({
-  selector: 'transform',
+  selector: 'slide-ng-transform',
   host: {
     '[style.transform]': 'transform()',
     '[style.transform-origin]': 'origin() || "top left"',

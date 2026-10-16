@@ -7,6 +7,7 @@ import { attr } from './protect.mjs';
 import { toTemplate } from './to-template.mjs';
 import { tagDragSites } from './drag-sites.mjs';
 import { rebaseCss, rebaseHtml } from './asset-paths.mjs';
+import { assertNoRenamedNames } from './renamed.mjs';
 
 const pad = (no) => String(no).padStart(3, '0');
 export const slideName = (no) => `slide-${pad(no)}`;
@@ -69,6 +70,11 @@ export function slideSource(slide, no, deck = {}) {
   const markup = html
     .replace(/<pre[\s\S]*?<\/pre>/g, '')
     .replace(/<code(?:\s[^>]*)?>[\s\S]*?<\/code>/g, '');
+  assertNoRenamedNames(
+    markup,
+    no,
+    (deck.components ?? []).flatMap((c) => (c.selector ? [c.selector] : [])),
+  );
   const used = (deck.components ?? COMPONENTS).filter((c) => c.test.test(markup));
   const imports = [def, ...used];
   const importLines = [

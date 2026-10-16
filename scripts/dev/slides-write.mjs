@@ -1,4 +1,4 @@
-// Changes slides.md (or a file it imports) on request of the page: a v-drag moved, or the side editor saved.
+// Changes slides.md (or a file it imports) on request of the page: a slide-ng-drag moved, or the side editor saved.
 // The page only says "slide 3"; which file and which lines is found here, from the parser. A path never comes from a request.
 import { existsSync, readFileSync } from 'node:fs';
 import { relative } from 'node:path';
@@ -32,7 +32,7 @@ async function save(ctx, file, result) {
   safeWrite(file, result.text);
 }
 
-/** A v-drag element was moved: write its new place. */
+/** A slide-ng-drag element was moved: write its new place. */
 export async function writeDrag(ctx, no, site, pos) {
   const { slide, file, text } = await locate(ctx, no);
   await save(ctx, file, dragEdit(text, slide, site, pos));

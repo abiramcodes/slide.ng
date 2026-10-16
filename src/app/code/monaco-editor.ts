@@ -30,7 +30,7 @@ const toAutorun = (v: unknown): boolean | 'once' =>
   v === 'once' ? 'once' : !(v === false || v === 'false');
 
 @Component({
-  selector: 'monaco',
+  selector: 'slide-ng-monaco',
   imports: [CodeRunner],
   // The host has `data-slide-ng-waitfor` until Monaco is loaded and the editor exists, so an exporter can wait.
   host: {

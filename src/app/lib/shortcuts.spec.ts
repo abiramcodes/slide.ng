@@ -94,7 +94,7 @@ describe('default shortcuts (the same keys as Slidev)', () => {
     ]);
     expect(run('ArrowRight', {}, false, true)).toBe('next');
   });
-  it('leaves the arrow keys to a selected v-drag element', () => {
+  it('leaves the arrow keys to a selected slide-ng-drag element', () => {
     const run = (k: string, mods = {}) => {
       const log: string[] = [];
       findShortcut(key(k, mods), defaultShortcuts(actions(log, false, false, true)))?.run();

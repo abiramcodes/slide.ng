@@ -20,7 +20,7 @@ Count is {{ c.n() }}.
 
 <app-counter #c [start]="5" />
 
-<div v-click>Appears on the first click</div>
+<div slide-ng-click>Appears on the first click</div>
 ```
 
 ## Run it
@@ -71,22 +71,22 @@ The URL is the state: `/7?clicks=2` is slide 7 at click 2.
 - Slides from one markdown file, with Angular templates inside (`{{ }}`, `@if`, `@for`, your own components).
 - `src:` imports of other markdown files, headmatter `defaults`, `routeAlias`, `level`, `hideInToc`, `clicks`, speaker notes, per-slide `<style>`.
 - All 19 Slidev layouts plus `404` and `error`, with the same names and props, and `::name::` slots.
-- Clicks: `v-click`, `v-after`, `v-click-hide`, `<v-clicks>`, `<v-switch>`, `<v-click-gap>`.
+- Clicks: `slide-ng-click`, `slide-ng-after`, `slide-ng-click-hide`, `<slide-ng-clicks>`, `<slide-ng-switch>`, `<slide-ng-click-gap>`.
 - Transitions: `slide-left`, `slide-right`, `slide-up`, `slide-down`, `fade`, `fade-out`, `view-transition`.
 - Navigation bar, right-click menu, slide overview with live thumbnails, go-to box, info dialog, light and dark mode.
-- Built-in `<slide-toc>`, `<slide-link>`, `<slide-current-no>`, `<slides-total>`, `<light-or-dark>`, `<render-when>`.
+- Built-in `<slide-ng-toc>`, `<slide-ng-link>`, `<slide-ng-current-no>`, `<slide-ng-total>`, `<slide-ng-light-or-dark>`, `<slide-ng-render-when>`.
 - Keyboard shortcuts as a list you can change.
 - Code: Shiki highlighting at build time, line numbers, line highlights that step with clicks (`{1|2-3|all}`), `<<<` snippets with regions, code groups, copy button, Magic Move.
 - Twoslash type popups, KaTeX math (also stepped by clicks), Mermaid and PlantUML diagrams.
 - Monaco editors in slides: `{monaco}`, `{monaco-diff}` and `{monaco-run}` (runs the code in a sandbox). Heavy libraries are lazy chunks, only in decks that use them.
-- Built-in `<arrow>`, `<transform>`, `<auto-fit-text>`, `<youtube>`, `<slide-video>`, `<tweet>`, `<blue-sky>`.
-- `v-mark` (rough-notation marks on clicks) and a small `v-motion`.
+- Built-in `<slide-ng-arrow>`, `<slide-ng-transform>`, `<slide-ng-auto-fit-text>`, `<slide-ng-youtube>`, `<slide-ng-video>`, `<slide-ng-tweet>`, `<slide-ng-blue-sky>`.
+- `slide-ng-mark` (rough-notation marks on clicks) and a small `slide-ng-motion`.
 - GitHub alerts, task lists, footnotes, and icons as tags (`<carbon-apps />`, `<mdi-account-circle />`, `<ph-star />`; any installed Iconify set).
 
 - Presenter view (three layouts, notes with click markers, timer, next-step preview), notes page, laser pointer and presenter cursor, synced between windows.
 - Drawing with a toolbar (drauu), synced, kept in the browser and, with `drawings.persist`, in `.slide-ng/drawings/`.
 - Camera bubble, screen and camera recording (native MediaRecorder, webm), screen mirror, settings menu (filters, wake lock, devices).
-- `v-drag`, `<v-drag>`, `<v-drag-arrow>` written back into slides.md in dev; `zoom`, `canvasWidth`, `aspectRatio`, `routerMode`, global and slide layers.
+- `slide-ng-drag`, `<slide-ng-drag>`, `<slide-ng-drag-arrow>` written back into slides.md in dev; `zoom`, `canvasWidth`, `aspectRatio`, `routerMode`, global and slide layers.
 - Dev companion server: side editor, `{monaco-write}`, drawing files, WebSocket sync for other devices.
 
 - Export to PDF (with outline), PNG, PPTX (pictures) and Markdown; speaker notes as PDF; `slide-ng build` with `--base`, 404 page, Open Graph picture, remote assets, download button, and an offline worker with install icons and an "Available offline" label (`pwa: true`).
@@ -124,7 +124,7 @@ Remote mode always has a password, unlike Slidev where it is optional: plain `--
 ```sh
 npm test             # unit tests (generator, code and math handling, click engine, table of contents, shortcuts, transitions)
 npm run test:e2e     # builds the starter deck and the showcase, code, interaction and theme decks, and checks them in a real browser
-npm run test:dev     # starts the dev server: live updates, v-drag write-back, drawings, side editor, {monaco-write}, --remote password
+npm run test:dev     # starts the dev server: live updates, slide-ng-drag write-back, drawings, side editor, {monaco-write}, --remote password
 npm run test:export  # the command line: export (PDF, PNG, PPTX, MD), build, themes, create, the MCP server, the agent skill's samples
 npm run test:skills  # builds every code sample of the agent skill (part of test:export)
 npm run check:skills # fails when a document changed after the agent skill was synced with it
@@ -145,7 +145,7 @@ Chromium is not in `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`.
    scaling and the controls around the slide.
 
 Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full picture,
-[docs/SYNTAX.md](docs/SYNTAX.md) for how to write slides, and
+[docs/SYNTAX.md](docs/SYNTAX.md) for how to write slides (built-ins all start with `slide-ng-`, see [docs/RENAMES.md](docs/RENAMES.md)), and
 [docs/DECISIONS.md](docs/DECISIONS.md) for why things are the way they are.
 Current state: [docs/STATUS.md](docs/STATUS.md).
 

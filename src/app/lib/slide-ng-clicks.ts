@@ -1,4 +1,4 @@
-// <v-clicks> makes each list item of its content appear on its own click.
+// <slide-ng-clicks> makes each list item of its content appear on its own click.
 // Options: depth="2" (nested lists), every="2" (items per click), at="3" (first click), hide.
 import {
   Component,
@@ -12,14 +12,14 @@ import {
   input,
 } from '@angular/core';
 import { ClicksContext, RawAt, RawSingleAt, normalizeSingle } from './clicks';
-import { stateOf } from './v-click';
+import { stateOf } from './slide-ng-click';
 
 @Component({
-  selector: 'v-clicks',
+  selector: 'slide-ng-clicks',
   template: '<ng-content />',
   host: { style: 'display: contents' },
 })
-export class VClicks implements OnInit, OnDestroy {
+export class SlideNgClicks implements OnInit, OnDestroy {
   depth = input<number | string>(1);
   every = input<number | string>(1);
   at = input<RawAt>('+1');
@@ -75,7 +75,7 @@ export class VClicks implements OnInit, OnDestroy {
     this.ctx.register(gap, { delta: size, max: this.ctx.currentOffset + size - 1 });
   }
 
-  // How many <ul>/<ol> sit between this <li> and the <v-clicks> element.
+  // How many <ul>/<ol> sit between this <li> and the <slide-ng-clicks> element.
   private listDepth(li: HTMLElement) {
     let depth = 0;
     for (let p = li.parentElement; p && p !== this.el; p = p.parentElement) {

@@ -1,5 +1,5 @@
-// An embedded Bluesky post:  <blue-sky uri="at://did:plc:.../app.bsky.feed.post/..." />
-//                            <blue-sky uri="https://bsky.app/profile/sli.dev/post/3lgwg2vy44s2q" />
+// An embedded Bluesky post:  <slide-ng-blue-sky uri="at://did:plc:.../app.bsky.feed.post/..." />
+//                            <slide-ng-blue-sky uri="https://bsky.app/profile/sli.dev/post/3lgwg2vy44s2q" />
 // Uses Bluesky's own embed script. A post address is first turned into an `at://` address with Bluesky's public API.
 import { Component, ElementRef, OnInit, inject, input, signal, viewChild } from '@angular/core';
 import { Dark } from '../lib/dark';
@@ -29,10 +29,10 @@ export async function resolvePostUri(input: string): Promise<string | undefined>
 }
 
 @Component({
-  selector: 'blue-sky',
+  selector: 'slide-ng-blue-sky',
   imports: [Transform],
   template: `
-    <transform [scale]="scale() || 1">
+    <slide-ng-transform [scale]="scale() || 1">
       <div #box class="slidev-bluesky">
         @if (uri2()) {
           <blockquote
@@ -52,7 +52,7 @@ export async function resolvePostUri(input: string): Promise<string | undefined>
           </div>
         }
       </div>
-    </transform>
+    </slide-ng-transform>
   `,
   styles: ['.slidev-bluesky .bluesky-embed iframe { border-radius: 12px; overflow: hidden; }'],
 })

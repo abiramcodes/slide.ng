@@ -1,4 +1,4 @@
-// The v-drag elements of a slide's markdown. Two readers need to agree on which one is "number 3":
+// The slide-ng-drag elements of a slide's markdown. Two readers need to agree on which one is "number 3":
 //   - the generator, which tags each one with `drag-site="3"`, so the browser can say which one moved;
 //   - the dev server, which finds number 3 in slides.md and writes the new position into it.
 // Both call `findDragSites` on the same text, so the numbers always match.
@@ -13,15 +13,15 @@ export function maskCode(md) {
 
 // <tag attributes> where the attributes may hold quoted `>` characters.
 const TAG = /<([a-zA-Z][\w-]*)((?:"[^"]*"|'[^']*'|[^<>"'])*)>/g;
-const COMPONENT = /^v-?drag(-arrow)?$/i;
-const DIRECTIVE = /(?<![\w-])v-drag(?![\w-])/;
+const COMPONENT = /^slide-ng-drag(-arrow)?$/;
+const DIRECTIVE = /(?<![\w-])slide-ng-drag(?![\w-])/;
 
-// The place of a site is written as `v-drag="..."` (on any tag) or `pos="..."` (on the components).
-const VALUE = /(?<![\w-])(?:v-drag|pos)=(?:"([^"]*)"|'([^']*)')/;
+// The place of a site is written as `slide-ng-drag="..."` (on any tag) or `pos="..."` (on the components).
+const VALUE = /(?<![\w-])(?:slide-ng-drag|pos)=(?:"([^"]*)"|'([^']*)')/;
 const NAME = /^[A-Za-z_][\w-]*$/;
 
 /** @returns {{ index: number, start: number, end: number, tag: string, attrs: string, component: boolean, name: string | null }[]}
- *  `name` is set when the place is a name (`v-drag="square"`): its numbers live in the frontmatter, under `dragPos`. */
+ *  `name` is set when the place is a name (`slide-ng-drag="square"`): its numbers live in the frontmatter, under `dragPos`. */
 export function findDragSites(content) {
   const sites = [];
   for (const m of maskCode(content).matchAll(TAG)) {
@@ -43,7 +43,7 @@ export function findDragSites(content) {
   return sites;
 }
 
-/** The content with ` drag-site="N"` added to every v-drag tag (what the generator feeds to the template). */
+/** The content with ` drag-site="N"` added to every slide-ng-drag tag (what the generator feeds to the template). */
 export function tagDragSites(content) {
   let out = content;
   for (const s of findDragSites(content).reverse()) {
@@ -61,7 +61,7 @@ const POSITION = new RegExp(
 );
 export const isPosition = (text) => typeof text === 'string' && POSITION.test(text);
 
-/** `10,20,30,_,5` -> `[10,20,30,NaN,5]`: the spelling of `v-drag="..."`. Text that is already an array stays. */
+/** `10,20,30,_,5` -> `[10,20,30,NaN,5]`: the spelling of `slide-ng-drag="..."`. Text that is already an array stays. */
 export const toArrayStyle = (pos) => (pos.startsWith('[') ? pos : `[${pos.replace(/_/g, 'NaN')}]`);
 /** `[10,20,30,NaN]` -> `10,20,30,_`: the spelling of `pos="..."` and of `dragPos` in the frontmatter. */
 export const toPlainStyle = (pos) => pos.replace(/^\[|\]$/g, '').replace(/NaN/g, '_');
@@ -77,15 +77,15 @@ export function setDragPosition(content, site, pos) {
   let next;
   if (s.component) {
     const plain = `"${toPlainStyle(pos)}"`;
-    // <v-drag pos="..."> : replace the pos attribute, or add one
+    // <slide-ng-drag pos="..."> : replace the pos attribute, or add one
     next = /(\spos=)("[^"]*"|'[^']*')/.test(tag)
       ? tag.replace(/(\spos=)("[^"]*"|'[^']*')/, `$1${plain}`)
       : tag.replace(/^<[\w-]+/, (open) => `${open} pos=${plain}`);
   } else {
-    // <img v-drag="..."> or a bare v-drag
+    // <img slide-ng-drag="..."> or a bare slide-ng-drag
     next = tag.replace(
-      /(?<![\w-])v-drag(?:=("[^"]*"|'[^']*'))?(?![\w-])/,
-      `v-drag="${toArrayStyle(pos)}"`,
+      /(?<![\w-])slide-ng-drag(?:=("[^"]*"|'[^']*'))?(?![\w-])/,
+      `slide-ng-drag="${toArrayStyle(pos)}"`,
     );
   }
   return content.slice(0, s.start) + next + content.slice(s.end);
