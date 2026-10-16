@@ -284,7 +284,17 @@ try {
   await page.keyboard.type('\n\n<p id="from-editor">Typed in the editor</p>\n');
   t.ok(
     'what is typed is coloured too',
-    (await page.locator('#editor-highlight').innerText()).includes('Typed in the editor'),
+    await page
+      .waitForFunction(
+        () =>
+          document.querySelector('#editor-highlight')?.textContent.includes('Typed in the editor'),
+        null,
+        { timeout: 5000 },
+      )
+      .then(
+        () => true,
+        () => false,
+      ),
   );
   t.ok(
     'typing in the editor saves into the markdown file',
