@@ -24,6 +24,7 @@ Short notes on choices made, and why. Newest at the bottom.
 4. **Imports are decided by looking at the slide's HTML** (`scripts/lib/registry.mjs`), outside code samples.
    A standalone component must import what it uses, and unused imports produce Angular warnings. Adding your own
    component is one line in that table. Trade-off: it is a manual list, not auto-discovery.
+   _Superseded:_ components in a `components/` folder are found by scanning (`scripts/lib/scan-roots.mjs`); the table lists only the built-ins, and you never edit it.
 5. **Click attribute spelling: `slide-ng-click`, `slide-ng-after`, `slide-ng-click-hide`** (first written as Slidev's `v-click`, `v-after`, `v-click-hide`; see the last section), as inputs with aliases.
    Plain attributes give text (`slide-ng-click="+2"`); ranges need a binding (`[slide-ng-click]="[2,4]"`). The prototype used
    camelCase names; the dashed names are closer to Slidev and verified to work with Angular bindings.
@@ -283,7 +284,7 @@ plain Node.
 24. **Two phase 3 limits were smaller than written:** `slide-ng-drag` boxes are drawn in the right place in overview thumbnails (they are only not editable there), and the presenter's next-step preview now draws the global layers. Slidev does not draw global
     layers in overview thumbnails either, so they were left out there.
 25. **The four layer files of the layout test deck live in its own folder** (`tests/e2e/phase3/layout/layers/`) instead of being copied into `src/app/layers` during the build; that is the deck-folder feature doing the job.
-26. **Left out on purpose:** editable PPTX, the VS Code extension, the prettier plugin, the Vue-syntax converter, community themes, the browser exporter page and `overviewSnapshots` (as asked). Also left out because they would not fit: `--tunnel`,
+26. **Left out on purpose:** editable PPTX, the prettier plugin, the Vue-syntax converter, community themes, the browser exporter page and `overviewSnapshots` (as asked; the VS Code extension was left out of the core and became the separate slide.ng-vscode repository). Also left out because they would not fit: `--tunnel`,
     Monaco type loading, `fonts`, MDC/Comark.
 
 ### Open decisions (for the person to settle)
@@ -404,7 +405,6 @@ Verified by running the built decks in Chromium; the tests are `tests/export/off
    - Nothing was added for hooks (no husky, no lint-staged): `.githooks/` and `scripts/prepare.mjs` use git's own `core.hooksPath`.
 4. **Lint rules turned off or narrowed, and why:**
    - `@angular-eslint/no-input-rename` is off in `src`: directives such as `slide-ng-click`, `slide-ng-drag` and `slide-ng-mark` need a dashed attribute that differs from the input name.
-   - `@angular-eslint/no-output-native` is disabled on one line in `src/app/presenter/clicks-slider.ts`: the slider's output is called `change` like the event of a range input. Renaming it would change how templates use it.
    - `no-control-regex` is disabled on one line in `scripts/export/filename.mjs`: the pattern removes control characters from file names on purpose.
    - `@typescript-eslint/no-explicit-any` is off in `*.spec.ts` only (loose test doubles). It stays on in `src`.
    - Names that start with an underscore are allowed to be unused (rest destructuring that drops keys).

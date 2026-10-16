@@ -130,7 +130,7 @@ Under a sub-path build with `--base /talk/`, put the files in `/usr/share/nginx/
 Headmatter `download: true` shows a download button in the nav bar and the settings menu. It is enabled only if the page
 can really fetch a PDF next to it (so it stays disabled in `npm start` and in builds made without `--download`).
 `slide-ng build --download` makes the PDF with the same code as `slide-ng export` and writes it as `<exportFilename>.pdf`
-(a plain file name, see [SYNTAX.md](SYNTAX.md#export)). `download: https://example.com/talk.pdf` points the button at a
+(a plain file name, see [SYNTAX.md](SYNTAX.md#the-page-export-and-build)). `download: https://example.com/talk.pdf` points the button at a
 file somewhere else, and no PDF is made.
 
 ## Link previews (Open Graph)
@@ -183,5 +183,5 @@ service workers there. A new build gets a new cache name, so visitors get the ne
 ## Bundle size
 
 A deck without heavy features is about 450 kB at startup (compressed about 110 kB). Decks that use Monaco or KaTeX add their
-style sheets to that (about 850 kB with both). The build warns above 1 MB and fails above 2 MB at startup; Monaco, Mermaid,
+style sheets to that (about 850 kB with both). The build warns above 1.5 MB and fails above 3 MB at startup; Monaco, Mermaid,
 Magic Move and the like are lazy chunks and do not count.

@@ -21,7 +21,7 @@ command line as a package, themes and addons, an example theme, the MCP server a
 10. **Official themes**: `seriph`, `shibainu`, `bricks` and `apple-basic` are npm packages `@slide-ng/theme-<name>` in the separate slide.ng-themes repository (DECISIONS.md 10), with the layouts, components, fonts,
     READMEs, showcase decks, NOTICE and tests. This package resolves `theme: <name>` from `node_modules` like Slidev (`@slide-ng/theme-<name>`, `slide-ng-theme-<name>`, `<name>`); `default` is the built-in look.
     A missing official theme stops the build with `npm install -D @slide-ng/theme-<name>`. A fake `@slide-ng/theme-demo` package (a copy of `examples/theme-minimal`) is built end to end in `tests/export/theme.mjs`.
-11. **docs/PARITY.md**: 162 rows (plus 5 for the offline work), a test found for each `done` row, and a ranked list of gaps.
+11. **docs/PARITY.md**: 173 rows, a test found for each `done` row, and a ranked list of gaps.
 12. **Offline use** (docs/OFFLINE.md): `slide-ng build --offline` makes a folder that opens from disk in Chromium (classic script, hash routing, relative addresses, Monaco workers from blobs, no service worker);
     window sync between `file://` pages; web fonts and remote pictures bundled (`fonts.selfHost`, on for `pwa` and `--offline`); `/public` addresses get the deck's base; the first-visit limit of the PWA is stated; a checklist for presenters.
 13. **Agent skill** (`skills/slide-ng`, docs/AGENT-SKILL.md): `SKILL.md` and 82 short references grouped by prefix, one for each feature marked done in PARITY.md, with the Angular-not-Vue differences and a `not-supported.md`. `slide-ng skills install [--dir] [--force]` copies it into a project. `npm run test:skills` builds every `<!-- verify -->` sample (72) with the real generator and one combined `slide-ng build`; `npm run check:skills` is a drift guard over the hashes in `skills/GENERATION.md` (CI runs both). Writing the samples found two documentation mistakes (a Monaco setup example that no longer type-checks, an example in SYNTAX.md that Prettier had broken) and two wrong claims (PARITY said 22 layouts and `<carbon:...>` tags).
@@ -39,7 +39,7 @@ command line as a package, themes and addons, an example theme, the MCP server a
 - **Editable PPTX** (out of scope on purpose). PPTX holds pictures and notes only.
 - `export` takes one entry; no `--format pptx-editable`.
 - `dev --tunnel` (needs a tunnel service; refused with a message) and `dev --base` (refused with a message); `build --router-mode` (use `routerMode`).
-- VS Code extension, prettier plugin, Vue-syntax converter, community themes, browser exporter page, `overviewSnapshots` (out of scope).
+- Prettier plugin, Vue-syntax converter, community themes, browser exporter page, `overviewSnapshots` (out of scope). A VS Code extension exists in the slide.ng-vscode repository (first version, not released, never run inside VS Code).
 - Monaco type loading; MDC/Comark; `notesAutoRuby`; slide hooks; custom transition objects; touch tuning for drawing and drag. The full list is in docs/PARITY.md.
 - Offline: PlantUML, `<slide-ng-youtube>`, `<slide-ng-tweet>` and `<slide-ng-blue-sky>` need the network, also in an offline folder. A deck with Monaco and Mermaid becomes one large script in an offline folder (27 MB folder, 16 MB script for the phase 2 test deck).
 - PWA: the first visit must be online (a browser that never opened the deck cannot get it offline). Remote pictures are not cached in dev. Icons are drawn with Chromium at build time (a build without one warns and has no icons).

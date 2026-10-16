@@ -54,8 +54,11 @@ In the headmatter (the frontmatter of the first slide) you can also set:
 | `theme`, `addons`                                                                | the look of the deck: a folder, a package name, or `default`; see "Themes and addons" below           |
 | `titleTemplate`, `author`, `keywords`, `favicon`, `lang`, `htmlAttrs`, `seoMeta` | the page's `<head>`, see "The page, export and build" below                                           |
 | `download`, `exportFilename`, `export`, `remoteAssets`, `pwa`                    | export and build settings, see below                                                                  |
+| `codeCopy`, `magicMoveCopy`                                                      | `false` hides the copy button on every code block, or only on Magic Move blocks                       |
+| `contextMenu`, `presenter`                                                       | `true` (default), `false`, `dev` or `build`: the right-click menu, and the presenter page and button  |
+| `editor`                                                                         | `false` hides the side editor (dev server only)                                                       |
 
-Any other key is kept in the slide's metadata and ignored.
+Other keys are kept in the slide's metadata and ignored, unless a theme or a component reads them.
 
 ## Importing slides
 
@@ -540,8 +543,8 @@ The presenter's mouse is shown on the audience page as a pointer or a red laser 
 
 ## Drawing
 
-The pen button in the bar (or the right-click menu) opens a toolbar: pen, line, arrow, ellipse, rectangle, eraser, colours, width, undo, redo, clear, pin.
-Keys while it is open: `L` line, `A` arrow, `S` stylus, `R` rectangle, `E` eraser, `C` clear, digits for colours, Ctrl+Z undo, Escape closes.
+The pen button in the bar (or the right-click menu) opens a toolbar: pen, line, arrow, ellipse, rectangle, eraser, colours, width, undo, redo, clear, pin. The eraser has no key; use its button.
+Keys while it is open: `L` line, `A` arrow, `S` stylus, `R` rectangle, `E` ellipse, `C` clear, digits for colours, Ctrl+Z undo, Escape closes.
 Drawings are per slide, shared between windows, and kept in the browser. Headmatter:
 
 ```md
@@ -558,12 +561,12 @@ drawings:
 
 `record: true` (headmatter; default `dev`, so only while developing; `false`, `build` also work) adds a camera button and a record button to the bar, and camera, microphone and "record screen / camera" to the settings.
 The camera is a round, draggable picture over the slides. Recording uses the browser's recorder and downloads a `.webm` when you stop (pause and resume work). Screen recording asks which tab or screen to share.
-The presenter page has a **Screen Mirror** switch that shows a shared window instead of the slide. The file has no duration field, so some players show the length only after a seek.
+The presenter page has a **Screen Mirror** switch that shows a shared window instead of the slide.
 
 ## Settings menu
 
 Dark mode, slide scale, hide idle cursor, keep the screen awake (headmatter `wakeLock: true` starts it on), presenter cursor and its style, colour filters for the slide, camera options.
-"Download as PDF" is a disabled placeholder: export is not done.
+"Download as PDF" appears with `download: true` and is enabled only when the build made the PDF (`build --download`, see HOSTING.md).
 
 ## Moving things: `slide-ng-drag`
 
