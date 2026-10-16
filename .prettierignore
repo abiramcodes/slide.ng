@@ -1,0 +1,18 @@
+# Build output and caches
+dist
+.angular
+node_modules
+.slide-ng
+
+# Written by npm run generate
+src/slides/generated
+
+# The lock file is written by npm
+package-lock.json
+
+# Decks and theme fixtures: their markdown and templates are test input
+slides.md
+template/slides.md
+tests/**/*.md
+docs/screenshots
+examples/**/*.md
