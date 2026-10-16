@@ -1,3 +1,4 @@
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { Recorder } from './recorder';
 
@@ -26,5 +27,50 @@ describe('Recorder', () => {
     expect(stopped).toBe(1);
     expect(recorder.state()).toBe('idle');
     expect(recorder.error()).toBe('Permission denied');
+  });
+
+  it('goes back to idle and stops the tracks when saving fails', async () => {
+    let stopped = 0;
+    const track = { stop: () => stopped++ };
+    const stream = { getTracks: () => [track], getVideoTracks: () => [], getAudioTracks: () => [] };
+    Object.defineProperty(navigator, 'mediaDevices', {
+      configurable: true,
+      value: {
+        getUserMedia: async () => stream,
+        getDisplayMedia: async () => stream,
+      },
+    });
+    class FakeRecorder {
+      static isTypeSupported = () => false;
+      mimeType = 'video/webm';
+      state = 'recording';
+      onstop: () => void = () => {};
+      ondataavailable = () => {};
+      start() {}
+      stop() {
+        this.state = 'inactive';
+        this.onstop();
+      }
+    }
+    vi.stubGlobal('MediaRecorder', FakeRecorder);
+    vi.stubGlobal(
+      'MediaStream',
+      class {
+        getVideoTracks = () => [];
+      },
+    );
+    vi.spyOn(URL, 'createObjectURL').mockImplementation(() => {
+      throw new Error('no url');
+    });
+    const recorder = TestBed.inject(Recorder);
+    recorder.source.set('screen');
+    await recorder.start();
+    expect(recorder.state()).toBe('recording');
+    recorder.stop();
+    await vi.waitFor(() => expect(recorder.state()).toBe('idle'));
+    expect(stopped).toBeGreaterThan(0);
+    expect(recorder.error()).toBe('no url');
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 });

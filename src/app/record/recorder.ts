@@ -100,20 +100,25 @@ export class Recorder {
   }
 
   private async finish(type: string) {
-    if (this.state() === 'paused') this.pausedTotal += performance.now() - this.pausedAt;
-    const elapsed = performance.now() - this.startedAt - this.pausedTotal;
-    const blob = await fixWebmDuration(
-      new Blob(this.chunks, { type: type || 'video/webm' }),
-      elapsed,
-    );
-    this.lastSize.set(blob.size);
-    // A click on a temporary link is how a page starts a download.
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = recordingName(String(HEADMATTER['title'] ?? 'slides'), new Date());
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(link.href), 10_000);
-    this.release();
+    try {
+      if (this.state() === 'paused') this.pausedTotal += performance.now() - this.pausedAt;
+      const elapsed = performance.now() - this.startedAt - this.pausedTotal;
+      const blob = await fixWebmDuration(
+        new Blob(this.chunks, { type: type || 'video/webm' }),
+        elapsed,
+      );
+      this.lastSize.set(blob.size);
+      // A click on a temporary link is how a page starts a download.
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = recordingName(String(HEADMATTER['title'] ?? 'slides'), new Date());
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(link.href), 10_000);
+    } catch (e) {
+      this.error.set(e instanceof Error ? e.message : 'saving the recording failed');
+    } finally {
+      this.release();
+    }
   }
 
   private release() {
