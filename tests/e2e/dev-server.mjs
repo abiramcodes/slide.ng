@@ -61,6 +61,24 @@ const waitForFile = async (check, ms = 15000) => {
 };
 async function dragBy(page, sel, dx, dy) {
   await page.bringToFront();
+  await sleep(1500);
+  await page.waitForFunction(
+    () => /clicks \d+\/\d+/.test(document.querySelector('#hud')?.innerText ?? ''),
+    null,
+    { timeout: 60000 },
+  );
+  await sleep(1500);
+  await page.waitForFunction(
+    () => /clicks \d+\/\d+/.test(document.querySelector('#hud')?.innerText ?? ''),
+    null,
+    { timeout: 60000 },
+  );
+  await sleep(1500);
+  await page.waitForFunction(
+    () => /clicks \d+\/\d+/.test(document.querySelector('#hud')?.innerText ?? ''),
+    null,
+    { timeout: 60000 },
+  );
   const b = await page.locator(sel).boundingBox();
   await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
   await page.mouse.down();
@@ -145,6 +163,12 @@ try {
   );
 
   const x0 = +/id="b1" slide-ng-drag="\[(\d+),/.exec(read())[1];
+  await sleep(4000);
+  await page.waitForFunction(
+    () => /clicks \d+\/\d+/.test(document.querySelector('#hud')?.innerText ?? ''),
+    null,
+    { timeout: 60000 },
+  );
   await page.keyboard.press('Escape');
   await dragBy(page, '#b1', 0, 0); // select without moving
   await page.keyboard.press('ArrowRight');
