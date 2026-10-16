@@ -1,5 +1,6 @@
 import { Injectable, isDevMode, signal } from '@angular/core';
 import { DOWNLOAD } from '../../slides/generated';
+import { canCheckTarget } from './download-check';
 
 /**
  * The "Download PDF" button (headmatter `download`). The file is made by `slide-ng build --download` and sits next to
@@ -17,7 +18,7 @@ export class Download {
     if (!this.url || isDevMode()) return;
     // From a folder opened on disk (`build --offline`) a request cannot be asked; the build wrote the file next to the page.
     if (location.protocol === 'file:') this.available.set(!DOWNLOAD!.startsWith('http'));
-    else if (!DOWNLOAD!.startsWith('http') && !DOWNLOAD!.startsWith('/')) void this.check(this.url);
+    else if (canCheckTarget(DOWNLOAD!)) void this.check(this.url);
     else this.available.set(true); // somebody else's address: take their word for it
   }
 
