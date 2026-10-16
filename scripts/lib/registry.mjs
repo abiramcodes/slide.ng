@@ -36,5 +36,6 @@ export const COMPONENTS = [
   { className: 'VDrag', file: 'drag/v-drag', test: /\sv-drag[\s=>/]/ },
   { className: 'VDragBox', file: 'drag/v-drag-box', test: /<v-drag[\s>/]/ },
   { className: 'VDragArrow', file: 'drag/v-drag-arrow', test: /<v-drag-arrow[\s>/]/ },
+  { className: 'SlideLayer', file: 'lib/slide-layer', test: /<app-slide-layer/ },
   { className: 'Counter', file: 'lib/counter', test: /<app-counter/ },
 ];

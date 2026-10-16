@@ -1,5 +1,5 @@
 // The arithmetic of v-drag, without any browser code, so it can be tested on its own.
-// All numbers are canvas pixels (the 980x552 slide), never screen pixels: the caller divides pointer movement by the scale.
+// All numbers are canvas pixels (the slide canvas), never screen pixels: the caller divides pointer movement by the scale.
 
 /** A box on the slide. `h` is NaN when the height follows the content. `rot` is degrees. */
 export interface Box { x: number; y: number; w: number; h: number; rot: number }

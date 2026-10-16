@@ -9,6 +9,7 @@ import { makeCss, tsFiles } from './lib/make-css.mjs';
 import { detectFeatures } from './lib/features.mjs';
 import { initHighlighter } from './lib/code/highlighter.mjs';
 import { readDrawings } from './lib/drawings.mjs';
+import { findLayers, layersSource } from './lib/layers.mjs';
 
 // SLIDES_FILE lets tests build another deck.
 const INPUT = process.env.SLIDES_FILE ?? 'slides.md';
@@ -35,15 +36,17 @@ async function generate() {
   const deck = await parseDeck(INPUT);
   deck.problems.forEach((p) => console.warn(`[slides] ${p}`));
   deck.drawings = readDrawings(deck.root, deck.headmatter);
+  deck.layers = findLayers();
   // Decide each layout once, so that an unknown name is reported once.
   deck.slides.forEach((s, i) => (s.layout = layoutName(s.frontmatter, i)));
   const features = detectFeatures(deck.slides);
   await initHighlighter({ langs: features.langs, headmatter: deck.headmatter, twoslash: features.twoslash });
   mkdirSync(OUT, { recursive: true });
-  const wanted = new Set(deck.slides.map((_, i) => `${slideName(i + 1)}.ts`).concat('index.ts', 'uno.css', 'features.css'));
+  const wanted = new Set(deck.slides.map((_, i) => `${slideName(i + 1)}.ts`).concat('index.ts', 'layers.ts', 'uno.css', 'features.css'));
   for (const f of readdirSync(OUT)) if (!wanted.has(f)) rmSync(OUT + f);
   deck.slides.forEach((s, i) => write(`${OUT}${slideName(i + 1)}.ts`, slideSource(s, i + 1, deck)));
   write(`${OUT}index.ts`, indexSource(deck));
+  write(`${OUT}layers.ts`, layersSource(deck.layers));
   write(`${OUT}features.css`, featureCss(features));
   // The generated slides are scanned too: icon tags and alerts only become class names there.
   const slideFiles = deck.slides.map((_, i) => `${OUT}${slideName(i + 1)}.ts`);

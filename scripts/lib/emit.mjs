@@ -34,11 +34,13 @@ function body(markdown, def, no, ctx) {
     .join('');
 }
 
-/** @param {any} slide @param {number} no @param {{ root?: string, headmatter?: any }} [deck] where `@/` is, and the deck-wide settings */
+/** @param {any} slide @param {number} no @param {{ root?: string, headmatter?: any, layers?: string[] }} [deck] where `@/` is, and the deck-wide settings */
 export function slideSource(slide, no, deck = {}) {
   const def = LAYOUTS[slide.layout ?? layoutName(slide.frontmatter, no - 1)];
   const { markdown, css } = extractStyles(tagDragSites(slide.content));
-  const html = `${openTag(def, slide.frontmatter)}${body(markdown, def, no, { file: slide.file, root: deck.root, headmatter: deck.headmatter })}</${def.tag}>`;
+  const layer = (name) => (deck.layers?.includes(name) ? `<app-slide-layer name="${name}"></app-slide-layer>` : '');
+  const layout = `${openTag(def, slide.frontmatter)}${body(markdown, def, no, { file: slide.file, root: deck.root, headmatter: deck.headmatter })}</${def.tag}>`;
+  const html = layer('slide-bottom') + layout + layer('slide-top');
 
   // Look for components outside code samples only (code is just text).
   const markup = html.replace(/<pre[\s\S]*?<\/pre>/g, '').replace(/<code(?:\s[^>]*)?>[\s\S]*?<\/code>/g, '');

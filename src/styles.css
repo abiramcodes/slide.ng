@@ -18,6 +18,8 @@ html.dark .canvas { background: #121212; color: #ddd; }
 
 /* Slides are stacked on top of each other so that a transition can show two at once. */
 .canvas > * { position: absolute; inset: 0; display: block; }
+/* `zoom: 0.8`: draw the layout 1/0.8 times bigger than the slide, then scale it down from the top left corner. */
+[data-zoom] > .slidev-layout { width: calc(100% / var(--slidev-zoom)); height: calc(100% / var(--slidev-zoom)); transform: scale(var(--slidev-zoom)); transform-origin: top left; }
 
 /* The readout the tests use (slide number and clicks). Hidden from the eye, still in the page. */
 #hud { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

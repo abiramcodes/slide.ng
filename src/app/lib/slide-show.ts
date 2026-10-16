@@ -4,6 +4,7 @@ import { HEADMATTER } from '../../slides/generated';
 import { CANVAS_HEIGHT, CANVAS_WIDTH, fitScale } from './canvas';
 import { hostSize } from './element-size';
 import { Nav } from './nav';
+import { SlideLayer } from './slide-layer';
 import { RenderContext } from './slide-context';
 import { Stage } from './stage';
 import { pickTransition } from './transitions';
@@ -17,11 +18,13 @@ import { filterCss } from './filters';
 @Component({
   selector: 'app-slide-show',
   host: { id: 'slide-container', class: 'slide-show', '(pointerdown)': 'hostClick($event)' },
-  imports: [NotFoundLayout],
+  imports: [NotFoundLayout, SlideLayer],
   template: `
     <div #canvas id="slide-content" class="canvas" [style.width.px]="width" [style.height.px]="height" [style]="canvasStyle()">
+      <app-slide-layer name="global-bottom" />
       <ng-container #host />
       @if (nav.notFound()) { <sn-404 /> }
+      <app-slide-layer name="global-top" />
       <ng-content />
     </div>
   `,
