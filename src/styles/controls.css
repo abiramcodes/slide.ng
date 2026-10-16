@@ -64,3 +64,93 @@ html.dark .slidev-icon-btn:focus-visible {
 html[data-presenter='off'] #nav-presenter {
   display: none;
 }
+
+/* The settings menu (ported from Slidev's FormItem, FormSlider, FormCheckbox and SegmentControl). */
+.slidev-form-item {
+  display: flex;
+  flex: none;
+  flex-flow: row;
+  gap: 0.5rem;
+  align-items: center;
+  user-select: none;
+}
+.slidev-form-title {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 7.5rem;
+  height: 2rem;
+  flex: none;
+  opacity: 0.75;
+}
+.slidev-form-dot {
+  position: absolute;
+  top: 0.5rem;
+  right: -0.5rem;
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 0.25rem;
+  background: var(--slidev-theme-primary);
+}
+.slidev-checkbox {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0.25rem;
+  border: 1px solid rgba(156, 163, 175, 0.2);
+  border-radius: 0.25rem;
+}
+.slidev-checkbox:hover {
+  background: rgba(156, 163, 175, 0.1);
+}
+.slidev-checkbox input {
+  position: absolute;
+  inset: 0;
+  opacity: 0.1;
+  cursor: pointer;
+  margin: 0;
+}
+.slidev-slider {
+  appearance: none;
+  height: 22px;
+  margin: 0;
+  outline: none;
+  opacity: 0.7;
+  overflow: hidden;
+  border: 1px solid rgba(156, 163, 175, 0.2);
+  border-radius: 0.25rem;
+  background: rgba(156, 163, 175, 0.05);
+  transition: opacity 0.2s;
+}
+.slidev-slider:hover,
+.slidev-slider:focus-visible {
+  opacity: 1;
+}
+.slidev-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 5px;
+  height: 22px;
+  background: var(--slidev-theme-primary);
+  cursor: pointer;
+}
+.slidev-slider::-moz-range-thumb {
+  width: 5px;
+  height: 22px;
+  border: 0;
+  border-radius: 0;
+  background: var(--slidev-theme-primary);
+  cursor: pointer;
+}
+.slidev-number {
+  width: 5rem;
+  height: 22px;
+  margin: 0;
+  padding: 0 0 0 0.5rem;
+  font-size: 0.875rem;
+  color: inherit;
+  border: 1px solid rgba(156, 163, 175, 0.2);
+  border-radius: 0.25rem;
+  background: rgba(156, 163, 175, 0.05);
+}

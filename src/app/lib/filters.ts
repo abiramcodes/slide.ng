@@ -1,30 +1,33 @@
-// Colour filters for the slides (Slidev's "slide filters" in the settings menu), as plain numbers.
+// Colour filters for the slides (Slidev's "viewer CSS filter" in the settings menu), as plain numbers.
 export interface Filters {
-  /** Percent: 100 is unchanged. */
+  invert: boolean;
+  /** 1 is unchanged. */
   brightness: number;
   contrast: number;
   saturate: number;
-  /** Percent, 0 is unchanged. */
-  grayscale: number;
+  /** 0 is unchanged. */
+  sepia: number;
   /** Degrees. */
-  hue: number;
+  hueRotate: number;
 }
 
 export const defaultFilters: Filters = {
-  brightness: 100,
-  contrast: 100,
-  saturate: 100,
-  grayscale: 0,
-  hue: 0,
+  invert: false,
+  brightness: 1,
+  contrast: 1,
+  saturate: 1,
+  sepia: 0,
+  hueRotate: 0,
 };
 
 /** The CSS `filter` value, or '' when nothing is changed (so the browser does no extra work). */
 export function filterCss(f: Filters): string {
   const parts: string[] = [];
-  if (f.brightness !== 100) parts.push(`brightness(${f.brightness}%)`);
-  if (f.contrast !== 100) parts.push(`contrast(${f.contrast}%)`);
-  if (f.saturate !== 100) parts.push(`saturate(${f.saturate}%)`);
-  if (f.grayscale !== 0) parts.push(`grayscale(${f.grayscale}%)`);
-  if (f.hue !== 0) parts.push(`hue-rotate(${f.hue}deg)`);
+  if (f.brightness !== 1) parts.push(`brightness(${f.brightness})`);
+  if (f.contrast !== 1) parts.push(`contrast(${f.contrast})`);
+  if (f.saturate !== 1) parts.push(`saturate(${f.saturate})`);
+  if (f.sepia > 0) parts.push(`sepia(${f.sepia})`);
+  if (f.hueRotate !== 0) parts.push(`hue-rotate(${f.hueRotate}deg)`);
+  if (f.invert) parts.push('invert(1)');
   return parts.join(' ');
 }

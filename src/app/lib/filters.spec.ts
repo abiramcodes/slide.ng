@@ -5,11 +5,18 @@ describe('filterCss', () => {
     expect(filterCss(defaultFilters)).toBe('');
   });
   it('lists only what changed, in a fixed order', () => {
-    expect(filterCss({ ...defaultFilters, hue: 90, brightness: 120 })).toBe(
-      'brightness(120%) hue-rotate(90deg)',
+    expect(filterCss({ ...defaultFilters, hueRotate: 90, brightness: 1.2 })).toBe(
+      'brightness(1.2) hue-rotate(90deg)',
     );
     expect(
-      filterCss({ brightness: 80, contrast: 110, saturate: 50, grayscale: 100, hue: 10 }),
-    ).toBe('brightness(80%) contrast(110%) saturate(50%) grayscale(100%) hue-rotate(10deg)');
+      filterCss({
+        invert: true,
+        brightness: 0.8,
+        contrast: 1.1,
+        saturate: 0.5,
+        sepia: 1,
+        hueRotate: 10,
+      }),
+    ).toBe('brightness(0.8) contrast(1.1) saturate(0.5) sepia(1) hue-rotate(10deg) invert(1)');
   });
 });

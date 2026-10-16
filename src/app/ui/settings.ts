@@ -6,110 +6,100 @@ import { Ui } from '../lib/ui-state';
 import { WakeLock } from '../lib/wake-lock';
 import { PresenterPrefs } from '../presenter/prefs';
 import { DevicesSelectors } from '../record/devices-selectors';
+import { Devices } from '../record/devices';
 import { FilterSettings } from './filter-settings';
+import { SegmentControl } from './segment-control';
 
 // The content of the settings menu ("More Options").
 @Component({
   selector: 'app-settings',
-  imports: [DevicesSelectors, FilterSettings],
+  imports: [DevicesSelectors, FilterSettings, SegmentControl],
   template: `
-    <div class="text-sm select-none flex flex-col gap-1 min-w-60 px-4 max-h-[70vh] overflow-auto">
-      @if (!dark.isFixed) {
-        <label class="flex items-center gap-4 cursor-pointer">
-          <span class="mr-auto">Dark Mode</span>
-          <input
-            type="checkbox"
-            id="settings-dark"
-            [checked]="dark.isDark()"
-            (change)="dark.toggle()"
+    <div class="text-sm select-none flex flex-col gap-1 min-w-30 px-4 max-h-[70vh] overflow-auto">
+      <app-filter-settings />
+      <div class="h-1px op5 bg-current w-full my-2"></div>
+      <div class="slidev-form-item">
+        <span class="slidev-form-title">Cursor Style</span>
+        <app-segment-control
+          [options]="cursorOptions"
+          [value]="prefs.cursorStyle()"
+          (changed)="prefs.cursorStyle.set($any($event))"
+        />
+      </div>
+      @if (!nav.isPresenter) {
+        <div class="slidev-form-item">
+          <span class="slidev-form-title">Slide Scale</span>
+          <app-segment-control
+            [options]="scaleOptions"
+            [value]="ui.slideScale()"
+            (changed)="ui.slideScale.set($any($event))"
           />
+        </div>
+      }
+      @if (wake.supported) {
+        <label class="slidev-form-item">
+          <span class="slidev-form-title">Wake Lock</span>
+          <span class="slidev-checkbox">
+            <i class="i-carbon:checkmark" [class.op0]="!wake.enabled()"></i>
+            <input
+              type="checkbox"
+              id="wake-lock"
+              [attr.data-held]="wake.held()"
+              [checked]="wake.enabled()"
+              (change)="wake.enabled.set(!wake.enabled())"
+            />
+          </span>
         </label>
       }
-      <div class="flex items-center gap-4">
-        <span class="mr-auto">Slide Scale</span>
-        <div class="flex rounded border border-main overflow-hidden">
-          <button
-            type="button"
-            id="scale-fit"
-            class="px-2 py-0.5"
-            [class.bg-active]="!ui.slideScale()"
-            (click)="ui.slideScale.set(0)"
-          >
-            Fit
-          </button>
-          <button
-            type="button"
-            id="scale-1"
-            class="px-2 py-0.5"
-            [class.bg-active]="ui.slideScale() === 1"
-            (click)="ui.slideScale.set(1)"
-          >
-            1:1
-          </button>
-        </div>
-      </div>
-      <label class="flex items-center gap-4 cursor-pointer">
-        <span class="mr-auto">Hide Idle Cursor</span>
-        <input
-          type="checkbox"
-          id="hide-idle-cursor"
-          [checked]="ui.hideIdleCursor()"
-          (change)="ui.hideIdleCursor.set(!ui.hideIdleCursor())"
-        />
-      </label>
-      @if (wake.supported) {
-        <label class="flex items-center gap-4 cursor-pointer">
-          <span class="mr-auto">Keep Screen Awake</span>
-          <input
-            type="checkbox"
-            id="wake-lock"
-            [attr.data-held]="wake.held()"
-            [checked]="wake.enabled()"
-            (change)="wake.enabled.set(!wake.enabled())"
-          />
+      @if (!nav.isPresenter) {
+        <label class="slidev-form-item">
+          <span class="slidev-form-title">Hide Idle Cursor</span>
+          <span class="slidev-checkbox">
+            <i class="i-carbon:checkmark" [class.op0]="!ui.hideIdleCursor()"></i>
+            <input
+              type="checkbox"
+              id="hide-idle-cursor"
+              [checked]="ui.hideIdleCursor()"
+              (change)="ui.hideIdleCursor.set(!ui.hideIdleCursor())"
+            />
+          </span>
         </label>
       }
       @if (nav.isPresenter) {
-        <div class="h-1px bg-current op10 my-1"></div>
-        <label class="flex items-center gap-4 cursor-pointer">
-          <span class="mr-auto">Show Presenter Cursor</span>
-          <input
-            type="checkbox"
-            id="settings-cursor"
-            [checked]="prefs.showCursor()"
-            (change)="prefs.toggleCursor()"
-          />
+        <label class="slidev-form-item">
+          <span class="slidev-form-title">Show Presenter Cursor</span>
+          <span class="slidev-checkbox">
+            <i class="i-carbon:checkmark" [class.op0]="!prefs.showCursor()"></i>
+            <input
+              type="checkbox"
+              id="settings-cursor"
+              [checked]="prefs.showCursor()"
+              (change)="prefs.toggleCursor()"
+            />
+          </span>
         </label>
-        <div class="flex items-center gap-4">
-          <span class="mr-auto">Cursor Style</span>
-          <div class="flex rounded border border-main overflow-hidden">
-            <button
-              type="button"
-              id="cursor-style-cursor"
-              class="px-2 py-0.5"
-              [class.bg-active]="prefs.cursorStyle() === 'cursor'"
-              (click)="prefs.cursorStyle.set('cursor')"
-            >
-              Pointer
-            </button>
-            <button
-              type="button"
-              id="cursor-style-laser"
-              class="px-2 py-0.5"
-              [class.bg-active]="prefs.cursorStyle() === 'laser'"
-              (click)="prefs.cursorStyle.set('laser')"
-            >
-              Laser
-            </button>
-          </div>
-        </div>
       }
-      <div class="h-1px bg-current op10 my-1"></div>
-      <app-filter-settings />
-      <div class="h-1px bg-current op10 my-1"></div>
-      <app-devices-selectors />
+      @if (!dark.isFixed) {
+        <div class="h-1px op5 bg-current w-full my-2"></div>
+        <label class="slidev-form-item">
+          <span class="slidev-form-title">Dark Mode</span>
+          <span class="slidev-checkbox">
+            <i class="i-carbon:checkmark" [class.op0]="!dark.isDark()"></i>
+            <input
+              type="checkbox"
+              id="settings-dark"
+              [checked]="dark.isDark()"
+              (change)="dark.toggle()"
+            />
+          </span>
+        </label>
+      }
+      @if (devices.available) {
+        <div class="h-1px op5 bg-current w-full my-2"></div>
+        <app-devices-selectors />
+      }
       @if (download.wanted) {
-        <div class="h-1px bg-current op10 my-1"></div>
+        <div class="h-1px op5 bg-current w-full my-2"></div>
         @if (download.available()) {
           <button type="button" id="download-pdf" class="text-left" (click)="download.save()">
             Download as PDF
@@ -136,4 +126,13 @@ export class Settings {
   protected prefs = inject(PresenterPrefs);
   protected wake = inject(WakeLock);
   protected download = inject(Download);
+  protected devices = inject(Devices);
+  protected cursorOptions = [
+    { id: 'cursor-style-cursor', label: 'Cursor', value: 'cursor' },
+    { id: 'cursor-style-laser', label: 'Laser', value: 'laser' },
+  ];
+  protected scaleOptions = [
+    { id: 'scale-fit', label: 'Fit', value: 0 },
+    { id: 'scale-1', label: '1:1', value: 1 },
+  ];
 }
