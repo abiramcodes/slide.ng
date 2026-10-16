@@ -79,9 +79,11 @@ export class Recorder {
   }
 
   private async makeStream(): Promise<MediaStream> {
+    // Every stream goes into `opened` as soon as it exists, so release() can stop it if a later step fails.
     const mic = await navigator.mediaDevices
       .getUserMedia({ audio: this.devices.constraint(this.devices.micId()), video: false })
       .catch(() => null);
+    if (mic) this.opened.push(mic);
     const video =
       this.source() === 'camera'
         ? await navigator.mediaDevices.getUserMedia({
@@ -93,7 +95,7 @@ export class Recorder {
             audio: false,
             preferCurrentTab: true,
           } as DisplayMediaStreamOptions);
-    this.opened = [video, ...(mic ? [mic] : [])];
+    this.opened.push(video);
     return new MediaStream([...video.getVideoTracks(), ...(mic?.getAudioTracks() ?? [])]);
   }
 
