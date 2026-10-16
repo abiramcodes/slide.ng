@@ -1,4 +1,4 @@
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { SNIPPET_LINE, dedent, findRegion, resolveSnippet } from './snippet.mjs';
@@ -48,7 +48,7 @@ describe('resolveSnippet', () => {
   const root = mkdtempSync(join(tmpdir(), 'snip-'));
   writeFileSync(join(root, 'a.ts'), 'one\n// #region r\n  two\n// #endregion r\n');
   it('reads a file relative to the slide, language from the extension', () => {
-    expect(resolveSnippet('<<< ./a.ts', join(root, 'slides.md'), '/elsewhere')).toMatchObject({
+    expect(resolveSnippet('<<< ./a.ts', join(root, 'slides.md'), root)).toMatchObject({
       code: 'one\n// #region r\n  two\n// #endregion r',
       lang: 'ts',
     });
@@ -58,6 +58,35 @@ describe('resolveSnippet', () => {
       code: 'two',
       lang: 'js',
     });
+  });
+  it('refuses a file outside the deck folder: absolute, ../ and @/../ (a clear error)', () => {
+    const deck = mkdtempSync(join(tmpdir(), 'snip-deck-'));
+    for (const line of [
+      `<<< ${join(root, 'a.ts')}`,
+      '<<< ../a.ts',
+      '<<< @/../a.ts',
+      '<<< /etc/passwd',
+    ])
+      expect(() => resolveSnippet(line, join(deck, 'slides.md'), deck), line).toThrow(
+        'outside the deck',
+      );
+  });
+  it('refuses a symlink inside the deck that leads out', () => {
+    const deck = mkdtempSync(join(tmpdir(), 'snip-deck-'));
+    symlinkSync(join(root, 'a.ts'), join(deck, 'link.ts'));
+    expect(() => resolveSnippet('<<< ./link.ts', join(deck, 'slides.md'), deck)).toThrow(
+      'outside the deck',
+    );
+  });
+  it('reads outside the deck only with the explicit opt-in, or from a listed theme folder', () => {
+    const deck = mkdtempSync(join(tmpdir(), 'snip-deck-'));
+    const line = `<<< ${join(root, 'a.ts')}`;
+    expect(
+      resolveSnippet(line, join(deck, 'slides.md'), deck, { allowOutsideRoot: true })!.code,
+    ).toContain('one');
+    expect(
+      resolveSnippet(line, join(deck, 'slides.md'), deck, { roots: [deck, root] })!.code,
+    ).toContain('one');
   });
   it('throws a readable error for a missing file', () => {
     expect(() => resolveSnippet('<<< ./missing.ts', join(root, 'slides.md'), root)).toThrow(

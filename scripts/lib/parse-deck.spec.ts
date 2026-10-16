@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parseDeck } from './parse-deck.mjs';
@@ -129,5 +129,36 @@ describe('parseDeck: src imports', () => {
     const { slides, problems } = await main('./pages/nope.md');
     expect(slides.map((s) => s.title)).toEqual(['First', 'Last']);
     expect(problems.join()).toContain('not found');
+  });
+});
+
+describe('parseDeck: imports outside the deck folder', () => {
+  const base = mkdtempSync(join(tmpdir(), 'slideng-out-'));
+  const dir = join(base, 'deck');
+  mkdirSync(dir);
+  writeFileSync(join(base, 'outside.md'), '# Outside one\n');
+  symlinkSync(join(base, 'outside.md'), join(dir, 'linked.md'));
+  const deck = (src: string, head = '') => {
+    writeFileSync(
+      join(dir, 'slides.md'),
+      `---\n${head}title: T\n---\n\n# First\n\n---\nsrc: ${src}\n---\n\n---\n\n# Last\n`,
+    );
+    return parseDeck(join(dir, 'slides.md'));
+  };
+
+  it('refuses src: ../ with a clear error naming the opt-in', async () => {
+    await expect(deck('../outside.md')).rejects.toThrow('allowOutsideRoot: true');
+  });
+  it('refuses a symlinked markdown file that leads out', async () => {
+    await expect(deck('./linked.md')).rejects.toThrow('outside the deck');
+  });
+  it('reads a leading slash as the deck folder (Slidev), never as a file system path', async () => {
+    const { slides, problems } = await deck('/etc/passwd');
+    expect(slides.map((s) => s.title)).toEqual(['T', 'Last']);
+    expect(problems.join()).toContain(join(dir, 'etc/passwd'));
+  });
+  it('reads outside files when the deck itself sets allowOutsideRoot: true', async () => {
+    const { slides } = await deck('../outside.md', 'allowOutsideRoot: true\n');
+    expect(slides.map((s) => s.title)).toEqual(['T', 'Outside one', 'Last']);
   });
 });

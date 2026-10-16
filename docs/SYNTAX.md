@@ -67,7 +67,9 @@ class: from-here
 The slide is replaced by the slides of that file. A range after `#` picks some of them:
 `src: ./pages/intro.md#2,4-6`. Keys set on the importing slide win over the imported ones.
 The text of the importing slide is ignored. A missing file or a circular import is reported when
-the slides are generated, and the slide is skipped.
+the slides are generated, and the slide is skipped. A leading `/` means the deck's folder (as in Slidev), not the file system.
+The imported file must be inside the deck's folder or a theme or addon folder, by real path (a symlink that leads out does not count); otherwise the build stops
+with an error. A deck that really wants to import from elsewhere says so in its own headmatter: `allowOutsideRoot: true` (a theme or addon cannot set it for the deck).
 
 ## Notes
 
@@ -257,6 +259,7 @@ and `codeAliases: { mylang: 'ts' }` for extra language names. A language Shiki d
 
 The path is relative to the markdown file; `@/` is the folder of the entry `slides.md`. `#greet` is a region written in the file as
 `// #region greet` ... `// #endregion greet` (also `<!-- #region -->`, `/* #region */`, `# region`). A missing file is a warning and a comment in the block.
+The file must be inside the deck's folder or a theme or addon folder (real path, so a symlink that leads out does not count; `@/../x` and absolute paths are outside); otherwise the build stops with an error. `allowOutsideRoot: true` in the deck's headmatter allows other places (see [SECURITY-MODEL.md](SECURITY-MODEL.md)).
 
 ### Code groups
 

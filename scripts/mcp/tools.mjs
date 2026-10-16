@@ -7,6 +7,7 @@ import { stringify } from 'yaml';
 import { z } from 'zod';
 import { confine, safeWrite } from '../dev/auth.mjs';
 import { replaceSource, sourceOf } from '../dev/slide-source.mjs';
+import { assertReadable } from '../lib/outside-root.mjs';
 import { parseDeck } from '../lib/parse-deck.mjs';
 import { insertSlide, moveSlide, removeSlide } from './deck-edit.mjs';
 
@@ -105,6 +106,11 @@ export const TOOLS = [
     async run(ctx, { no }) {
       const deck = await load(ctx);
       const slide = pick(deck, no);
+      // parseDeck already refuses imports that leave the deck; the read checks again, so no path reaches readFileSync unchecked.
+      assertReadable(slide.source.filepath, 'The slide file', {
+        roots: [ctx.root, ...(deck.roots ?? []).map((r) => r.dir)],
+        allowOutsideRoot: deck.allowOutsideRoot,
+      });
       const text = readFileSync(slide.source.filepath, 'utf8');
       return {
         no,

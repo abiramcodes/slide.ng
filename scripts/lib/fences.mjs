@@ -2,6 +2,7 @@
 // converter never sees them. Also expands `<<< file` snippet lines and `::code-group` blocks,
 // which are made of fences. Each one is replaced by a line `NGFENCE<n>X`.
 import { SNIPPET_LINE, resolveSnippet } from './code/snippet.mjs';
+import { OutsideRootError } from './outside-root.mjs';
 
 const OPEN = /^(`{3,})(.*)$/;
 const CLOSE = /^(`{3,})[ \t]*$/;
@@ -56,8 +57,12 @@ export function extractFences(markdown, ctx = {}) {
 // A missing file becomes a visible code block and a warning, not a crash.
 function resolveSafe(line, ctx) {
   try {
-    return resolveSnippet(line, ctx.file ?? 'slides.md', ctx.root ?? '.');
+    return resolveSnippet(line, ctx.file ?? 'slides.md', ctx.root ?? '.', {
+      roots: ctx.roots,
+      allowOutsideRoot: ctx.allowOutsideRoot,
+    });
   } catch (e) {
+    if (e instanceof OutsideRootError) throw e; // a deck that reads outside its folder stops the build
     console.warn(`[slides] ${e.message}`);
     return { code: `// ${e.message}`, lang: 'text', meta: '' };
   }

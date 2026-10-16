@@ -2,6 +2,7 @@
 // Port of Slidev's snippet.ts. `@/` means the project root.
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { dirname, extname, resolve } from 'node:path';
+import { assertReadable } from '../outside-root.mjs';
 
 // (The language is the word after the file name; it cannot start with `{`, which begins the ranges.)
 export const SNIPPET_LINE = /^<<<[ \t]*(\S.*?)(#[\w-]+)?[ \t]*(?:[ \t]([^\s{]\S*?))?[ \t]*(\{.*)?$/;
@@ -38,12 +39,18 @@ export function dedent(lines) {
 }
 
 // `line` is the whole `<<<` line, `file` the markdown file it is in, `root` the project folder.
+// `options.roots` adds the folders of themes and addons; `options.allowOutsideRoot` is the deck's explicit opt-in. Without it a
+// file whose real place is outside those folders is an OutsideRootError (a symlink that leads out counts as outside).
 // Returns { code, lang, meta, path, partial } (`partial`: only a region of the file) or throws with a readable message.
-export function resolveSnippet(line, file, root) {
+export function resolveSnippet(line, file, root, options = {}) {
   const m = SNIPPET_LINE.exec(line.trim());
   if (!m) return null;
   const [, name, region = '', lang = '', meta = ''] = m;
   const path = name.startsWith('@/') ? resolve(root, name.slice(2)) : resolve(dirname(file), name);
+  assertReadable(path, 'The code snippet', {
+    roots: options.roots ?? [root],
+    allowOutsideRoot: options.allowOutsideRoot,
+  });
   if (!existsSync(path) || !statSync(path).isFile())
     throw new Error(`Code snippet not found: ${path}`);
   let lines = readFileSync(path, 'utf8').replace(/\r/g, '').replace(/\n$/, '').split('\n');

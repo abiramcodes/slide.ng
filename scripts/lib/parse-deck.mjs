@@ -3,6 +3,7 @@
 // over the imported one, so we get one flat list of slides.
 import { dirname, resolve } from 'node:path';
 import { injectPreparserExtensionLoader, load } from '@slidev/parser/fs';
+import { assertReadable, allowsOutsideRoot } from './outside-root.mjs';
 import { mergeHeadmatter, resolveRoots } from './roots.mjs';
 import { preparserExtensions } from './setup/node-setups.mjs';
 
@@ -27,6 +28,12 @@ export async function parseDeck(file = 'slides.md', sources, options = {}) {
     headmatter: data.headmatter,
     themeOverride: options.theme ?? (process.env.SLIDE_NG_THEME || undefined),
   });
+  // Imports (`src:`) must stay inside the deck or a theme folder, by real path, unless the deck's own headmatter opts out.
+  // (A leading `/` in `src:` means the deck's folder, as in Slidev, so it cannot name a system path.)
+  const allowOutsideRoot = allowsOutsideRoot(data.headmatter);
+  const readRoots = [dirname(entry), ...roots.map((r) => r.dir).filter(Boolean)];
+  for (const path of Object.keys(data.markdownFiles))
+    assertReadable(path, 'The imported file', { roots: readRoots, allowOutsideRoot });
   const headmatter = mergeHeadmatter(roots, data.headmatter);
   // `defaults:` in the headmatter is the starting point of every slide's frontmatter.
   const defaults = headmatter.defaults ?? {};
@@ -55,6 +62,7 @@ export async function parseDeck(file = 'slides.md', sources, options = {}) {
     entry,
     roots,
     root: dirname(entry),
+    allowOutsideRoot,
     slides,
     files: Object.keys(data.markdownFiles),
     problems,

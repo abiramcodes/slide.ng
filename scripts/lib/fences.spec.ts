@@ -36,4 +36,11 @@ describe('extractFences', () => {
     expect(warn).toHaveBeenCalled();
     warn.mockRestore();
   });
+  it('stops the build for a snippet outside the deck, unless the deck opts in', () => {
+    const ctx = { file: '/x/slides.md', root: '/x' };
+    expect(() => extractFences('<<< /etc/hostname', ctx)).toThrow('allowOutsideRoot: true');
+    expect(() => extractFences('<<< ../../etc/hostname', ctx)).toThrow('outside the deck');
+    const { fences } = extractFences('<<< /etc/hostname', { ...ctx, allowOutsideRoot: true });
+    expect(fences[0].code.length).toBeGreaterThan(0);
+  });
 });
