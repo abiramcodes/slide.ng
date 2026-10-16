@@ -8,6 +8,7 @@ slide-ng build --base /talk/         # for https://you.github.io/talk/
 slide-ng build --out public-html     # another output folder
 slide-ng build --download            # also writes the PDF and adds the download button
 slide-ng build --without-notes       # speaker notes are not shipped
+slide-ng build --offline             # a folder that opens from disk, no server (see below and OFFLINE.md)
 ```
 
 In this repository `npm run build` is the plain Angular build (`dist/slide-ng/browser`); `slide-ng build` is the command meant for publishing.
@@ -28,7 +29,9 @@ temporary `.slide-ng/build` folder inside the deck's folder.
 | `_redirects` | the same rule for Netlify |
 | `<exportFilename>.pdf` | only with `--download` or `download: true` in the headmatter |
 | `og-image.png` | the link preview picture (see below) |
-| `remote-assets/` | remote pictures that were downloaded (`remoteAssets: true`) |
+| `remote-assets/` | remote pictures that were downloaded (`remoteAssets: true`, or any `--offline` build) |
+| `media/` | font files (KaTeX, and the web fonts with `fonts.selfHost`) |
+| `workers.js` | only with `--offline` and Monaco: the editor's workers as text |
 | `sw.js`, `manifest.webmanifest` | offline support (`pwa: true`) |
 
 ## Addresses and the base path
@@ -145,10 +148,27 @@ slides to use them. Only answers with an `image/*` content type up to 20 MB are 
 reported. The download runs on the machine that builds, so a deck from someone else can make that machine request
 addresses of its choice: build untrusted decks without `remoteAssets`.
 
+## Web fonts
+
+`fonts:` in the headmatter loads web fonts from a provider with an `@import` (as Slidev does). That needs the network when the
+deck is shown. With `fonts: { selfHost: true }` the build downloads the provider's style sheet and every font file in it and serves
+them from the build (`media/`), so the deck does not call the provider. It is on by default for `pwa: true` and `build --offline`
+(`selfHost: false` turns it off). Google's answer depends on the browser name, so the download asks as a current Chrome and gets woff2 files.
+If the download fails the build warns and the deck keeps the `@import`. `provider` can be `google`, `coollabs`, `none`, or the address of a
+Google-compatible `css2` endpoint (a mirror in your company). The download runs on the machine that builds: build decks from others without `selfHost`, as with `remoteAssets`.
+Tested against a local fake provider only (`tests/export/offline.mjs`, `offline-net.mjs`); real Google Fonts were not called: NOT VERIFIED.
+
+## Offline folder
+
+`slide-ng build --offline` makes a folder you can open from disk (`file://`) and copy to a USB stick. It forces `base ./`, `routerMode: hash`,
+no service worker, and bundles the app and its lazy chunks into one classic script, because Chromium does not run module scripts from `file://`.
+It cannot take `--base`. Remote pictures and web fonts are downloaded into the folder by default. Details, limits and the checklist for the day before are in
+[OFFLINE.md](OFFLINE.md). Any other build can also be served from a folder with `python3 -m http.server` or `npx serve`.
+
 ## Offline use (PWA)
 
 `pwa: true` (or `pwa: build`) makes the build write `manifest.webmanifest` and `sw.js`, a small service worker that stores
-every file of the build the first time the deck is opened. It also draws install icons (192 and 512 pixels, plus a maskable 512) and lists them in
+every file of the build the first time the deck is opened. The first visit must be online: a browser that never opened the deck cannot get it without a network (OFFLINE.md). It also draws install icons (192 and 512 pixels, plus a maskable 512) and lists them in
 the manifest, so the deck can be installed. The picture is `public/icon.png`, else `public/icon.svg`, else a local `favicon` file in `public/`,
 else a generated one (dark square, first letter of the title). Drawing needs Chromium, like `--download` (`CHROME_PATH` or `--executable-path`);
 without it the build warns and goes on without icons. A small label in the bottom right corner of the deck says "Available offline" once everything is stored,
