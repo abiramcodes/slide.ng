@@ -86,13 +86,18 @@ export async function downloadImage(url, warn, fetchImpl, options = {}) {
   }
 }
 
-/** Replaces each downloaded address in `text` by its new relative address (relative to the page's <base>). */
+/**
+ * Replaces each downloaded address in `text` by its new relative address (relative to the page's <base>).
+ * An address is replaced only as a whole: `a.png` inside `a.png?v=2` is left alone.
+ */
 export function rewriteAddresses(text, mapping) {
-  let result = text;
   // Longest first, so an address that starts like another one is not cut.
-  for (const url of Object.keys(mapping).sort((a, b) => b.length - a.length))
-    result = result.split(url).join(mapping[url]);
-  return result;
+  const urls = Object.keys(mapping).sort((a, b) => b.length - a.length);
+  if (!urls.length) return text;
+  const escaped = urls.map((u) => u.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  // An address ends where the text around it ends it: space, bracket, quote or end of text (a backslash in JSON).
+  const whole = new RegExp(`(${escaped.join('|')})(?=$|[\\s)"'<>\\]\\\\])`, 'g');
+  return text.replace(whole, (url) => mapping[url]);
 }
 
 /** Makes sure `folder` exists and holds nothing (it only ever holds what a previous run wrote). */

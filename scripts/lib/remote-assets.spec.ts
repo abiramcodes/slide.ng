@@ -59,6 +59,16 @@ describe('rewriteAddresses', () => {
   });
 });
 
+describe('rewriteAddresses, whole addresses', () => {
+  it('leaves an address that only starts like a downloaded one', () => {
+    const map = { 'https://x.test/a.png': 'remote-assets/1.png' };
+    const text = '![](https://x.test/a.png?v=2) ![](https://x.test/a.png) "https://x.test/a.png"';
+    expect(rewriteAddresses(text, map)).toBe(
+      '![](https://x.test/a.png?v=2) ![](remote-assets/1.png) "remote-assets/1.png"',
+    );
+  });
+});
+
 describe('bundleRemoteAssets', () => {
   const png = Buffer.from('89504e470d0a1a0a', 'hex');
   const fakeFetch = async (url: string) => {
