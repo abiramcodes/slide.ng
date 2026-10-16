@@ -110,6 +110,14 @@ await cli(['build', join(flagged, 'slides.md'), '--theme', themeDir, '--out', jo
 const flaggedJs = readdirSync(join(flagged, 'site')).filter((f) => f.endsWith('.js')).map((f) => readFileSync(join(flagged, 'site', f), 'utf8')).join('\n');
 t.ok('--theme <path> uses that theme although the headmatter names none', flaggedJs.includes('minimal-cover') && !readFileSync(join(flagged, 'slides.md'), 'utf8').includes('theme:'));
 
+// ---- an official theme by name, from a deck outside the repository (nothing is installed), and its eject
+const named = deck('named', 'theme: seriph\n');
+const namedSite = await build(named);
+const namedJs = readdirSync(namedSite).filter((f) => f.endsWith('.js')).map((f) => readFileSync(join(namedSite, f), 'utf8')).join('\n');
+t.ok('theme: seriph works without installing anything (built-in themes folder)', namedJs.includes('seriph-cover') && !existsSync(join(named, 'node_modules')));
+const namedEject = await cli(['theme', 'eject'], named);
+t.ok('theme eject of a built-in theme name copies its folder', existsSync(join(named, 'theme/layouts/cover.ts')) && existsSync(join(named, 'theme/theme.json')) && /^theme: \.\/theme$/m.test(readFileSync(join(named, 'slides.md'), 'utf8')), namedEject.trim());
+
 // ---- a theme that does not exist
 const missing = deck('missing', 'theme: ./nope\n');
 const failure = await cli(['build', join(missing, 'slides.md'), '--out', join(missing, 'site')], missing).then(() => '', (e) => e.stderr);
