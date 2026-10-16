@@ -196,7 +196,11 @@ const bad = await client.callTool({ name: 'get_slide', arguments: { no: 'two' } 
 t.ok('refused: a slide number that is not a number', bad.error, bad.text);
 
 // ---- path confinement: a slide imported from outside the deck's folder is never written
-writeFileSync(file, `---\ntitle: Imports\n---\n\n# Local\n\n---\nsrc: ../outside.md\n---\n`);
+// The read is allowed on purpose here (allowOutsideRoot), so the test is about the write.
+writeFileSync(
+  file,
+  `---\ntitle: Imports\nallowOutsideRoot: true\n---\n\n# Local\n\n---\nsrc: ../outside.md\n---\n`,
+);
 const outsideBefore = readFileSync(join(scratch, 'outside.md'), 'utf8');
 const imported = await call('list_slides', {});
 t.ok(

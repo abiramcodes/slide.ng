@@ -6,7 +6,8 @@ import { chromium } from 'playwright-core';
  * the sandbox is the wall between the page and this machine. `--no-sandbox` (or SLIDE_NG_NO_SANDBOX=1) takes it away, which a
  * container or the root user needs because Chromium refuses to start there otherwise: export only decks you trust then.
  */
-export const noSandboxWanted = (option) => option ?? process.env.SLIDE_NG_NO_SANDBOX === '1';
+export const noSandboxWanted = (option) =>
+  option === true || process.env.SLIDE_NG_NO_SANDBOX === '1';
 
 /**
  * Playwright turns the sandbox off unless `chromiumSandbox: true` is given, so the setting is passed on purpose.
