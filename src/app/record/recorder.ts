@@ -3,13 +3,14 @@ import { HEADMATTER } from '../../slides/generated';
 import { storedSignal } from '../lib/stored-signal';
 import { Devices } from './devices';
 import { pickMimeType, recordingName } from './recording-file';
+import { fixWebmDuration } from './webm-duration';
 
 export type RecordingState = 'idle' | 'recording' | 'paused';
 
 /**
  * Records with the browser's own MediaRecorder and offers the result as a .webm download.
  * `screen` records this tab (the browser asks which), `camera` records the camera.
- * Both add the microphone. The file has no duration field: players show it only after a seek.
+ * Both add the microphone. MediaRecorder writes no duration, so the saved file gets one (`webm-duration.ts`), as in Slidev.
  */
 @Injectable({ providedIn: 'root' })
 export class Recorder {
@@ -27,6 +28,10 @@ export class Recorder {
   private opened: MediaStream[] = [];
   private chunks: Blob[] = [];
   private timer = 0;
+  // Recorded time in milliseconds, not counting pauses: the length the saved file is given.
+  private startedAt = 0;
+  private pausedAt = 0;
+  private pausedTotal = 0;
 
   async start() {
     if (this.active()) return;
@@ -42,6 +47,8 @@ export class Recorder {
       stream.getVideoTracks()[0]?.addEventListener('ended', () => this.stop());
       recorder.start(1000);
       this.recorder = recorder;
+      this.startedAt = performance.now();
+      this.pausedTotal = 0;
       this.seconds.set(0);
       this.state.set('recording');
       this.timer = window.setInterval(() => { if (this.state() === 'recording') this.seconds.update((s) => s + 1); }, 1000);
@@ -56,8 +63,8 @@ export class Recorder {
   }
 
   togglePause() {
-    if (this.state() === 'recording') { this.recorder?.pause(); this.state.set('paused'); }
-    else if (this.state() === 'paused') { this.recorder?.resume(); this.state.set('recording'); }
+    if (this.state() === 'recording') { this.recorder?.pause(); this.pausedAt = performance.now(); this.state.set('paused'); }
+    else if (this.state() === 'paused') { this.recorder?.resume(); this.pausedTotal += performance.now() - this.pausedAt; this.state.set('recording'); }
   }
 
   private async makeStream(): Promise<MediaStream> {
@@ -69,8 +76,10 @@ export class Recorder {
     return new MediaStream([...video.getVideoTracks(), ...(mic?.getAudioTracks() ?? [])]);
   }
 
-  private finish(type: string) {
-    const blob = new Blob(this.chunks, { type: type || 'video/webm' });
+  private async finish(type: string) {
+    if (this.state() === 'paused') this.pausedTotal += performance.now() - this.pausedAt;
+    const elapsed = performance.now() - this.startedAt - this.pausedTotal;
+    const blob = await fixWebmDuration(new Blob(this.chunks, { type: type || 'video/webm' }), elapsed);
     this.lastSize.set(blob.size);
     // A click on a temporary link is how a page starts a download.
     const link = document.createElement('a');

@@ -319,3 +319,7 @@ The owner decided "do it like Slidev" for every open choice. For each one, Slide
    a `blockquote` had a margin (Slidev: none); the table and `kbd` border colour was grey 128 (Slidev's `border-main` is `rgb(156 163 175 / 0.2)`); `none` was an inline element (Slidev wraps in a div);
    the `error` layout text now is Slidev's (terminal text with a dev server, network text in a build); `/image.png` in `image`, `image-left`, `image-right` and `cover` gets the deck's base in front, like `resolveAssetUrl`;
    right-to-left rules added. Everything else matched. Test: `layout-classes.spec.ts` lists all 21 layouts with Slidev's classes; the showcase test checks `full` padding in the browser.
+5. **Recording: Slidev does fix the webm duration, so slide.ng does too.** Slidev (`packages/client/logic/recording.ts`) records with RecordRTC (MediaRecorder underneath), which gives a webm without a Duration,
+   and then calls `fixWebmDuration` from `@fix-webm-duration/fix` with the measured time before the download. slide.ng measures the recorded time (pauses not counted) and `record/webm-duration.ts` writes a Duration element
+   into the file's Info block (about 100 lines instead of a dependency; any layout it does not understand leaves the file untouched). Not done and still listed in PARITY.md: Slidev also saves a separate camera file, and has mp4/mkv
+   mime types, frame rate, bit rate and resolution settings. Tests: `webm-duration.spec.ts` (synthetic files), and the camera browser test (the downloaded file has a Duration, `ffprobe` reads its length).
