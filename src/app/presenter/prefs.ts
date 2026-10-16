@@ -8,8 +8,13 @@ export class PresenterPrefs {
   readonly layout = storedSignal('slidev-presenter-layout', 1);
   /** Font size of the notes, in em. */
   readonly fontSize = storedSignal('slidev-presenter-font-size', 1);
+  /** The audience sees the presenter's mouse over the slide. */
+  readonly showCursor = storedSignal('slidev-presenter-cursor', true);
+  /** How the audience sees it: a mouse arrow or a red laser dot. */
+  readonly cursorStyle = storedSignal<'cursor' | 'laser'>('slidev-cursor-style', 'cursor');
 
   nextLayout() { this.layout.update((l) => (l >= 3 ? 1 : l + 1)); }
   bigger() { this.fontSize.update((s) => Math.min(2, Math.round((s + 0.1) * 10) / 10)); }
   smaller() { this.fontSize.update((s) => Math.max(0.5, Math.round((s - 0.1) * 10) / 10)); }
+  toggleCursor() { this.showCursor.update((v) => !v); }
 }

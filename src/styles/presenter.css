@@ -54,3 +54,12 @@ html.dark .slidev-presenter .grid-section { --slidev-bg: #121212; }
 .slidev-note-click-mark-past { opacity: 0.6; }
 
 .slidev-presenter .note-section { overflow: auto; }
+
+/* The presenter's cursor on the slide: a red laser dot (Slidev's LaserPointer.vue). */
+app-presenter-cursor { position: absolute; inset: 0; z-index: 50; }
+.laser-pointer {
+  position: absolute; width: 6px; height: 6px; border-radius: 9999px; transform: translate(-50%, -50%);
+  background: radial-gradient(circle at center, rgba(255, 80, 80, 1) 0%, rgba(255, 0, 0, 0.95) 55%, rgba(255, 0, 0, 0.1) 100%);
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.9), 0 0 22px rgba(255, 0, 0, 0.55);
+}
+.slidev-self-laser-active .slide-show { cursor: none; }

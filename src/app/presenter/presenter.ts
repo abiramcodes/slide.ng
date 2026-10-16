@@ -16,6 +16,7 @@ import { ClicksSlider } from './clicks-slider';
 import { NextPreview } from './next-preview';
 import { NoteDisplay } from './note-display';
 import { PresenterPrefs } from './prefs';
+import { PresenterCursor } from './presenter-cursor';
 import { ProgressBar } from './progress-bar';
 import { TimerBar } from './timer-bar';
 import { TimerInlined } from './timer-inlined';
@@ -24,7 +25,7 @@ import { TimerInlined } from './timer-inlined';
 // It drives the other windows (see sync/nav-sync.ts). Same navigation as the play page.
 @Component({
   selector: 'app-presenter',
-  imports: [SlideShow, NextPreview, NoteDisplay, NavBar, ProgressBar, TimerBar, TimerInlined, ClicksSlider, Overview, Goto, ContextMenu],
+  imports: [SlideShow, PresenterCursor, NextPreview, NoteDisplay, NavBar, ProgressBar, TimerBar, TimerInlined, ClicksSlider, Overview, Goto, ContextMenu],
   providers: [Nav, Ui],
   host: { '(window:keydown)': 'key($event)', class: 'block h-full' },
   template: `
@@ -38,7 +39,7 @@ import { TimerInlined } from './timer-inlined';
           <div class="flex gap-4 items-center border-b border-main p-1">
             <span class="op50 px-2">Current</span>
           </div>
-          <div class="relative flex-auto p-2 lg:p-4"><div class="relative h-full w-full"><app-slide-show context="presenter" /></div></div>
+          <div class="relative flex-auto p-2 lg:p-4"><div class="relative h-full w-full"><app-slide-show context="presenter"><app-presenter-cursor /></app-slide-show></div></div>
           <app-clicks-slider
             class="w-full pb-2 px-4 flex-none"
             [current]="nav.clicks()" [total]="nav.clicksTotal()" [start]="nav.ctx()?.clicksStart ?? 0"

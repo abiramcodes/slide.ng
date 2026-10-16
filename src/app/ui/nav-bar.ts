@@ -36,6 +36,19 @@ import { Settings } from './settings';
 
         <div class="w-1px opacity-10 bg-current m-1 lg:m-2"></div>
 
+        @if (nav.isPresenter) {
+          <button
+            icon-btn id="nav-cursor" [active]="prefs.showCursor()"
+            [title]="prefs.cursorStyle() === 'laser' ? (prefs.showCursor() ? 'Disable laser pointer' : 'Enable laser pointer') : (prefs.showCursor() ? 'Hide presenter cursor' : 'Show presenter cursor')"
+            (click)="prefs.toggleCursor()"
+          >
+            @if (prefs.cursorStyle() === 'laser') {
+              <div [class]="prefs.showCursor() ? 'i-carbon-magic-wand-filled color-red-600 dark:color-red-400' : 'i-carbon-magic-wand'"></div>
+            } @else {
+              <div [class]="prefs.showCursor() ? 'i-ph-cursor-fill' : 'i-ph-cursor-duotone'"></div>
+            }
+          </button>
+        }
         <button icon-btn id="nav-drawing" title="Show drawing toolbar (coming in phase 3)" [disabled]="true">
           <div class="i-carbon:pen"></div>
         </button>
