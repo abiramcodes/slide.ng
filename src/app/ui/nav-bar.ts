@@ -6,6 +6,7 @@ import { Nav } from '../lib/nav';
 import { PresenterPrefs } from '../presenter/prefs';
 import { Ui } from '../lib/ui-state';
 import { IconBtn } from './icon-btn';
+import { SideEditorState } from '../dev/side-editor-state';
 import { RecordingControls } from '../record/recording-controls';
 import { Settings } from './settings';
 
@@ -72,6 +73,11 @@ import { Settings } from './settings';
           <button icon-btn id="nav-presenter" title="Presenter Mode" (click)="nav.enterPresenter()">
             <div class="i-carbon:user-speaker"></div>
           </button>
+          @if (editor.available()) {
+            <button icon-btn id="nav-editor" [title]="editor.open() ? 'Hide editor' : 'Show editor'" [active]="editor.open()" (click)="editor.toggle()">
+              <div class="i-carbon:edit"></div>
+            </button>
+          }
           <button icon-btn id="nav-info" title="Show info" (click)="ui.info.set(!ui.info())">
             <div class="i-carbon:information"></div>
           </button>
@@ -113,6 +119,7 @@ export class NavBar {
   persist = input(false);
   protected nav = inject(Nav);
   protected drawings = inject(Drawings);
+  protected editor = inject(SideEditorState);
   protected prefs = inject(PresenterPrefs);
   protected ui = inject(Ui);
   protected dark = inject(Dark);

@@ -1,5 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { DragControls } from './drag/drag-controls';
+import { SideEditor } from './dev/side-editor';
+import { SideEditorState } from './dev/side-editor-state';
 import { WebCamera } from './record/web-camera';
 import { hideIdleCursor } from './lib/idle-cursor';
 import { Drawings } from './drawing/drawings';
@@ -20,12 +22,13 @@ import { Overview } from './ui/overview';
 // The route /:no, the audience's page. Shows one slide on a scaled canvas and hosts the controls around it.
 @Component({
   selector: 'app-deck',
-  imports: [SlideShow, PresenterCursor, DrawingLayer, DrawingControls, DragControls, WebCamera, NavBar, Overview, Goto, InfoDialog, ContextMenu],
+  imports: [SlideShow, PresenterCursor, DrawingLayer, DrawingControls, DragControls, WebCamera, SideEditor, NavBar, Overview, Goto, InfoDialog, ContextMenu],
   providers: [Nav, Ui, Drawings],
   host: { '(window:keydown)': 'key($event)' },
   template: `
     <div
       class="stage"
+      [style.right.px]="editor.open() && editor.available() ? editor.width : 0"
       [class.slidev-nav-go-forward]="nav.direction() > 0"
       [class.slidev-nav-go-backward]="nav.direction() < 0"
       (contextmenu)="contextMenu($event)"
@@ -37,6 +40,7 @@ import { Overview } from './ui/overview';
     </div>
     <app-drawing-controls />
     <app-web-camera />
+    <app-side-editor />
     <app-overview />
     <app-goto />
     <app-info-dialog />
@@ -47,6 +51,7 @@ import { Overview } from './ui/overview';
 export class Deck {
   protected nav = inject(Nav);
   private ui = inject(Ui);
+  protected editor = inject(SideEditorState);
   protected key = keyHandler(this.nav, this.ui);
 
   constructor() {

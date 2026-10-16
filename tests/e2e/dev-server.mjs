@@ -112,6 +112,26 @@ try {
   for (let i = 0; i < 40 && !gone; i++) { await sleep(250); gone = !existsSync(`${DIR}/drawings/2.svg`); }
   t.ok('clearing the drawing deletes the file', gone);
 
+  // ---- side editor
+  await page.goto(`${base}/2`);
+  await page.waitForFunction(() => /clicks \d+\/\d+/.test(document.querySelector('#hud')?.innerText ?? ''), null, { timeout: 60000 });
+  await page.locator('#nav-editor').click({ force: true });
+  await page.waitForFunction(() => document.querySelector('#editor-text')?.value.includes('# Two'), null, { timeout: 15000 });
+  t.ok('the side editor shows the markdown of the slide, frontmatter included', (await page.locator('#editor-text').inputValue()).includes('dragPos:'));
+  const stageRight = await page.locator('.stage').evaluate((e) => getComputedStyle(e).right);
+  t.ok('the slide makes room for it', stageRight === '420px', stageRight);
+  await page.locator('#editor-text').click();
+  await page.keyboard.press('Control+End');
+  await page.keyboard.type('\n\n<p id="from-editor">Typed in the editor</p>\n');
+  t.ok('typing in the editor saves into the markdown file', await waitForFile((s) => s.includes('<p id="from-editor">Typed in the editor</p>')));
+  t.ok('and the other slides of the file are untouched', read().includes('# One') && read().includes('# Three'));
+  await page.waitForSelector('#from-editor', { timeout: 30000 });
+  t.ok('the slide shows the new text after the rebuild', (await page.locator('#from-editor').innerText()) === 'Typed in the editor');
+  await page.waitForSelector('#editor-text');
+  await page.locator('#editor-close').click();
+  await page.waitForTimeout(300);
+  t.ok('the close button closes it and the slide gets its room back', (await page.locator('#side-editor').count()) === 0 && (await page.locator('.stage').evaluate((e) => getComputedStyle(e).right)) === '0px');
+
   // ---- {monaco-write}
   await page.locator('#nav-drawing').click({ force: true }); // toolbar off, so the drawing layer lets clicks through
   await page.goto(`${base}/3`);
