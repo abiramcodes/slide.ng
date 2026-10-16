@@ -50,7 +50,7 @@ describe('parseDeck', async () => {
   });
   it('reads a yaml block at the top of a slide as its frontmatter', async () => {
     const out = await parse('---\ntitle: T\n---\n\n# One\n\n---\n\n```yaml\nlayout: quote\n```\n\n# Two\n');
-    expect(out.slides[1].frontmatter.layout).toBe('quote');
+    expect((out.slides[1].frontmatter as { layout?: string }).layout).toBe('quote');
     expect(out.slides[1].content).not.toContain('layout: quote');
   });
   it('removes slides with hide or disabled', async () => {

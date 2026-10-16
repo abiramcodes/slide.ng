@@ -53,3 +53,4 @@ Thumbs.db
 # Build folders that the slide-ng command makes and removes itself
 **/.slide-ng/export-build/
 **/.slide-ng/build/
+**/.slide-ng/app/
