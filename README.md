@@ -47,14 +47,16 @@ node bin/slide-ng.mjs export-notes [slides.md] # a PDF of the speaker notes
 node bin/slide-ng.mjs format [slides.md]       # tidy the markdown file
 node bin/slide-ng.mjs theme eject              # copy the theme in use into ./theme to edit it
 node bin/slide-ng.mjs mcp [slides.md]          # MCP server on stdio: read and edit slides with a tool client
+node bin/slide-ng.mjs skills install           # copy the agent skill into .agents/skills/slide-ng
 ```
 
-| command  | flags                                                                                                                                                                                                                                                                                                                               |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `dev`    | `--port`/`-p` (4230), `--open`/`-o`, `--remote[=password]`, `--bind <address>`, `--log error\|warn\|info\|silent`, `--force`/`-f` (clear the build cache), `--theme`/`-t`. `--tunnel` and `--base` are refused with a message                                                                                                       |
-| `build`  | `--out`/`-o` (`dist`), `--base /talk/`, `--offline` (a folder that opens from disk; no `--base`), `--download` (also make the PDF and a download button), `--without-notes`, `--theme`/`-t`, `--executable-path`, `--timeout`                                                                                                       |
-| `export` | `--format pdf\|png\|pptx\|md`, `--output`/`-o`, `--range 1,4-5`, `--with-clicks`/`-c`, `--dark`, `--timeout`, `--wait`, `--wait-until`, `--executable-path`, `--per-slide`, `--scale`, `--omit-background`, `--with-toc`, `--theme`/`-t`, and `--dist <folder>` / `--url <address>` to export an existing build or a running server |
-| `create` | `<folder>`, `--force` (add the missing files to a folder that has files)                                                                                                                                                                                                                                                            |
+| command          | flags                                                                                                                                                                                                                                                                                                                               |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `dev`            | `--port`/`-p` (4230), `--open`/`-o`, `--remote[=password]`, `--bind <address>`, `--log error\|warn\|info\|silent`, `--force`/`-f` (clear the build cache), `--theme`/`-t`. `--tunnel` and `--base` are refused with a message                                                                                                       |
+| `build`          | `--out`/`-o` (`dist`), `--base /talk/`, `--offline` (a folder that opens from disk; no `--base`), `--download` (also make the PDF and a download button), `--without-notes`, `--theme`/`-t`, `--executable-path`, `--timeout`                                                                                                       |
+| `export`         | `--format pdf\|png\|pptx\|md`, `--output`/`-o`, `--range 1,4-5`, `--with-clicks`/`-c`, `--dark`, `--timeout`, `--wait`, `--wait-until`, `--executable-path`, `--per-slide`, `--scale`, `--omit-background`, `--with-toc`, `--theme`/`-t`, and `--dist <folder>` / `--url <address>` to export an existing build or a running server |
+| `create`         | `<folder>`, `--force` (add the missing files to a folder that has files)                                                                                                                                                                                                                                                            |
+| `skills install` | `--dir <folder>` (default `.agents/skills`; the skill goes in `<dir>/slide-ng`), `--force` (replace an earlier copy of the skill)                                                                                                                                                                                                   |
 
 The export needs a Chromium: set `CHROME_PATH` or pass `--executable-path`. It never downloads one. The headmatter can set `exportFilename`, `export: { ... }` (the same names as the flags) and `download`.
 Hosting, `--base`, the PDF button, the offline mode and the head tags are in [docs/HOSTING.md](docs/HOSTING.md); going offline for a talk is in [docs/OFFLINE.md](docs/OFFLINE.md). Setup files (`setup/shiki.ts`, `katex.ts`, `mermaid.ts`, `monaco.ts`, `shortcuts.ts`, ...) are in [docs/SETUP.md](docs/SETUP.md). Themes and addons are in [docs/THEMES.md](docs/THEMES.md) and [docs/WRITING-A-THEME.md](docs/WRITING-A-THEME.md); the official themes are packages `@slide-ng/theme-<name>` in the separate slide.ng-themes repository.
@@ -93,6 +95,10 @@ The URL is the state: `/7?clicks=2` is slide 7 at click 2.
 How it compares with Slidev, row by row: [docs/PARITY.md](docs/PARITY.md). What is missing or not checked: [docs/STATUS.md](docs/STATUS.md).
 Pictures of the layouts and of every feature slide (light and dark) are in `docs/screenshots/`; `npm run screenshots` makes them again.
 
+## Agent skill
+
+`skills/slide-ng` is an agent skill for coding agents that write slide.ng decks: when to use it, the real commands, the Angular (not Vue) syntax, one short reference per feature and a list of what does not exist. `slide-ng skills install` copies it into your project (`.agents/skills/slide-ng`; it never overwrites without `--force` and never writes outside the project). Its code samples are built by `npm run test:skills`, and `npm run check:skills` fails when a document it was written from changed. See [docs/AGENT-SKILL.md](docs/AGENT-SKILL.md).
+
 ## Offline use
 
 Presenting where there is no internet is a goal of its own. Three ways, from most to least convenient (the full checklist is [docs/OFFLINE.md](docs/OFFLINE.md)):
@@ -118,7 +124,9 @@ The password is optional, as in Slidev: plain `--remote` listens on every addres
 npm test             # unit tests (generator, code and math handling, click engine, table of contents, shortcuts, transitions)
 npm run test:e2e     # builds the starter deck and the showcase, code, interaction and theme decks, and checks them in a real browser
 npm run test:dev     # starts the dev server: live updates, v-drag write-back, drawings, side editor, {monaco-write}, --remote password
-npm run test:export  # the command line: export (PDF, PNG, PPTX, MD), build, themes, create, the MCP server
+npm run test:export  # the command line: export (PDF, PNG, PPTX, MD), build, themes, create, the MCP server, the agent skill's samples
+npm run test:skills  # builds every code sample of the agent skill (part of test:export)
+npm run check:skills # fails when a document changed after the agent skill was synced with it
 ```
 
 The browser tests use Chromium through `playwright-core`. Set `CHROME_PATH` if

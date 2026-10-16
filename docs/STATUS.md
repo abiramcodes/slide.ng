@@ -24,14 +24,15 @@ command line as a package, themes and addons, an example theme, the MCP server a
 11. **docs/PARITY.md**: 162 rows (plus 5 for the offline work), a test found for each `done` row, and a ranked list of gaps.
 12. **Offline use** (docs/OFFLINE.md): `slide-ng build --offline` makes a folder that opens from disk in Chromium (classic script, hash routing, relative addresses, Monaco workers from blobs, no service worker);
     window sync between `file://` pages; web fonts and remote pictures bundled (`fonts.selfHost`, on for `pwa` and `--offline`); `/public` addresses get the deck's base; the first-visit limit of the PWA is stated; a checklist for presenters.
+13. **Agent skill** (`skills/slide-ng`, docs/AGENT-SKILL.md): `SKILL.md` and 82 short references grouped by prefix, one for each feature marked done in PARITY.md, with the Angular-not-Vue differences and a `not-supported.md`. `slide-ng skills install [--dir] [--force]` copies it into a project. `npm run test:skills` builds every `<!-- verify -->` sample (72) with the real generator and one combined `slide-ng build`; `npm run check:skills` is a drift guard over the hashes in `skills/GENERATION.md` (CI runs both). Writing the samples found two documentation mistakes (a Monaco setup example that no longer type-checks, an example in SYNTAX.md that Prettier had broken) and two wrong claims (PARITY said 22 layouts and `<carbon:...>` tags).
 
 ## Test results (last run, Node 22.23.3, Chromium from `/opt/pw-browsers`)
 
 - `npm run build`: succeeds.
-- `npm test`: 81 files, **647** tests passed (theme and addon names: `roots.spec.ts`).
+- `npm test`: 90 files, **718** tests passed (theme and addon names: `roots.spec.ts`; the agent skill: `skills.spec.ts`, `hash.spec.ts`, `samples.spec.ts`).
 - `npm run test:e2e`: starter deck **45**, showcase **144**, code and content **125**, phase 3 decks **154**, print route **24**, setup hooks **24**, 0 failed. The official theme tests (every layout of four themes, fonts, PNG export) moved to the slide.ng-themes repository.
 - `npm run test:dev`: live update **6**, dev server **46**; 0 failed (one timing check of the dev server failed in two earlier runs, a different one each time, and passed on the third).
-- `npm run test:export`: export command **33**, build **47**, theme **21**, scaffold **13**, MCP **22**, offline folder from disk **40**, network off **13**; 0 failed.
+- `npm run test:export`: export command **33**, build **47**, theme **21**, scaffold **13**, MCP **22**, offline folder from disk **40**, network off **13**, agent skill samples **72** (generated one by one, then built together); 0 failed.
 
 ## Not done
 
@@ -46,6 +47,7 @@ command line as a package, themes and addons, an example theme, the MCP server a
 - The first load of a deck with Monaco and KaTeX is about 850 kB (budget 1.5 MB / 3 MB).
 - Recording: no separate camera file, no mp4 or mkv, no cloud upload. No HTTPS for `--remote` (as before).
 - Phase 2 and phase 3 lists still apply (Monaco and Mermaid limits, `v-motion` limits, footnote limits, resizing a rotated `v-drag` box, `{monaco-write}` limits, imported slides outside the deck's folder cannot be edited by the dev server).
+- Agent skill: the samples prove that decks generate and compile, not that they look right. In the combined build only the `theme`, `addons` and `codeAliases` of the samples' headmatter are applied; other headmatter keys are checked by the generator alone (`--each` builds every sample alone, slow, run by hand). Features that need a network, a browser or a device are described in the skill, not run. The skill is written by hand; the drift guard only notices that a document changed, not whether the skill was updated well.
 
 ## Problems found and fixed along the way
 
