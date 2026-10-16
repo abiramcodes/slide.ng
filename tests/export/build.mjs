@@ -62,6 +62,8 @@ pwa: true
 
 <img id="second" src="${remoteUrl}/pic2.png" width="40">
 
+<img id="pub" src="/favicon.ico" width="16">
+
 <!-- a note that must be gone from the build -->
 `);
 const site = join(scratch, 'site-a');
@@ -125,6 +127,9 @@ t.ok('the document title uses the template', (await page.title()).endsWith('| Ta
 await page.waitForFunction(() => document.querySelector('#second')?.complete);
 const img = await page.locator('#second').evaluate((e) => ({ src: e.getAttribute('src'), ok: e.naturalWidth > 0 }));
 t.ok('the picture comes from the build, not from the remote server', /^remote-assets\/\w+\.png$/.test(img.src) && img.ok && remoteHits === hitsAfterBuild, `${img.src} hits ${remoteHits - hitsAfterBuild}`);
+await page.waitForFunction(() => document.querySelector('#pub')?.complete);
+const pub = await page.locator('#pub').evaluate((e) => ({ src: e.getAttribute('src'), ok: e.naturalWidth > 0 }));
+t.ok('a /public picture written as /favicon.ico gets the base in front (/talk/favicon.ico) and loads', pub.src === '/talk/favicon.ico' && pub.ok, JSON.stringify(pub));
 t.ok('the lang and attributes are on <html>', await page.evaluate(() => document.documentElement.lang === 'de' && document.documentElement.dataset.test === 'yes'));
 
 await page.mouse.move(40, 700);
