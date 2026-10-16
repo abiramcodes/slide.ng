@@ -23,8 +23,19 @@ beforeAll(async () => {
       up: '../../etc/passwd',
       abs: '/etc/passwd',
       gone: 'missing.ts',
+      setup: 'setup/shiki.ts',
+      pkg: 'package.json',
+      git: '.git/hooks/pre-commit',
+      script: 'run.sh',
+      mine: 'snippet.ts',
     }),
   );
+  mkdirSync(join(root, 'setup'));
+  writeFileSync(join(root, 'setup/shiki.ts'), 'export default {};\n');
+  writeFileSync(join(root, 'package.json'), '{}\n');
+  mkdirSync(join(root, '.git/hooks'), { recursive: true });
+  writeFileSync(join(root, '.git/hooks/pre-commit'), '#!/bin/sh\n');
+  writeFileSync(join(root, 'run.sh'), '#!/bin/sh\n');
   ctx = readConfig({ SLIDE_NG_TOKEN: 'tok' }, root);
   const started = await startServer({ ...ctx, port: 0 });
   port = started.port;
@@ -171,6 +182,16 @@ describe('{monaco-write}', () => {
   it('refuses listed paths that leave the project: ../../etc/passwd and absolute paths', async () => {
     expect((await call('PUT', '/__slide-ng/monaco/up', { content: 'x' })).status).toBe(403);
     expect((await call('PUT', '/__slide-ng/monaco/abs', { content: 'x' })).status).toBe(403);
+  });
+  it('re-checks the target at write time: setup, package, git and script files stay untouched', async () => {
+    for (const id of ['setup', 'pkg', 'git', 'script'])
+      expect((await call('PUT', `/__slide-ng/monaco/${id}`, { content: 'pwned' })).status, id).toBe(
+        403,
+      );
+    expect(readFileSync(join(root, 'setup/shiki.ts'), 'utf8')).toBe('export default {};\n');
+    expect(readFileSync(join(root, 'package.json'), 'utf8')).toBe('{}\n');
+    expect(readFileSync(join(root, '.git/hooks/pre-commit'), 'utf8')).toBe('#!/bin/sh\n');
+    expect(readFileSync(join(root, 'run.sh'), 'utf8')).toBe('#!/bin/sh\n');
   });
   it('does not create files that are listed but missing', async () => {
     expect((await call('PUT', '/__slide-ng/monaco/gone', { content: 'x' })).status).toBe(403);

@@ -33,6 +33,14 @@ describe('{monaco-write}', () => {
     expect(monacoWriteTargets()).toEqual({});
     warn.mockRestore();
   });
+  it('lists no file the tools load or run: setup, package, git, hidden, odd extensions', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    for (const f of ['setup/shiki.ts', 'package.json', '.git/config', '.env', 'run.sh'])
+      expect(renderMonaco(fence({ file: `/project/${f}` }), ctx), f).not.toContain('write-id');
+    expect(monacoWriteTargets()).toEqual({});
+    expect(warn.mock.calls[0][0]).toContain('{monaco-write}');
+    warn.mockRestore();
+  });
   it('does not touch the other editors', () => {
     expect(renderMonaco({ info: 'ts {monaco}', code: 'x' }, ctx)).not.toContain('write-id');
   });
