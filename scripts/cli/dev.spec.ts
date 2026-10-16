@@ -8,6 +8,10 @@ describe('devPlan', () => {
     expect(plan.entry.endsWith('slides.md')).toBe(true);
     expect(plan.host).toBeUndefined();
   });
+  it('reads --theme and its alias', () => {
+    expect(devPlan(['--theme', './t']).theme).toBe('./t');
+    expect(devPlan(['-t', 'x']).theme).toBe('x');
+  });
   it('reads the entry file and the flags', () => {
     const plan = devPlan(['talk/my.md', '--port', '4300', '--open', '--log=warn', '--force']);
     expect(plan).toMatchObject({ port: 4300, open: true, log: 'warn', force: true });

@@ -17,6 +17,7 @@ export const EXPORT_FLAGS = {
   dist: { type: 'string' }, // export an existing build instead of building first
   url: { type: 'string' }, // export a running server (the dev server) instead
   base: { type: 'string' },
+  theme: { type: 'string', alias: 't' },
 };
 
 export const FORMATS = ['pdf', 'png', 'pptx', 'md'];

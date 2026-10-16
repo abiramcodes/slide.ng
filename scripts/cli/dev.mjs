@@ -11,7 +11,7 @@ import { hostname, networkInterfaces } from 'node:os';
 import { join, resolve } from 'node:path';
 import { randomSecret } from '../dev/config.mjs';
 import { ngBinary, prepareApp } from './app-root.mjs';
-import { parseFlags } from './flags.mjs';
+import { applyThemeFlag, parseFlags } from './flags.mjs';
 import { packageRoot } from './package-root.mjs';
 
 export const DEV_FLAGS = {
@@ -23,6 +23,7 @@ export const DEV_FLAGS = {
   force: { type: 'boolean', alias: 'f' },
   tunnel: { type: 'optional' },
   base: { type: 'string' },
+  theme: { type: 'string', alias: 't' },
 };
 
 const LOG_LEVELS = ['error', 'warn', 'info', 'silent'];
@@ -40,7 +41,7 @@ export function devPlan(argv) {
   const host = flags.bind ?? (remote ? '0.0.0.0' : undefined);
   // SLIDES_FILE is how tests (and older scripts) pick another deck.
   const entry = resolve(positionals[0] ?? process.env.SLIDES_FILE ?? 'slides.md');
-  return { entry, port: flags.port ?? 4200, open: Boolean(flags.open), remote, password, host, log, force: Boolean(flags.force) };
+  return { entry, port: flags.port ?? 4200, open: Boolean(flags.open), remote, password, host, log, force: Boolean(flags.force), theme: flags.theme };
 }
 
 // A free port for the companion server (it only listens on this machine).
@@ -50,6 +51,7 @@ const freePort = () => new Promise((done) => {
 
 export async function devCommand(argv) {
   const plan = devPlan(argv);
+  applyThemeFlag(plan);
   const appRoot = prepareApp(plan.entry);
   if (plan.force) rmSync(join(appRoot, '.angular', 'cache'), { recursive: true, force: true }); // the build cache is the only thing --force clears
   const companionPort = process.env.SLIDE_NG_DEV_PORT || String(await freePort());

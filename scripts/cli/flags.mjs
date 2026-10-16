@@ -1,3 +1,5 @@
+import { resolve } from 'node:path';
+
 // A small command line reader, so every command parses flags the same way.
 //   spec = { port: { type: 'number', alias: 'p' }, open: { type: 'boolean' }, format: { type: 'string' } }
 // Types: string, number, boolean, and `optional` (`--remote` is true, `--remote=secret` is the text; it never takes the next argument).
@@ -35,6 +37,12 @@ export function parseFlags(argv, spec) {
     flags[name] = s.type === 'number' ? toNumber(name, value) : value;
   }
   return { flags, positionals };
+}
+
+/** `--theme name|path` overrides the headmatter's theme for this run. The generator (a child process) reads the same variable. */
+export function applyThemeFlag(flags) {
+  // A path given on the command line is relative to where the command runs, not to the deck.
+  if (flags.theme) process.env.SLIDE_NG_THEME = flags.theme.startsWith('.') ? resolve(flags.theme) : flags.theme;
 }
 
 function splitOnce(text, sep) {

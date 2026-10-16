@@ -6,11 +6,12 @@ import { outputBase } from '../export/filename.mjs';
 import { EXPORT_FLAGS, resolveExportOptions } from '../export/options.mjs';
 import { serveDirectory } from '../export/static-server.mjs';
 import { parseDeck } from '../lib/parse-deck.mjs';
-import { parseFlags } from './flags.mjs';
+import { applyThemeFlag, parseFlags } from './flags.mjs';
 import { buildDeck } from './runtime.mjs';
 
 export async function exportCommand(argv, { notes = false } = {}) {
   const { flags, positionals } = parseFlags(argv, EXPORT_FLAGS);
+  applyThemeFlag(flags);
   const entry = resolve(positionals[0] ?? 'slides.md');
   const deck = await parseDeck(entry);
   const options = resolveExportOptions(flags, deck.headmatter);

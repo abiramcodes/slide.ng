@@ -12,7 +12,7 @@ export async function parseDeck(file = 'slides.md', sources, options = {}) {
   const entry = resolve(file);
   const data = await load({ userRoot: dirname(entry), roots: [dirname(entry)] }, entry, sources);
   const problems = [];
-  const roots = resolveRoots({ deckRoot: dirname(entry), headmatter: data.headmatter, themeOverride: options.theme, warn: (m) => problems.push(m) });
+  const roots = resolveRoots({ deckRoot: dirname(entry), headmatter: data.headmatter, themeOverride: options.theme ?? (process.env.SLIDE_NG_THEME || undefined), warn: (m) => problems.push(m) });
   const headmatter = mergeHeadmatter(roots, data.headmatter);
   // `defaults:` in the headmatter is the starting point of every slide's frontmatter.
   const defaults = headmatter.defaults ?? {};

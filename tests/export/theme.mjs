@@ -104,6 +104,12 @@ t.ok('ejected built-in theme: the cover layout still renders', (await v.page.loc
 t.ok('ejected built-in theme: no console errors', v.problems.length === 0, v.problems.join('|'));
 await v.close();
 
+// ---- --theme on the command line replaces the headmatter's theme
+const flagged = deck('flagged', '');
+await cli(['build', join(flagged, 'slides.md'), '--theme', themeDir, '--out', join(flagged, 'site')], flagged);
+const flaggedJs = readdirSync(join(flagged, 'site')).filter((f) => f.endsWith('.js')).map((f) => readFileSync(join(flagged, 'site', f), 'utf8')).join('\n');
+t.ok('--theme <path> uses that theme although the headmatter names none', flaggedJs.includes('minimal-cover') && !readFileSync(join(flagged, 'slides.md'), 'utf8').includes('theme:'));
+
 // ---- a theme that does not exist
 const missing = deck('missing', 'theme: ./nope\n');
 const failure = await cli(['build', join(missing, 'slides.md'), '--out', join(missing, 'site')], missing).then(() => '', (e) => e.stderr);
