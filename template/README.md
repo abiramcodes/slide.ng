@@ -4,7 +4,7 @@ Slides made with slide.ng.
 
 ```sh
 npm install
-npm run dev      # http://localhost:4200
+npm run dev      # http://localhost:4230
 npm run build    # a static site in ./dist
 npm run export   # slides-export.pdf (needs Chromium, see the slide.ng docs)
 ```

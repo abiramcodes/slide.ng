@@ -270,7 +270,7 @@ plain Node.
 18. **Setup hooks are Angular providers** (`setup/providers.ts`, an array). Shortcuts use the existing `SHORTCUTS_SETUP` token (one wins: the last root), code runners use the new multi token `CODE_RUNNERS`. There are no hooks for Shiki,
     KaTeX, Mermaid, Monaco or the markdown pipeline; that is the second biggest gap in PARITY.md.
 19. **One example theme, `examples/theme-minimal`**: replaces `cover` and `quote`, adds `<minimal-callout>`, CSS, a UnoCSS shortcut, `colorSchema: dark` and `transition: fade` as defaults and a `b` shortcut. No community theme was ported.
-20. **The dev server is one command with several processes** (`cli/dev.mjs`): the generator in watch mode, the companion server and `ng serve`. `npm start` is the same code. `--port` (default 4200), `--open` (`ng serve --open`), `--remote[=password]`,
+20. **The dev server is one command with several processes** (`cli/dev.mjs`): the generator in watch mode, the companion server and `ng serve`. `npm start` is the same code. `--port` (default 4230), `--open` (`ng serve --open`), `--remote[=password]`,
     `--bind`, `--theme`, `--log` (`error`/`silent` hide the output of the child programs), `--force` (clears the build cache). `--tunnel` (needs a tunnel service) and `--base` are refused with a message instead of being ignored.
     `--remote` is an optional-value flag: it never takes the next argument, so `slide-ng --remote my.md` means what it says.
 21. **`slide-ng mcp`** has seven tools: `list_slides`, `get_outline`, `get_slide`, `update_slide`, `insert_slide`, `remove_slide`, `move_slide`. They read with the generator's parser and edit slides.md as text. Every edit is parsed
@@ -290,7 +290,7 @@ plain Node.
 
 - Publish `slide-ng` to a registry (remove `private`, choose a version scheme)? Until then `create` writes `"slide-ng": "^0.0.0"`, which only resolves with a link or a local tarball.
 - Default canvas width: 960 (now) or Slidev's 980? Decks that care can set `canvasWidth: 980`.
-- Default dev port: 4200 (Angular's) or Slidev's 3030?
+- Default dev port: decided by the owner: 4230 (not Angular's 4200, not Slidev's 3030).
 - Should an uninstalled theme be an error instead of a warning?
 - Add setup hooks for Shiki, KaTeX, Mermaid and Monaco, or keep themes to layouts, components, styles and providers?
 - PWA icons and an "available offline" indicator.

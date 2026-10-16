@@ -587,7 +587,7 @@ npm start -- --remote=secret     # (or `slide-ng --remote=secret`) others on you
 npm start -- --remote            # same, with a random password that is printed
 ```
 
-It prints the deck address and the presenter address (`/presenter/1?password=secret`). Use that address on the presenter's device; a viewer opens `http://<your address>:4200/1?password=secret`.
+It prints the deck address and the presenter address (`/presenter/1?password=secret`). Use that address on the presenter's device; a viewer opens `http://<your address>:4230/1?password=secret`.
 The password lets a device sync and write; it is sent without encryption, so use it on a network you trust.
 
 ## The page, export and build

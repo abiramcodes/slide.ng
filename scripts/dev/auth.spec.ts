@@ -6,7 +6,7 @@ import { check, confine, hostAllowed, originAllowed, parseCookies, readBody, saf
 
 const ctx = { token: 'tok123', password: '', auth: 'cookie456', remote: false, hostnames: [] };
 const req = (headers: Record<string, string>, url = '/__slide-ng/slide/1') => ({ headers, url }) as any;
-const good = { host: 'localhost:4200', origin: 'http://localhost:4200', 'x-slide-ng-token': 'tok123' };
+const good = { host: 'localhost:4230', origin: 'http://localhost:4230', 'x-slide-ng-token': 'tok123' };
 
 describe('safeEqual', () => {
   it('compares texts of any length', () => {
@@ -19,17 +19,17 @@ describe('safeEqual', () => {
 
 describe('hostAllowed', () => {
   it('lets localhost in, with or without a port', () => {
-    for (const h of ['localhost', 'localhost:4200', '127.0.0.1:4200', '[::1]:4200']) expect(hostAllowed(h, ctx)).toBe(true);
+    for (const h of ['localhost', 'localhost:4230', '127.0.0.1:4230', '[::1]:4230']) expect(hostAllowed(h, ctx)).toBe(true);
   });
   it('refuses other names (DNS rebinding) and other addresses unless --remote', () => {
     expect(hostAllowed('evil.example.com', ctx)).toBe(false);
     expect(hostAllowed('localhost.evil.com', ctx)).toBe(false);
-    expect(hostAllowed('192.168.1.5:4200', ctx)).toBe(false);
-    expect(hostAllowed('192.168.1.5:4200', { ...ctx, remote: true })).toBe(true);
+    expect(hostAllowed('192.168.1.5:4230', ctx)).toBe(false);
+    expect(hostAllowed('192.168.1.5:4230', { ...ctx, remote: true })).toBe(true);
     expect(hostAllowed('evil.example.com', { ...ctx, remote: true })).toBe(false);
   });
   it('knows extra names', () => {
-    expect(hostAllowed('my-laptop:4200', { ...ctx, hostnames: ['my-laptop'] })).toBe(true);
+    expect(hostAllowed('my-laptop:4230', { ...ctx, hostnames: ['my-laptop'] })).toBe(true);
   });
   it('refuses missing or odd values', () => {
     for (const h of [undefined, '', 'a b', 'host/path', 'localhost:99999999']) expect(hostAllowed(h as string, ctx)).toBe(false);
@@ -38,13 +38,13 @@ describe('hostAllowed', () => {
 
 describe('originAllowed', () => {
   it('accepts no origin and the server own origin', () => {
-    expect(originAllowed(undefined, 'localhost:4200')).toBe(true);
-    expect(originAllowed('http://localhost:4200', 'localhost:4200')).toBe(true);
+    expect(originAllowed(undefined, 'localhost:4230')).toBe(true);
+    expect(originAllowed('http://localhost:4230', 'localhost:4230')).toBe(true);
   });
   it('refuses other sites, other ports and the string null', () => {
-    expect(originAllowed('http://evil.com', 'localhost:4200')).toBe(false);
-    expect(originAllowed('http://localhost:9999', 'localhost:4200')).toBe(false);
-    expect(originAllowed('null', 'localhost:4200')).toBe(false);
+    expect(originAllowed('http://evil.com', 'localhost:4230')).toBe(false);
+    expect(originAllowed('http://localhost:9999', 'localhost:4230')).toBe(false);
+    expect(originAllowed('null', 'localhost:4230')).toBe(false);
   });
 });
 

@@ -157,7 +157,7 @@ Slidev is Vue and Vite; slide.ng is Angular. Anything that is about Vue, Vite pl
 
 | Feature | Slidev reference | slide.ng status | Notes or test |
 | --- | --- | --- | --- |
-| `slide-ng [entry]` dev server | cli.ts dev | done | default port 4200 (Slidev 3030); test: edit ${n}: page updated without reload |
+| `slide-ng [entry]` dev server | cli.ts dev | done | default port 4230 (Slidev 3030); test: edit ${n}: page updated without reload |
 | dev `--port`, `-p` | builtin/cli.md | done | test: has sensible defaults |
 | dev `--open`, `-o` | builtin/cli.md | partial | passed to `ng serve --open`; a real browser opening was not observed; test: reads the entry file and the flags |
 | dev `--remote [password]`, `--bind` | builtin/cli.md | done | test: --remote listens on every address and always has a password |
@@ -245,7 +245,7 @@ browser exporter page and `overviewSnapshots`. (They are also listed in the rows
 6. **Touch**: no swipe or touch navigation and none of the touch handling for drawing and `v-drag` was tried.
 7. **UI switches**: `contextMenu`, `presenter`, `editor` headmatter switches, a custom context menu, `selectable`, `themeConfig`, `TitleRenderer`, `notesAutoRuby` are not there.
 8. **Syntax**: MDC/Comark syntax is not parsed.
-9. **CLI**: dev `--base`, `--tunnel`, build `--router-mode`, `--inspect`; the dev server's default port differs (4200).
+9. **CLI**: dev `--base`, `--tunnel`, build `--router-mode`, `--inspect`; the dev server's default port differs (4230).
 10. **Recording and PWA**: the webm has no duration field and no separate camera file; the PWA has no icons and no offline indicator.
 11. **Size**: the first load of a deck with Monaco and KaTeX is about 850 kB (budget raised to 1 MB warning, 2 MB error).
 12. **Unverified ground**: Firefox and Safari, real devices over a LAN, a real screen-share picker, wake lock behaviour and hosts that need hash routing were not tried (STATUS.md, NOT VERIFIED).

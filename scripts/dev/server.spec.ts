@@ -240,10 +240,10 @@ describe('--remote with a password', () => {
     expect((await ask('POST', '/__slide-ng/login', { password: 'pw' }, { host: 'evil.example' })).status).toBe(403);
   });
   it('accepts a network address as Host (that is how other devices come in), and a local one is the same', async () => {
-    expect((await ask('GET', '/__slide-ng/session', undefined, { cookie, host: '192.168.1.20:4200', origin: 'http://192.168.1.20:4200' })).status).toBe(200);
+    expect((await ask('GET', '/__slide-ng/session', undefined, { cookie, host: '192.168.1.20:4230', origin: 'http://192.168.1.20:4230' })).status).toBe(200);
   });
   it('without --remote a network address as Host is refused', async () => {
-    expect((await call('GET', '/__slide-ng/session', undefined, { host: '192.168.1.20:4200' })).status).toBe(403);
+    expect((await call('GET', '/__slide-ng/session', undefined, { host: '192.168.1.20:4230' })).status).toBe(403);
   });
   it('refuses a WebSocket without the cookie, accepts it with', async () => {
     const connect = (headers: Record<string, string>) => new Promise<string>((resolve) => {

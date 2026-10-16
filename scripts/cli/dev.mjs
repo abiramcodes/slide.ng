@@ -2,7 +2,7 @@
 //   1. the generator in watch mode (slides.md -> components, class names -> CSS file)
 //   2. the companion server (scripts/dev/server.mjs): writes slides.md and drawings, passes sync messages
 //   3. the Angular dev server, which sends `/__slide-ng/*` to the companion (proxy.conf.mjs)
-//   slide-ng [dev] [slides.md] [--port 4200] [--open] [--remote[=password]] [--bind 0.0.0.0] [--log info] [--force]
+//   slide-ng [dev] [slides.md] [--port 4230] [--open] [--remote[=password]] [--bind 0.0.0.0] [--log info] [--force]
 import { spawn, spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { rmSync } from 'node:fs';
@@ -41,7 +41,7 @@ export function devPlan(argv) {
   const host = flags.bind ?? (remote ? '0.0.0.0' : undefined);
   // SLIDES_FILE is how tests (and older scripts) pick another deck.
   const entry = resolve(positionals[0] ?? process.env.SLIDES_FILE ?? 'slides.md');
-  return { entry, port: flags.port ?? 4200, open: Boolean(flags.open), remote, password, host, log, force: Boolean(flags.force), theme: flags.theme };
+  return { entry, port: flags.port ?? 4230, open: Boolean(flags.open), remote, password, host, log, force: Boolean(flags.force), theme: flags.theme };
 }
 
 // A free port for the companion server (it only listens on this machine).

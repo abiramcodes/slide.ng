@@ -4,7 +4,7 @@ import { devPlan } from './dev.mjs';
 describe('devPlan', () => {
   it('has sensible defaults', () => {
     const plan = devPlan([]);
-    expect(plan).toMatchObject({ port: 4200, open: false, remote: false, password: '', log: 'info', force: false });
+    expect(plan).toMatchObject({ port: 4230, open: false, remote: false, password: '', log: 'info', force: false });
     expect(plan.entry.endsWith('slides.md')).toBe(true);
     expect(plan.host).toBeUndefined();
   });

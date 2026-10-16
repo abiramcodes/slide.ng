@@ -26,7 +26,7 @@ You need Node 22.22.3 or newer.
 
 ```sh
 npm install
-npm start          # dev server at http://localhost:4200, reloads when you edit slides.md
+npm start          # dev server at http://localhost:4230, reloads when you edit slides.md
 npm run build      # production build of the repository's own deck in dist/slide-ng/browser
 ```
 
@@ -48,7 +48,7 @@ node bin/slide-ng.mjs mcp [slides.md]          # MCP server on stdio: read and e
 
 | command | flags |
 | --- | --- |
-| `dev` | `--port`/`-p` (4200), `--open`/`-o`, `--remote[=password]`, `--bind <address>`, `--log error\|warn\|info\|silent`, `--force`/`-f` (clear the build cache), `--theme`/`-t`. `--tunnel` and `--base` are refused with a message |
+| `dev` | `--port`/`-p` (4230), `--open`/`-o`, `--remote[=password]`, `--bind <address>`, `--log error\|warn\|info\|silent`, `--force`/`-f` (clear the build cache), `--theme`/`-t`. `--tunnel` and `--base` are refused with a message |
 | `build` | `--out`/`-o` (`dist`), `--base /talk/`, `--download` (also make the PDF and a download button), `--without-notes`, `--theme`/`-t`, `--executable-path`, `--timeout` |
 | `export` | `--format pdf\|png\|pptx\|md`, `--output`/`-o`, `--range 1,4-5`, `--with-clicks`/`-c`, `--dark`, `--timeout`, `--wait`, `--wait-until`, `--executable-path`, `--per-slide`, `--scale`, `--omit-background`, `--with-toc`, `--theme`/`-t`, and `--dist <folder>` / `--url <address>` to export an existing build or a running server |
 | `create` | `<folder>`, `--force` (add the missing files to a folder that has files) |
