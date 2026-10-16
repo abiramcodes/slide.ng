@@ -166,6 +166,25 @@ describe('writes to slides.md', () => {
     ).toBe(400);
     expect(readFileSync(join(root, 'slides.md'), 'utf8')).toBe(SLIDES);
   });
+  it('cannot switch on settings that widen what a build reads or downloads', async () => {
+    const before = readFileSync(join(root, 'slides.md'), 'utf8');
+    for (const raw of [
+      '---\ntitle: T\nallowOutsideRoot: true\n---\n\n# One',
+      '---\ntitle: T\n"allowOutside\\x52oot": true\n---\n\n# One',
+      '---\ntitle: [\nallowOutsideRoot: true\n---\n\n# One', // does not parse: still refused
+      '---\ntitle: T\nfonts:\n  allowCustomProvider: true\n---\n\n# One',
+    ]) {
+      const r = await call('PUT', '/__slide-ng/slides/1/source', { raw });
+      expect(r.status, raw).toBe(422);
+    }
+    expect(readFileSync(join(root, 'slides.md'), 'utf8')).toBe(before);
+    // Half-typed frontmatter that does not mention them is still saved.
+    expect(
+      (await call('PUT', '/__slide-ng/slides/1/source', { raw: '---\ntitle: [\n---\n\n# One' }))
+        .status,
+    ).toBe(200);
+    writeFileSync(join(root, 'slides.md'), before);
+  });
   it('reads and replaces a slide for the side editor', async () => {
     const got = await call('GET', '/__slide-ng/slides/2/source');
     expect(got.json.raw).toContain('# Two');

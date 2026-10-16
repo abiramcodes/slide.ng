@@ -13,6 +13,8 @@ Say which version or commit you used, how you ran slide.ng (dev server, `--remot
 
 This is a small project kept up in spare time, so there is no fixed response time. Expect an answer within a few days. A confirmed problem is fixed in the next release, and the advisory credits you unless you prefer not to be named.
 
+The trust model (who is trusted, what a person on your network, another website or a malicious deck, theme or addon can and cannot do, and what each flag changes) is in [docs/SECURITY-MODEL.md](docs/SECURITY-MODEL.md).
+
 ## What the dev server protects
 
 `npm start` runs a small companion server next to the Angular dev server. It reads and writes files in your deck folder (drag positions, the side editor, drawings, `{monaco-write}` files), so it follows these rules. Each one has tests, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).

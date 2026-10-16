@@ -6,6 +6,7 @@ import { relative } from 'node:path';
 import { stringify } from 'yaml';
 import { z } from 'zod';
 import { confine, safeWrite } from '../dev/auth.mjs';
+import { assertNoWidening } from '../dev/escalation.mjs';
 import { replaceSource, sourceOf } from '../dev/slide-source.mjs';
 import { assertReadable } from '../lib/outside-root.mjs';
 import { parseDeck } from '../lib/parse-deck.mjs';
@@ -53,6 +54,7 @@ async function commit(ctx, file, text, expected) {
   if (got.length !== expected.length || got.some((g, i) => g !== expected[i])) {
     throw new Error('the edit would change other slides than intended, so nothing was written');
   }
+  await assertNoWidening(ctx, file, text);
   safeWrite(file, text);
   return check;
 }

@@ -4,6 +4,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { relative } from 'node:path';
 import { parseDeck } from '../lib/parse-deck.mjs';
 import { confine, safeWrite } from './auth.mjs';
+import { assertNoWidening } from './escalation.mjs';
 import { HttpError } from './http-error.mjs';
 import { dragEdit, replaceSource, sourceOf } from './slide-source.mjs';
 
@@ -25,15 +26,16 @@ async function locate(ctx, no) {
   };
 }
 
-function save(file, result) {
+async function save(ctx, file, result) {
   if (result.error) throw new HttpError(422, result.error);
+  await assertNoWidening(ctx, file, result.text);
   safeWrite(file, result.text);
 }
 
 /** A v-drag element was moved: write its new place. */
 export async function writeDrag(ctx, no, site, pos) {
   const { slide, file, text } = await locate(ctx, no);
-  save(file, dragEdit(text, slide, site, pos));
+  await save(ctx, file, dragEdit(text, slide, site, pos));
 }
 
 /** The raw markdown of a slide for the side editor. */
@@ -45,5 +47,5 @@ export async function readSlide(ctx, no) {
 /** The side editor saved: replace the slide's lines. */
 export async function writeSlide(ctx, no, raw) {
   const { slide, file, text } = await locate(ctx, no);
-  save(file, replaceSource(text, slide, raw));
+  await save(ctx, file, replaceSource(text, slide, raw));
 }

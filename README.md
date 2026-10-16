@@ -117,7 +117,7 @@ npm start -- --remote=secret
 ```
 
 Others on your network can open the deck and follow the presenter. It prints the addresses; the presenter's is `/presenter/1?password=secret`.
-Remote mode always has a password, unlike Slidev where it is optional: plain `--remote` makes a random one (24 characters) and prints it with the presenter address. You can also set it with `SLIDE_NG_PASSWORD` or, on a terminal, type it at a prompt, which keeps it out of the process list. Anyone with the password can edit your slides and the snippet files you made editable with `{monaco-write}`, so there is no HTTPS: use it on a network you trust. What it allows and what it does not is in [docs/SECURITY-MODEL.md](docs/SECURITY-MODEL.md); the security rules are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Remote mode always has a password, unlike Slidev where it is optional: plain `--remote` makes a random one (24 characters) and prints it with the presenter address. You can also set it with `SLIDE_NG_PASSWORD` or, on a terminal, type it at a prompt, which keeps it out of the process list. Anyone with the password can edit your slides and the snippet files you made editable with `{monaco-write}`, so there is no HTTPS: use it on a network you trust. What it allows and what it does not is in [docs/SECURITY-MODEL.md](docs/SECURITY-MODEL.md) (the trust model of the whole tool); the security rules are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Tests
 
@@ -161,7 +161,7 @@ These are planned names; the repositories do not all exist yet.
 
 ## Contributing
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md). Changes follow the [Code of Conduct](CODE_OF_CONDUCT.md); security problems go through [SECURITY.md](SECURITY.md). Changes are listed in [CHANGELOG.md](CHANGELOG.md).
+Read [CONTRIBUTING.md](CONTRIBUTING.md). Changes follow the [Code of Conduct](CODE_OF_CONDUCT.md); security problems go through [SECURITY.md](SECURITY.md), and what the tool trusts is in [docs/SECURITY-MODEL.md](docs/SECURITY-MODEL.md). Changes are listed in [CHANGELOG.md](CHANGELOG.md).
 
 ## Maintainers
 
