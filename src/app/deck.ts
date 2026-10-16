@@ -5,7 +5,8 @@ import { Dark } from './lib/dark';
 import { Fullscreen } from './lib/fullscreen';
 import { hideIdleCursor } from './lib/idle-cursor';
 import { Nav } from './lib/nav';
-import { SHORTCUTS_SETUP, ShortcutActions, defaultShortcuts, findShortcut } from './lib/shortcuts';
+import { makeActions } from './lib/actions';
+import { SHORTCUTS_SETUP, defaultShortcuts, findShortcut } from './lib/shortcuts';
 import { Stage } from './lib/stage';
 import { pickTransition } from './lib/transitions';
 import { Ui } from './lib/ui-state';
@@ -70,7 +71,10 @@ export class Deck {
 
   private stage?: Stage;
   private shown = 0; // the slide number on screen, to tell which way we moved
-  private shortcuts = inject(SHORTCUTS_SETUP)(this.actions(), defaultShortcuts(this.actions()));
+  private shortcuts = (() => {
+    const actions = makeActions(this.nav, this.ui, this.dark, this.fullscreen);
+    return inject(SHORTCUTS_SETUP)(actions, defaultShortcuts(actions));
+  })();
 
   constructor() {
     // One slide component per slide number, so each slide gets a fresh ClicksContext.
@@ -133,23 +137,5 @@ export class Deck {
     if (e.shiftKey || e.defaultPrevented) return;
     e.preventDefault();
     this.ui.contextMenu.set({ x: e.pageX, y: e.pageY });
-  }
-
-  private actions(): ShortcutActions {
-    const { nav, ui } = this;
-    return {
-      next: () => nav.next(),
-      prev: () => nav.prev(),
-      nextSlide: () => nav.nextSlide(),
-      prevSlide: () => nav.prevSlide(),
-      toggleDark: () => this.dark.toggle(),
-      toggleOverview: () => ui.toggleOverview(),
-      toggleGoto: () => ui.toggleGoto(),
-      toggleFullscreen: () => this.fullscreen.toggle(),
-      closeAll: () => ui.closeAll(),
-      overviewOpen: () => ui.overview(),
-      overviewMove: (by) => ui.moveOverview(by, nav.total),
-      overviewGo: () => { nav.go(ui.overviewPage()); ui.overview.set(false); },
-    };
   }
 }

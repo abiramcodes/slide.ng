@@ -64,6 +64,7 @@ The `<style>` text goes into the slide component's `styles`, wrapped in `slide-0
 | `lib/stage.ts` | puts slides on the canvas and plays transitions (two slides in the page while it runs) |
 | `lib/transitions.ts` | which transition applies, and the animation of each (Web Animations) |
 | `lib/shortcuts.ts` | list of `{ name, key, run, when }`, the default keys, `SHORTCUTS_SETUP` to change them |
+| `lib/actions.ts` | connects shortcut names to what they do |
 | `lib/ui-state.ts` | `Ui`: which dialog or menu is open, slide scale, overview highlight |
 | `lib/dark.ts`, `lib/fullscreen.ts`, `lib/idle-cursor.ts` | dark mode, fullscreen, hide idle cursor |
 | `lib/mount-slide.ts`, `lib/slide-context.ts` | create a slide component and tell it its number and where it is drawn |

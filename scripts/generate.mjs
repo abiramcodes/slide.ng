@@ -4,6 +4,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, watch, writeF
 import { parseDeck } from './lib/parse-deck.mjs';
 import { slideName, slideSource } from './lib/emit.mjs';
 import { indexSource } from './lib/index-source.mjs';
+import { layoutName } from './lib/layouts.mjs';
 import { makeCss, tsFiles } from './lib/make-css.mjs';
 
 // SLIDES_FILE lets tests build another deck.
@@ -19,6 +20,8 @@ function write(path, text) {
 async function generate() {
   const deck = await parseDeck(INPUT);
   deck.problems.forEach((p) => console.warn(`[slides] ${p}`));
+  // Decide each layout once, so that an unknown name is reported once.
+  deck.slides.forEach((s, i) => (s.layout = layoutName(s.frontmatter, i)));
   mkdirSync(OUT, { recursive: true });
   const wanted = new Set(deck.slides.map((_, i) => `${slideName(i + 1)}.ts`).concat('index.ts', 'uno.css'));
   for (const f of readdirSync(OUT)) if (!wanted.has(f)) rmSync(OUT + f);

@@ -9,7 +9,7 @@ function metaOf(slide, index) {
   return {
     title: slide.title ?? null,
     level: slide.level ?? null,
-    layout: layoutName(f, index),
+    layout: slide.layout ?? layoutName(f, index),
     note: slide.note ?? null,
     routeAlias: f.routeAlias != null ? String(f.routeAlias) : null,
     hideInToc: Boolean(f.hideInToc),

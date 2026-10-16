@@ -35,7 +35,7 @@ function body(markdown, def, no) {
 }
 
 export function slideSource(slide, no) {
-  const def = LAYOUTS[layoutName(slide.frontmatter, no - 1)];
+  const def = LAYOUTS[slide.layout ?? layoutName(slide.frontmatter, no - 1)];
   const { markdown, css } = extractStyles(slide.content);
   const html = `${openTag(def, slide.frontmatter)}${body(markdown, def, no)}</${def.tag}>`;
 
