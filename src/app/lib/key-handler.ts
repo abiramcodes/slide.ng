@@ -1,4 +1,5 @@
 import { inject } from '@angular/core';
+import { Drawings } from '../drawing/drawings';
 import { makeActions } from './actions';
 import { Dark } from './dark';
 import { Fullscreen } from './fullscreen';
@@ -13,7 +14,7 @@ const isTyping = (t: EventTarget | null) =>
 
 /** The keydown handler of a page that has a Nav and a Ui: the deck and the presenter share it. Call in a constructor. */
 export function keyHandler(nav: Nav, ui: Ui): (e: KeyboardEvent) => void {
-  const actions = makeActions(nav, ui, inject(Dark), inject(Fullscreen));
+  const actions = makeActions(nav, ui, inject(Dark), inject(Fullscreen), inject(Drawings));
   const shortcuts = inject(SHORTCUTS_SETUP)(actions, defaultShortcuts(actions));
   return (e) => {
     if (isTyping(e.target)) return;

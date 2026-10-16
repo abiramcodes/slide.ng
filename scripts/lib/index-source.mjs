@@ -33,6 +33,8 @@ ${imports.join('\n')}
 
 export const HEADMATTER: Record<string, unknown> = ${JSON.stringify(deck.headmatter)};
 export const INFO_HTML: string | null = ${JSON.stringify(info)};
+/** Drawings saved in .slide-ng/drawings (only with \`drawings: { persist: true }\`): slide number -> SVG markup. */
+export const DRAWINGS: Record<number, string> = ${JSON.stringify(deck.drawings ?? {})};
 
 export const SLIDES: SlideMeta[] = [
 ${entries.join('\n')}

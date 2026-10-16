@@ -1,10 +1,11 @@
 import { Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
+import { Drawings } from '../drawing/drawings';
 import { Fullscreen } from '../lib/fullscreen';
 import { Nav } from '../lib/nav';
 import { Ui } from '../lib/ui-state';
 
 // The right-click menu (Slidev's ContextMenu): four arrows, then a list of actions.
-// The drawing entry is still a placeholder (see the drawing phase).
+
 @Component({
   selector: 'app-context-menu',
   host: {
@@ -52,6 +53,7 @@ export class ContextMenu {
   protected ui = inject(Ui);
   private nav = inject(Nav);
   private fullscreen = inject(Fullscreen);
+  private drawings = inject(Drawings);
   private menu = viewChild<ElementRef<HTMLElement>>('menu');
 
   protected arrows = computed(() => [
@@ -62,7 +64,7 @@ export class ContextMenu {
   ]);
 
   protected items = computed(() => [
-    { icon: 'i-carbon:pen', label: 'Show drawing toolbar', run: () => {}, disabled: true }, // phase 3
+    ...(this.drawings.available ? [{ icon: 'i-carbon:pen', label: this.drawings.enabled() ? 'Hide drawing toolbar' : 'Show drawing toolbar', run: () => this.drawings.toggle(), disabled: false }] : []),
     { icon: 'i-carbon:apps', label: 'Show slide overview', run: () => this.ui.toggleOverview(), disabled: false },
     this.nav.isPresenter
       ? { icon: 'i-carbon:presentation-file', label: 'Exit Presenter Mode', run: () => this.nav.exitPresenter(), disabled: false }

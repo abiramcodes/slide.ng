@@ -3,6 +3,9 @@ import { Title } from '@angular/platform-browser';
 import { HEADMATTER } from '../../slides/generated';
 import { hideIdleCursor } from '../lib/idle-cursor';
 import { keyHandler } from '../lib/key-handler';
+import { Drawings } from '../drawing/drawings';
+import { DrawingControls } from '../drawing/drawing-controls';
+import { DrawingLayer } from '../drawing/drawing-layer';
 import { Nav } from '../lib/nav';
 import { SlideShow } from '../lib/slide-show';
 import { storedSignal } from '../lib/stored-signal';
@@ -25,8 +28,8 @@ import { TimerInlined } from './timer-inlined';
 // It drives the other windows (see sync/nav-sync.ts). Same navigation as the play page.
 @Component({
   selector: 'app-presenter',
-  imports: [SlideShow, PresenterCursor, NextPreview, NoteDisplay, NavBar, ProgressBar, TimerBar, TimerInlined, ClicksSlider, Overview, Goto, ContextMenu],
-  providers: [Nav, Ui],
+  imports: [SlideShow, PresenterCursor, DrawingLayer, DrawingControls, NextPreview, NoteDisplay, NavBar, ProgressBar, TimerBar, TimerInlined, ClicksSlider, Overview, Goto, ContextMenu],
+  providers: [Nav, Ui, Drawings],
   host: { '(window:keydown)': 'key($event)', class: 'block h-full' },
   template: `
     <div class="bg-main text-main h-full slidev-presenter grid grid-rows-[max-content_1fr] of-hidden">
@@ -39,7 +42,7 @@ import { TimerInlined } from './timer-inlined';
           <div class="flex gap-4 items-center border-b border-main p-1">
             <span class="op50 px-2">Current</span>
           </div>
-          <div class="relative flex-auto p-2 lg:p-4"><div class="relative h-full w-full"><app-slide-show context="presenter"><app-presenter-cursor /></app-slide-show></div></div>
+          <div class="relative flex-auto p-2 lg:p-4"><div class="relative h-full w-full"><app-slide-show context="presenter"><app-drawing-layer /><app-presenter-cursor /></app-slide-show></div></div>
           <app-clicks-slider
             class="w-full pb-2 px-4 flex-none"
             [current]="nav.clicks()" [total]="nav.clicksTotal()" [start]="nav.ctx()?.clicksStart ?? 0"
@@ -71,6 +74,7 @@ import { TimerInlined } from './timer-inlined';
         </div>
       </div>
     </div>
+    <app-drawing-controls />
     <app-goto />
     <app-overview />
     <app-context-menu />

@@ -25,16 +25,16 @@ describe('matches', () => {
   });
 });
 
-function actions(log: string[], overview = false): ShortcutActions {
+function actions(log: string[], overview = false, drawing = false): ShortcutActions {
   const names = ['next', 'prev', 'nextSlide', 'prevSlide', 'toggleDark', 'toggleOverview', 'toggleGoto', 'toggleFullscreen', 'closeAll', 'overviewGo'];
   const base: any = Object.fromEntries(names.map((n) => [n, () => log.push(n)]));
-  return { ...base, overviewOpen: () => overview, overviewMove: (by: string) => log.push(`move ${by}`) };
+  return { ...base, overviewOpen: () => overview, drawingEnabled: () => drawing, overviewMove: (by: string) => log.push(`move ${by}`) };
 }
 
 describe('default shortcuts (the same keys as Slidev)', () => {
-  const run = (k: string, mods: Partial<KeyboardEvent> = {}, overview = false) => {
+  const run = (k: string, mods: Partial<KeyboardEvent> = {}, overview = false, drawing = false) => {
     const log: string[] = [];
-    findShortcut(key(k, mods), defaultShortcuts(actions(log, overview)))?.run();
+    findShortcut(key(k, mods), defaultShortcuts(actions(log, overview, drawing)))?.run();
     return log.join();
   };
   it('moves with space, arrows, page keys', () => {
@@ -51,6 +51,10 @@ describe('default shortcuts (the same keys as Slidev)', () => {
   });
   it('opens things with d, o, `, g, f and closes with Escape', () => {
     expect([run('d'), run('o'), run('`'), run('g'), run('f'), run('Escape')]).toEqual(['toggleDark', 'toggleOverview', 'toggleOverview', 'toggleGoto', 'toggleFullscreen', 'closeAll']);
+  });
+  it('leaves d, o, `, g and Escape to the drawing toolbar while it is on, arrows still move', () => {
+    expect(['d', 'o', '`', 'g', 'Escape'].map((k) => run(k, {}, false, true))).toEqual(['', '', '', '', '']);
+    expect(run('ArrowRight', {}, false, true)).toBe('next');
   });
   it('uses the arrows to move inside the overview, and Enter to go', () => {
     expect(run('ArrowRight', {}, true)).toBe('move right');

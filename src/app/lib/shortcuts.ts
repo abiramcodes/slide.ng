@@ -27,6 +27,9 @@ export interface ShortcutActions {
   /** Overview: move the highlight (left/right by 1, up/down by a row) or open the highlighted slide. */
   overviewMove(by: 'left' | 'right' | 'up' | 'down'): void;
   overviewGo(): void;
+  /** The drawing toolbar is on: it owns d, o, g, Escape, ... (Slidev disables the shortcuts then). */
+  drawingEnabled(): boolean;
+  toggleDrawing(): void;
 }
 
 /** Deck authors provide this to change the list: `{ provide: SHORTCUTS_SETUP, useValue: (a, list) => [...list, mine] }`. */
@@ -37,6 +40,7 @@ export const SHORTCUTS_SETUP = new InjectionToken<(actions: ShortcutActions, lis
 export function defaultShortcuts(a: ShortcutActions): Shortcut[] {
   const play = () => !a.overviewOpen(); // arrow keys move through the overview while it is open
   const overview = () => a.overviewOpen();
+  const notDrawing = () => !a.drawingEnabled();
   return [
     { name: 'next_space', key: 'space', run: a.next },
     { name: 'prev_space', key: 'shift+space', run: a.prev },
@@ -48,11 +52,11 @@ export function defaultShortcuts(a: ShortcutActions): Shortcut[] {
     { name: 'prev_up', key: 'ArrowUp', run: a.prevSlide, when: play },
     { name: 'next_shift', key: 'shift+ArrowRight', run: a.nextSlide },
     { name: 'prev_shift', key: 'shift+ArrowLeft', run: a.prevSlide },
-    { name: 'toggle_dark', key: 'd', run: a.toggleDark },
-    { name: 'toggle_overview', key: 'o', run: a.toggleOverview },
-    { name: 'toggle_overview_backtick', key: '`', run: a.toggleOverview },
-    { name: 'hide_overview', key: 'Escape', run: a.closeAll },
-    { name: 'goto', key: 'g', run: a.toggleGoto },
+    { name: 'toggle_dark', key: 'd', run: a.toggleDark, when: notDrawing },
+    { name: 'toggle_overview', key: 'o', run: a.toggleOverview, when: notDrawing },
+    { name: 'toggle_overview_backtick', key: '`', run: a.toggleOverview, when: notDrawing },
+    { name: 'hide_overview', key: 'Escape', run: a.closeAll, when: notDrawing },
+    { name: 'goto', key: 'g', run: a.toggleGoto, when: notDrawing },
     { name: 'fullscreen', key: 'f', run: a.toggleFullscreen },
     { name: 'right_overview', key: 'ArrowRight', run: () => a.overviewMove('right'), when: overview },
     { name: 'left_overview', key: 'ArrowLeft', run: () => a.overviewMove('left'), when: overview },

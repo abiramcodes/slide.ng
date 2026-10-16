@@ -1,4 +1,5 @@
 import { Component, ElementRef, inject, input } from '@angular/core';
+import { Drawings } from '../drawing/drawings';
 import { Dark } from '../lib/dark';
 import { Fullscreen } from '../lib/fullscreen';
 import { Nav } from '../lib/nav';
@@ -49,9 +50,14 @@ import { Settings } from './settings';
             }
           </button>
         }
-        <button icon-btn id="nav-drawing" title="Show drawing toolbar (coming in phase 3)" [disabled]="true">
-          <div class="i-carbon:pen"></div>
-        </button>
+        @if (drawings.available) {
+          <button icon-btn id="nav-drawing" class="relative" [title]="drawings.enabled() ? 'Hide drawing toolbar' : 'Show drawing toolbar'" [active]="drawings.enabled()" (click)="drawings.toggle()">
+            <div class="i-carbon:pen"></div>
+            @if (drawings.enabled()) {
+              <div class="absolute left-1 right-1 bottom-0 h-0.7 rounded-full" [style.background]="drawings.brush().color"></div>
+            }
+          </button>
+        }
 
         <div class="w-1px opacity-10 bg-current m-1 lg:m-2"></div>
 
@@ -103,6 +109,7 @@ export class NavBar {
   /** The presenter page keeps the bar open and drops its frame. */
   persist = input(false);
   protected nav = inject(Nav);
+  protected drawings = inject(Drawings);
   protected prefs = inject(PresenterPrefs);
   protected ui = inject(Ui);
   protected dark = inject(Dark);

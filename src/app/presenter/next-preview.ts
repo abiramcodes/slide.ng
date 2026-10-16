@@ -1,4 +1,5 @@
 import { Component, ComponentRef, ViewContainerRef, computed, effect, inject, untracked, viewChild } from '@angular/core';
+import { DrawingPreview } from '../drawing/drawing-preview';
 import { CANVAS_HEIGHT, CANVAS_WIDTH, fitScale } from '../lib/canvas';
 import { hostSize } from '../lib/element-size';
 import { mountSlide } from '../lib/mount-slide';
@@ -9,10 +10,11 @@ import { SlideBase } from '../lib/slide-base';
 // clicks are used up. It is the real slide component with its click set to that step.
 @Component({
   selector: 'app-next-preview',
+  imports: [DrawingPreview],
   host: { class: 'block relative h-full w-full overflow-hidden' },
   template: `
     @if (frame(); as f) {
-      <div id="next-canvas" class="canvas absolute left-1/2 top-1/2" [style]="style()"><ng-container #host /></div>
+      <div id="next-canvas" class="canvas absolute left-1/2 top-1/2" [style]="style()"><ng-container #host /><app-drawing-preview [no]="f.no" /></div>
     } @else if (nav.ready()) {
       <div class="h-full flex justify-center items-center"><div class="text-gray-500">End of the presentation</div></div>
     }

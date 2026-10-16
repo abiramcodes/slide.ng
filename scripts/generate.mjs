@@ -8,6 +8,7 @@ import { layoutName } from './lib/layouts.mjs';
 import { makeCss, tsFiles } from './lib/make-css.mjs';
 import { detectFeatures } from './lib/features.mjs';
 import { initHighlighter } from './lib/code/highlighter.mjs';
+import { readDrawings } from './lib/drawings.mjs';
 
 // SLIDES_FILE lets tests build another deck.
 const INPUT = process.env.SLIDES_FILE ?? 'slides.md';
@@ -33,6 +34,7 @@ function featureCss(features) {
 async function generate() {
   const deck = await parseDeck(INPUT);
   deck.problems.forEach((p) => console.warn(`[slides] ${p}`));
+  deck.drawings = readDrawings(deck.root, deck.headmatter);
   // Decide each layout once, so that an unknown name is reported once.
   deck.slides.forEach((s, i) => (s.layout = layoutName(s.frontmatter, i)));
   const features = detectFeatures(deck.slides);
