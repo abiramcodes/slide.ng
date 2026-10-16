@@ -11,11 +11,13 @@ import { animationsFor, transitionDuration } from './transitions';
 export class Stage {
   private current?: ComponentRef<SlideBase>;
   private leaving: ComponentRef<SlideBase>[] = [];
+  private pendingSwap?: () => void; // a view transition that has not swapped the slides yet
 
   constructor(
     private host: ViewContainerRef,
     private canvas: HTMLElement,
     private context: RenderContext = 'slide',
+    private mount = mountSlide, // replaceable in tests
   ) {}
 
   /** Removes the slide on screen (the 404 page takes its place). */
@@ -29,34 +31,33 @@ export class Stage {
   show(no: number, transition: string | null): SlideBase {
     this.finish(); // a transition still running is cut short
     const old = this.current;
-    const make = () => {
-      this.current = mountSlide(this.host, no, this.context);
-      this.current.changeDetectorRef.detectChanges(); // draw it now, so an animation can start on real content
-    };
+    if (!old || !transition) old?.destroy();
+    this.current = this.mount(this.host, no, this.context);
+    this.current.changeDetectorRef.detectChanges(); // draw it now, so an animation can start on real content
 
-    if (!old || !transition) {
-      old?.destroy();
-      make();
-    } else if (transition === 'view-transition') {
-      this.viewTransition(old, make);
-    } else {
-      make();
-      this.animate(old, this.current!, transition);
-    }
-    return this.current!.instance;
+    if (old && transition === 'view-transition') this.viewTransition(old, this.current);
+    else if (old && transition) this.animate(old, this.current, transition);
+    return this.current.instance;
   }
 
-  // The browser takes a picture of the old page, we swap the slides, and it cross-fades to the new page.
-  private viewTransition(old: ComponentRef<SlideBase>, make: () => void) {
+  // The new slide is created at once but stays hidden. The browser takes a picture of the old page,
+  // we remove the old slide and reveal the new one, and the browser cross-fades between the two.
+  private viewTransition(old: ComponentRef<SlideBase>, entering: ComponentRef<SlideBase>) {
+    if (!('startViewTransition' in document)) return old.destroy(); // no support: switch without animation
+    const element: HTMLElement = entering.location.nativeElement;
+    let done = false;
     const swap = () => {
+      if (done) return;
+      done = true;
+      this.pendingSwap = undefined;
       old.destroy();
-      make();
+      element.style.visibility = '';
     };
-    if ('startViewTransition' in document)
-      (
-        document as Document & { startViewTransition(update: () => void): unknown }
-      ).startViewTransition(swap);
-    else swap(); // no support: switch without animation
+    element.style.visibility = 'hidden';
+    this.pendingSwap = swap;
+    (
+      document as Document & { startViewTransition(update: () => void): unknown }
+    ).startViewTransition(swap);
   }
 
   private animate(old: ComponentRef<SlideBase>, entering: ComponentRef<SlideBase>, name: string) {
@@ -96,6 +97,7 @@ export class Stage {
 
   // Cut a running transition short: remove the old slides now and stop the animations.
   private finish() {
+    this.pendingSwap?.();
     this.leaving.forEach((ref) => ref.destroy());
     this.leaving = [];
     delete this.canvas.dataset['transition'];
