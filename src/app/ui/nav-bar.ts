@@ -6,13 +6,14 @@ import { Nav } from '../lib/nav';
 import { PresenterPrefs } from '../presenter/prefs';
 import { Ui } from '../lib/ui-state';
 import { IconBtn } from './icon-btn';
+import { RecordingControls } from '../record/recording-controls';
 import { Settings } from './settings';
 
 // The bar at the bottom left (Slidev's NavControls). The deck shows it only while the mouse is
 // over that corner; the presenter page always shows it (`persist`, no frame around it).
 @Component({
   selector: 'app-nav-bar',
-  imports: [IconBtn, Settings],
+  imports: [IconBtn, Settings, RecordingControls],
   host: { '(document:click)': 'closeSettingsOutside($event)' },
   template: `
     <nav class="flex flex-col" [attr.data-fullscreen]="fullscreen.isFullscreen()">
@@ -60,6 +61,8 @@ import { Settings } from './settings';
         }
 
         <div class="w-1px opacity-10 bg-current m-1 lg:m-2"></div>
+
+        <app-recording-controls />
 
         @if (nav.isPresenter) {
           <button icon-btn id="nav-play" title="Play Mode" (click)="nav.exitPresenter()">

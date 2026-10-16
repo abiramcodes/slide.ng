@@ -1,5 +1,4 @@
 import { Component, ElementRef, inject, input, signal } from '@angular/core';
-import { storedSignal } from '../lib/stored-signal';
 
 // A box the user can move around by its background (Slidev's Draggable). Its place is remembered in the browser.
 @Component({
@@ -17,13 +16,22 @@ import { storedSignal } from '../lib/stored-signal';
 export class Draggable {
   initialX = input(10);
   initialY = input(10);
+  /** localStorage key that remembers where the box was left. */
+  storageKey = input('slidev-drawing-pos');
   protected pos = signal({ x: 10, y: 10 });
   private el = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private grab: { dx: number; dy: number } | null = null;
-  private saved = storedSignal<{ x: number; y: number } | null>('slidev-drawing-pos', null);
 
   constructor() {
-    queueMicrotask(() => this.pos.set(this.saved() ?? { x: this.initialX(), y: this.initialY() }));
+    // Inputs are set after the constructor, so look at them one tick later.
+    queueMicrotask(() => this.pos.set(this.load() ?? { x: this.initialX(), y: this.initialY() }));
+  }
+
+  private load(): { x: number; y: number } | null {
+    try {
+      const p = JSON.parse(localStorage.getItem(this.storageKey()) ?? 'null');
+      return p && Number.isFinite(p.x) && Number.isFinite(p.y) ? p : null;
+    } catch { return null; }
   }
 
   protected down(e: PointerEvent) {
@@ -44,6 +52,6 @@ export class Draggable {
   protected up() {
     if (!this.grab) return;
     this.grab = null;
-    this.saved.set(this.pos());
+    try { localStorage.setItem(this.storageKey(), JSON.stringify(this.pos())); } catch { /* not remembered */ }
   }
 }

@@ -15,6 +15,8 @@ import { ContextMenu } from '../ui/context-menu';
 import { Goto } from '../ui/goto';
 import { NavBar } from '../ui/nav-bar';
 import { Overview } from '../ui/overview';
+import { WebCamera } from '../record/web-camera';
+import { ScreenMirror } from '../record/screen-mirror';
 import { ClicksSlider } from './clicks-slider';
 import { NextPreview } from './next-preview';
 import { NoteDisplay } from './note-display';
@@ -28,7 +30,7 @@ import { TimerInlined } from './timer-inlined';
 // It drives the other windows (see sync/nav-sync.ts). Same navigation as the play page.
 @Component({
   selector: 'app-presenter',
-  imports: [SlideShow, PresenterCursor, DrawingLayer, DrawingControls, NextPreview, NoteDisplay, NavBar, ProgressBar, TimerBar, TimerInlined, ClicksSlider, Overview, Goto, ContextMenu],
+  imports: [SlideShow, PresenterCursor, DrawingLayer, DrawingControls, NextPreview, NoteDisplay, NavBar, ProgressBar, TimerBar, TimerInlined, ClicksSlider, WebCamera, ScreenMirror, Overview, Goto, ContextMenu],
   providers: [Nav, Ui, Drawings],
   host: { '(window:keydown)': 'key($event)', class: 'block h-full' },
   template: `
@@ -41,8 +43,13 @@ import { TimerInlined } from './timer-inlined';
         <div class="relative grid-section main flex flex-col">
           <div class="flex gap-4 items-center border-b border-main p-1">
             <span class="op50 px-2">Current</span>
+            <div class="flex rounded border border-main overflow-hidden text-sm ml-auto">
+              <button type="button" id="main-slides" class="px-2 py-0.5" [class.bg-active]="!mirror()" (click)="mirror.set(false)">Slides</button>
+              <button type="button" id="main-mirror" class="px-2 py-0.5" [class.bg-active]="mirror()" (click)="mirror.set(true)">Screen Mirror</button>
+            </div>
           </div>
-          <div class="relative flex-auto p-2 lg:p-4"><div class="relative h-full w-full"><app-slide-show context="presenter"><app-drawing-layer /><app-presenter-cursor /></app-slide-show></div></div>
+          <div class="relative flex-auto p-2 lg:p-4" [style.display]="mirror() ? 'none' : null"><div class="relative h-full w-full"><app-slide-show context="presenter"><app-drawing-layer /><app-presenter-cursor /></app-slide-show></div></div>
+          <div class="relative flex-auto p-2 lg:p-4" [style.display]="mirror() ? null : 'none'"><app-screen-mirror /></div>
           <app-clicks-slider
             class="w-full pb-2 px-4 flex-none"
             [current]="nav.clicks()" [total]="nav.clicksTotal()" [start]="nav.ctx()?.clicksStart ?? 0"
@@ -75,6 +82,7 @@ import { TimerInlined } from './timer-inlined';
       </div>
     </div>
     <app-drawing-controls />
+    <app-web-camera />
     <app-goto />
     <app-overview />
     <app-context-menu />
@@ -85,6 +93,8 @@ export class Presenter {
   protected nav = inject(Nav);
   protected prefs = inject(PresenterPrefs);
   private ui = inject(Ui);
+  /** The main pane shows a shared screen instead of the slides. */
+  protected mirror = signal(false);
   protected key = keyHandler(this.nav, this.ui);
 
   constructor() {

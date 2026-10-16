@@ -1,4 +1,5 @@
 import { Component, inject } from '@angular/core';
+import { WebCamera } from './record/web-camera';
 import { hideIdleCursor } from './lib/idle-cursor';
 import { Drawings } from './drawing/drawings';
 import { DrawingControls } from './drawing/drawing-controls';
@@ -18,7 +19,7 @@ import { Overview } from './ui/overview';
 // The route /:no, the audience's page. Shows one slide on a scaled canvas and hosts the controls around it.
 @Component({
   selector: 'app-deck',
-  imports: [SlideShow, PresenterCursor, DrawingLayer, DrawingControls, NavBar, Overview, Goto, InfoDialog, ContextMenu],
+  imports: [SlideShow, PresenterCursor, DrawingLayer, DrawingControls, WebCamera, NavBar, Overview, Goto, InfoDialog, ContextMenu],
   providers: [Nav, Ui, Drawings],
   host: { '(window:keydown)': 'key($event)' },
   template: `
@@ -34,6 +35,7 @@ import { Overview } from './ui/overview';
       </div>
     </div>
     <app-drawing-controls />
+    <app-web-camera />
     <app-overview />
     <app-goto />
     <app-info-dialog />

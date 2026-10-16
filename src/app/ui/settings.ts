@@ -1,9 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { Ui } from '../lib/ui-state';
+import { DevicesSelectors } from '../record/devices-selectors';
 
 // The content of the settings menu: a small part of Slidev's (slide scale and idle cursor).
 @Component({
   selector: 'app-settings',
+  imports: [DevicesSelectors],
   template: `
     <div class="text-sm select-none flex flex-col gap-1 min-w-30 px-4">
       <div class="flex items-center gap-4">
@@ -17,6 +19,7 @@ import { Ui } from '../lib/ui-state';
         <span class="mr-auto">Hide Idle Cursor</span>
         <input type="checkbox" id="hide-idle-cursor" [checked]="ui.hideIdleCursor()" (change)="ui.hideIdleCursor.set(!ui.hideIdleCursor())" />
       </label>
+      <app-devices-selectors />
     </div>
   `,
 })
