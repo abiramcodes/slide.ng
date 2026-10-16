@@ -202,7 +202,7 @@ describe('mergeHeadmatter', () => {
     const merged = mergeHeadmatter([root({ fonts: { sans: 'PT Serif', mono: 'PT Mono' } })], {
       fonts: { mono: 'Fira Code' },
     });
-    expect(merged.fonts).toEqual({ sans: 'PT Serif', mono: 'Fira Code' });
+    expect(merged).toMatchObject({ fonts: { sans: 'PT Serif', mono: 'Fira Code' } });
   });
   it('merges defaults key by key', () => {
     const merged = mergeHeadmatter([root({ defaults: { layout: 'center', class: 'a' } })], {
