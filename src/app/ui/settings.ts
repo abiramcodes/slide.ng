@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { Dark } from '../lib/dark';
+import { Download } from '../lib/download';
 import { Nav } from '../lib/nav';
 import { Ui } from '../lib/ui-state';
 import { WakeLock } from '../lib/wake-lock';
@@ -54,8 +55,14 @@ import { FilterSettings } from './filter-settings';
       <app-filter-settings />
       <div class="h-1px bg-current op10 my-1"></div>
       <app-devices-selectors />
-      <div class="h-1px bg-current op10 my-1"></div>
-      <button type="button" id="download-pdf" class="text-left op40 cursor-not-allowed" disabled title="Not available yet: use the browser's print dialog">Download as PDF</button>
+      @if (download.wanted) {
+        <div class="h-1px bg-current op10 my-1"></div>
+        @if (download.available()) {
+          <button type="button" id="download-pdf" class="text-left" (click)="download.save()">Download as PDF</button>
+        } @else {
+          <span id="download-pdf" class="text-left op40 cursor-not-allowed" title="The PDF is added by: slide-ng build --download">Download as PDF</span>
+        }
+      }
     </div>
   `,
 })
@@ -65,4 +72,5 @@ export class Settings {
   protected nav = inject(Nav);
   protected prefs = inject(PresenterPrefs);
   protected wake = inject(WakeLock);
+  protected download = inject(Download);
 }

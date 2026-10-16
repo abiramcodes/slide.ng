@@ -1,6 +1,7 @@
 import { Component, ElementRef, inject, input } from '@angular/core';
 import { Drawings } from '../drawing/drawings';
 import { Dark } from '../lib/dark';
+import { Download } from '../lib/download';
 import { Fullscreen } from '../lib/fullscreen';
 import { Nav } from '../lib/nav';
 import { PresenterPrefs } from '../presenter/prefs';
@@ -93,6 +94,14 @@ import { Settings } from './settings';
           <div class="w-1px opacity-10 bg-current m-1 lg:m-2"></div>
         }
 
+        @if (download.wanted) {
+          @if (download.available()) {
+            <button icon-btn id="nav-download" title="Download as PDF" (click)="download.save()"><div class="i-carbon:download"></div></button>
+          } @else {
+            <button icon-btn id="nav-download" title="Download as PDF (not in this build)" [disabled]="true"><div class="i-carbon:download"></div></button>
+          }
+        }
+
         <div class="flex relative" #menu>
           <button icon-btn id="nav-settings" title="More Options" [active]="ui.settings()" (click)="ui.settings.set(!ui.settings())">
             <div class="i-carbon:settings-adjust"></div>
@@ -124,6 +133,7 @@ export class NavBar {
   protected ui = inject(Ui);
   protected dark = inject(Dark);
   protected fullscreen = inject(Fullscreen);
+  protected download = inject(Download);
   private el = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
 
   // A click anywhere outside the bar closes the settings menu.

@@ -1,0 +1,30 @@
+import { describe, expect, it } from 'vitest';
+import { parseFlags } from './flags.mjs';
+
+const spec = {
+  port: { type: 'number', alias: 'p' },
+  open: { type: 'boolean', alias: 'o' },
+  format: { type: 'string' },
+};
+
+describe('parseFlags', () => {
+  it('reads values after a space or an equals sign', () => {
+    expect(parseFlags(['--port', '3030', '--format=png'], spec).flags).toEqual({ port: 3030, format: 'png' });
+  });
+  it('reads aliases and booleans', () => {
+    expect(parseFlags(['-p', '1', '-o'], spec).flags).toEqual({ port: 1, open: true });
+    expect(parseFlags(['--open=false'], spec).flags).toEqual({ open: false });
+    expect(parseFlags(['--no-open'], spec).flags).toEqual({ open: false });
+  });
+  it('keeps positionals and everything after --', () => {
+    const r = parseFlags(['my.md', '--open', '--', '--port', 'x'], spec);
+    expect(r.positionals).toEqual(['my.md', '--port', 'x']);
+    expect(r.flags).toEqual({ open: true });
+  });
+  it('refuses unknown flags, missing values and bad numbers', () => {
+    expect(() => parseFlags(['--nope'], spec)).toThrow('Unknown flag --nope');
+    expect(() => parseFlags(['-z'], spec)).toThrow('Unknown flag -z');
+    expect(() => parseFlags(['--format'], spec)).toThrow('needs a value');
+    expect(() => parseFlags(['--port', 'abc'], spec)).toThrow('must be a number');
+  });
+});

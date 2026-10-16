@@ -2,6 +2,7 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router, Routes } from '@angular/router';
 import { Deck } from './deck';
 import { NotesPage } from './presenter/notes-page';
+import { NotesPrint } from './print/notes-print';
 import { PrintPage } from './print/print-page';
 import { Presenter } from './presenter/presenter';
 
@@ -16,6 +17,7 @@ const printQuery: CanActivateFn = (route) => {
 // `data.mode` tells Nav which of the two navigations it is serving.
 export const routes: Routes = [
   { path: 'presenter', pathMatch: 'full', redirectTo: 'presenter/1' },
+  { path: 'presenter/print', component: NotesPrint },
   { path: 'presenter/:no', component: Presenter, data: { mode: 'presenter' } },
   { path: 'notes', component: NotesPage },
   { path: 'print', component: PrintPage },

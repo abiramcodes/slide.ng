@@ -27,5 +27,5 @@ export async function parseDeck(file = 'slides.md', sources) {
   const problems = Object.values(data.markdownFiles).flatMap((md) =>
     (md.errors ?? []).map((e) => `${md.filepath}:${e.row}: ${e.message}`),
   );
-  return { headmatter, root: dirname(entry), slides, files: Object.keys(data.markdownFiles), problems };
+  return { headmatter, entry, root: dirname(entry), slides, files: Object.keys(data.markdownFiles), problems };
 }

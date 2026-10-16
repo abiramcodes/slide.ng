@@ -3,6 +3,7 @@ import { marked } from 'marked';
 import { layoutName } from './layouts.mjs';
 import { slideClass, slideName } from './emit.mjs';
 import { noteToHtml } from './note-html.mjs';
+import { downloadTarget } from '../export/filename.mjs';
 
 // What the app needs to know about one slide, besides its component.
 function metaOf(slide, index) {
@@ -35,6 +36,9 @@ export const HEADMATTER: Record<string, unknown> = ${JSON.stringify(deck.headmat
 export const INFO_HTML: string | null = ${JSON.stringify(info)};
 /** Drawings saved in .slide-ng/drawings (only with \`drawings: { persist: true }\`): slide number -> SVG markup. */
 export const DRAWINGS: Record<number, string> = ${JSON.stringify(deck.drawings ?? {})};
+
+/** Headmatter "download": the PDF the nav bar offers (a file next to the page, or a web address), or null. */
+export const DOWNLOAD: string | null = ${JSON.stringify(downloadTarget(deck.headmatter, deck.entry))};
 
 export const SLIDES: SlideMeta[] = [
 ${entries.join('\n')}
