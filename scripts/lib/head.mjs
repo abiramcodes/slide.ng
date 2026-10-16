@@ -107,7 +107,7 @@ export function headParts(headmatter, { ogImage = null, pwa = false, warn = () =
   if (pwa)
     tags.push(
       '<link rel="manifest" href="manifest.webmanifest">',
-      '<meta name="theme-color" content="#121212">',
+      '<meta name="theme-color" content="#16131A">',
     );
   if (headmatter.favicon) {
     const href = faviconHref(headmatter.favicon);

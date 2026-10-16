@@ -251,7 +251,7 @@ plain Node.
 8. **The offline worker is written by hand** (`sw.js`, written by `build/pwa.mjs`): a cache named by a hash of the file list, files from the build only, the PDF left out, cache first (a miss goes to the network, and a page navigation falls back to the cached `index.html`). It is registered only in production builds
    (`pwa: true`).
    **Icons and indicator (later):** `build/pwa-icons.mjs` draws `pwa-icon-192.png`, `pwa-icon-512.png` and `pwa-icon-maskable-512.png` with the Chromium the exporter already uses (no new dependency), from `public/icon.png`,
-   `public/icon.svg`, a local `favicon` of `public/`, or a generated SVG (dark square, first letter of the title). A build without a browser warns and has no icons instead of failing. The worker's list picks the icons up
+   `public/icon.svg`, a local `favicon` of `public/`, or the slide.ng icons in `build/default-icons/` (copied as they are, no browser needed; they used to be a dark square with the first letter of the title). A build without a browser warns and has no icons instead of failing for a picture of your own. The worker's list picks the icons up
    like any file. `ui/offline-badge.ts` shows "Available offline" (the worker is active, which means it has stored everything) or "Offline" (`navigator.onLine`) in the corner of the deck; it is absent in dev, the print route and without `pwa`.
 9. **The download button is disabled unless the PDF exists.** The page asks for the file with a HEAD request, so `npm start` and builds made without `--download` show a greyed entry with a hint instead of a dead link.
 10. **Build budgets raised** to 1 MB warning and 2 MB error for the first load. A deck with Monaco and KaTeX is about 850 kB, which is over the old 500 kB warning (1 MB error).

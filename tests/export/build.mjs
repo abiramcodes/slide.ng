@@ -171,7 +171,7 @@ t.ok(
   JSON.parse(readFileSync(join(site, 'manifest.webmanifest'), 'utf8')).name === 'Build deck',
 );
 
-// ---- install icons: generated from the title here (no public/icon.*), listed in the manifest and the offline list
+// ---- install icons: the slide.ng icons here (no public/icon.*), listed in the manifest and the offline list
 const pngSize = (name) => {
   const b = readFileSync(join(site, name));
   return b.subarray(1, 4).toString() === 'PNG'

@@ -645,7 +645,7 @@ export: # defaults for `slide-ng export`; command line flags win
 remoteAssets: true # a build downloads pictures with http(s) addresses and serves them itself
 pwa:
   true # a build adds a manifest, install icons and a service worker: the deck opens offline after one visit
-  # (icon: public/icon.png, public/icon.svg or a local favicon, else a letter from the title)
+  # (icon: public/icon.png, public/icon.svg or a local favicon, else the slide.ng icons)
 fonts: # web fonts, as in Slidev (sans, serif, mono, local, weights, italic, fallbacks, provider)
   sans: Inter
   selfHost: true # a build downloads the font files and serves them itself (default on with `pwa` and `build --offline`; false turns it off)

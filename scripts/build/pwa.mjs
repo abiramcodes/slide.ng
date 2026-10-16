@@ -48,8 +48,8 @@ export function manifestJson(headmatter, iconFiles = []) {
     start_url: './',
     scope: './',
     display: 'fullscreen',
-    theme_color: '#121212',
-    background_color: '#121212',
+    theme_color: '#16131A', // brand ink
+    background_color: '#FBF8F3', // brand paper
     ...(icons.length ? { icons } : {}),
   };
 }

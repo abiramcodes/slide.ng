@@ -1,8 +1,8 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { generatedIconSvg, ICONS, iconSource } from './pwa-icons.mjs';
+import { copyDefaultIcons, ICONS, iconSource } from './pwa-icons.mjs';
 
 const deck = (files: string[] = []) => {
   const dir = mkdtempSync(join(tmpdir(), 'slide-ng-icons-'));
@@ -12,8 +12,8 @@ const deck = (files: string[] = []) => {
 };
 
 describe('iconSource', () => {
-  it('generates an icon when the deck has none', () =>
-    expect(iconSource({}, deck()).kind).toBe('generated'));
+  it('uses the slide.ng icons when the deck has none', () =>
+    expect(iconSource({}, deck()).kind).toBe('default'));
   it('prefers public/icon.png over icon.svg', () => {
     expect(iconSource({}, deck(['icon.svg', 'icon.png']))).toMatchObject({
       kind: 'file',
@@ -44,16 +44,20 @@ describe('iconSource', () => {
       'a.ico',
       '../secret.png',
     ])
-      expect(iconSource({ favicon }, dir).kind).toBe('generated');
+      expect(iconSource({ favicon }, dir).kind).toBe('default');
   });
 });
 
-describe('generatedIconSvg', () => {
-  it('shows the first letter of the title in capitals', () =>
-    expect(generatedIconSvg('my talk')).toContain('>M</text>'));
-  it('falls back to S and escapes markup', () => {
-    expect(generatedIconSvg('')).toContain('>S</text>');
-    expect(generatedIconSvg('<b>')).toContain('>&lt;</text>');
+describe('copyDefaultIcons', () => {
+  it('writes every listed icon as a PNG of the listed size', () => {
+    const out = mkdtempSync(join(tmpdir(), 'slide-ng-icons-out-'));
+    copyDefaultIcons(out);
+    for (const { file, size } of ICONS) {
+      const png = readFileSync(join(out, file));
+      expect(png.subarray(1, 4).toString()).toBe('PNG');
+      expect(png.readUInt32BE(16)).toBe(size);
+      expect(png.readUInt32BE(20)).toBe(size);
+    }
   });
 });
 

@@ -5,7 +5,7 @@ import { dirname, join, resolve } from 'node:path';
 import { makeOffline } from '../build/offline.mjs';
 import { ogImagePlan, placeOgImage } from '../build/og-image.mjs';
 import { applyOffline } from '../lib/build-options.mjs';
-import { writeIcons } from '../build/pwa-icons.mjs';
+import { copyDefaultIcons, iconSource, writeIcons } from '../build/pwa-icons.mjs';
 import { pwaEnabled, writePwa } from '../build/pwa.mjs';
 import { launchBrowser } from '../export/browser.mjs';
 import { exportSlides } from '../export/index.mjs';
@@ -157,13 +157,20 @@ async function afterBuild({ dist, deck, entry, root, base, workDir, download, fl
   }
 }
 
-// Install icons need a browser to draw them. Without one the deck still works offline, it just cannot be installed.
+// The slide.ng icons are copied. A picture of your own is drawn at the sizes with a browser; without one the
+// deck still works offline, it just cannot be installed.
 async function makeIcons(head, root, dist, executablePath, noSandbox) {
+  const source = iconSource(head, root);
+  if (source.kind === 'default') {
+    copyDefaultIcons(dist);
+    console.log('Install icons: the slide.ng icons (put icon.png in public/ to use your own).');
+    return;
+  }
   let browser;
   try {
     browser = await launchBrowser(executablePath, { noSandbox });
-    const source = await writeIcons(dist, head, root, browser);
-    console.log(`Install icons from ${source.kind === 'file' ? source.path : 'the title'}.`);
+    await writeIcons(dist, source, browser);
+    console.log(`Install icons from ${source.path}.`);
   } catch (error) {
     console.warn(`No install icons: ${String(error.message).split('\n')[0]}`);
   } finally {
