@@ -68,6 +68,6 @@ describe('theme fonts and the deck', () => {
   const root = (headmatter: object) => ({ manifest: { headmatter } });
   it('merges the fonts of a theme with the deck key by key, as Slidev does', () => {
     const merged = mergeHeadmatter([root({ fonts: { sans: 'PT Serif', mono: 'PT Mono' } })], { fonts: { mono: 'Fira Code' } });
-    expect(merged.fonts).toEqual({ sans: 'PT Serif', mono: 'Fira Code' });
+    expect((merged as any).fonts).toEqual({ sans: 'PT Serif', mono: 'Fira Code' });
   });
 });

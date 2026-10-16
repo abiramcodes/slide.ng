@@ -11,7 +11,10 @@ import { installCommand } from './install-root.mjs';
 export const ROOT_FOLDERS = ['layouts', 'components', 'layers', 'styles', 'public', 'setup'];
 
 /** The themes that ship with slide.ng (`themes/<name>/`), looked up before `node_modules`. `default` is not one of them: it is the built-in look. */
-export const BUILTIN_THEMES_DIR = fileURLToPath(new URL('../../themes', import.meta.url));
+export function builtinThemesDir() {
+  // In a bundled unit test this file has no file address; the folder of the working directory is then the repository's.
+  try { return fileURLToPath(new URL('../../themes', import.meta.url)); } catch { return resolve('themes'); }
+}
 
 const isDir = (path) => existsSync(path) && statSync(path).isDirectory();
 
@@ -41,7 +44,7 @@ const SAFE_NAME = /^[a-z0-9~-][a-z0-9._~-]*$/;
  * and a package that cannot be found throws a `RootNotFoundError` that carries the install command.
  * A theme name is first looked for in `builtinDir` (the `themes/` folder of slide.ng), then in `node_modules`.
  */
-export function findRootDir(spec, kind, deckRoot, builtinDir = BUILTIN_THEMES_DIR) {
+export function findRootDir(spec, kind, deckRoot, builtinDir = builtinThemesDir()) {
   if (typeof spec !== 'string' || !spec.trim()) throw new Error(`${kind}: expected a name or a path, got ${JSON.stringify(spec)}`);
   if (spec.startsWith('@/')) spec = `./${spec.slice(2)}`;
   else if (!spec.startsWith('@') && spec.includes('/') && !isAbsolute(spec)) spec = `./${spec.replace(/^\.\//, '')}`;
