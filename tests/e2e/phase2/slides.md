@@ -83,3 +83,24 @@ yarn add slide-ng
 ```
 
 ::
+
+---
+
+# Magic move
+
+````md magic-move
+```js {*|1|2-3}
+let count = 1
+function add() {
+  count++
+}
+```
+
+```ts {*}{lines:true}
+let count: number = 1
+const add = () => count += 1
+console.log(add())
+```
+````
+
+<div v-click id="after-magic">after magic</div>

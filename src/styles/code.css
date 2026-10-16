@@ -59,3 +59,6 @@ html.dark .slidev-code-line-numbers .slidev-code code .line::before { color: #4b
 /* The reset removes borders; KaTeX needs them back */
 .katex, .katex :after, .katex :before { border-color: currentColor; }
 .slidev-code-group-blocks .slidev-code-block-title { display: none; }
+
+/* Magic Move: tokens that enter or leave fade (the rest of its CSS is @shikijs/magic-move/style.css) */
+.slidev-code-magic-move .shiki-magic-move-enter-from, .slidev-code-magic-move .shiki-magic-move-leave-to { opacity: 0; }

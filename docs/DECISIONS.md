@@ -122,3 +122,8 @@ Nothing else was added: footnotes, alerts, the PlantUML encoding and the code ru
    ones (needed for Magic Move) and `<<<` / `::code-group` are handled in the same pass.
 8. **The deck for the phase 2 tests is `tests/e2e/phase2/slides.md`**, next to the phase 1 showcase, with its own runner (`npm run test:e2e`
    runs all three decks). It is the showcase deck the task asks for; the starter `slides.md` stays small.
+9. **Magic Move uses `@shikijs/magic-move`** (the package `shiki-magic-move` was renamed; same code, matches Shiki 4). The generator
+   tokenises each step (`toKeyedTokens`), compresses the JSON with Node's zlib and writes it into a `steps` attribute. The component unpacks it with
+   the browser's `DecompressionStream`, then drives the library's plain DOM renderer (`MagicMoveRenderer`) and `syncTokenKeys`, both loaded with
+   dynamic `import()` so they are separate chunks. No lz-string dependency.
+10. **A magic-move step's `<<<` snippet lines work** because the inner blocks are read by the same fence scanner.

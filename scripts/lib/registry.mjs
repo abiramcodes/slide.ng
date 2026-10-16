@@ -19,5 +19,6 @@ export const COMPONENTS = [
   { className: 'SlideLink', file: 'builtin/slide-link', test: /<slide-link/ },
   { className: 'CodeBlockWrapper', file: 'code/code-block-wrapper', test: /<code-block-wrapper/ },
   { className: 'CodeGroup', file: 'code/code-group', test: /<code-group/ },
+  { className: 'ShikiMagicMove', file: 'code/magic-move', test: /<shiki-magic-move/ },
   { className: 'Counter', file: 'lib/counter', test: /<app-counter/ },
 ];
