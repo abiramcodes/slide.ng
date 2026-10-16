@@ -1,5 +1,7 @@
 # slide.ng
 
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 Presentations written in markdown, with real Angular template syntax inside.
 Inspired by [Slidev](https://sli.dev), built for Angular.
 
@@ -137,6 +139,20 @@ Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full picture,
 [docs/SYNTAX.md](docs/SYNTAX.md) for how to write slides, and
 [docs/DECISIONS.md](docs/DECISIONS.md) for why things are the way they are.
 Current state: [docs/STATUS.md](docs/STATUS.md).
+
+## Related repositories
+
+These are planned names; the repositories do not all exist yet.
+
+- slide.ng-themes: the official themes, as `@slide-ng/theme-<name>` packages.
+- slide.ng-starter: a starter deck to copy.
+- slide.ng-docs: the documentation site.
+- slide.ng-docker: a container image for building and serving decks.
+- slide.ng-vscode: a Visual Studio Code extension.
+
+## Contributing
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md). Changes follow the [Code of Conduct](CODE_OF_CONDUCT.md); security problems go through [SECURITY.md](SECURITY.md). Changes are listed in [CHANGELOG.md](CHANGELOG.md).
 
 ## Credits
 

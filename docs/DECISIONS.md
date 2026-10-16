@@ -390,3 +390,28 @@ Verified by running the built decks in Chromium; the tests are `tests/export/off
    for a mirror). Tested against a local fake provider; real Google Fonts were not contacted.
 9. **The service worker's first-visit limit is stated, not hidden.** A browser that never opened the deck has nothing in its store; with the network off, it cannot open the deck (tested: `net::ERR_INTERNET_DISCONNECTED`). docs/OFFLINE.md says so first and
    gives the offline folder and the PDF as the answers.
+
+## Made while preparing the repository for open source
+
+1. **Formatting is Prettier only, with the settings already in `.prettierrc`.** `npm run format` writes, `npm run format:check` is what CI runs. The files `.prettierignore` skips are build output, the generated slides, the lock file, and decks and markdown fixtures that tests feed to the generator (reformatting a deck could change what it means). Two specs that read source text were made independent of formatting (the layout padding check) or given room on a slow machine (the first twoslash run).
+2. **Linting is ESLint 10 with a flat config** (`eslint.config.mjs`). `src` gets `typescript-eslint` and `angular-eslint` recommended rules, `.mjs` files and tests get ESLint's recommended rules only. No type-aware rules, which keeps `npm run lint` fast and the config short.
+3. **New development dependencies, each with a reason:**
+   - `eslint`: the linter.
+   - `@eslint/js`: ESLint's recommended rule set, which the flat config imports.
+   - `typescript-eslint`: lets ESLint read and check TypeScript.
+   - `angular-eslint`: Angular rules for components and templates (it brings its own plugins).
+   - `globals`: the lists of Node and browser global names, so `console` or `document` are not reported as undefined.
+   - Nothing was added for hooks (no husky, no lint-staged): `.githooks/` and `scripts/prepare.mjs` use git's own `core.hooksPath`.
+4. **Lint rules turned off or narrowed, and why:**
+   - `@angular-eslint/no-input-rename` is off in `src`: directives such as `v-click`, `v-drag` and `v-mark` need a dashed attribute that differs from the input name, which is Slidev's spelling.
+   - `@angular-eslint/no-output-native` is disabled on one line in `src/app/presenter/clicks-slider.ts`: the slider's output is called `change` like the event of a range input. Renaming it would change how templates use it.
+   - `no-control-regex` is disabled on one line in `scripts/export/filename.mjs`: the pattern removes control characters from file names on purpose.
+   - `@typescript-eslint/no-explicit-any` is off in `*.spec.ts` only (loose test doubles). It stays on in `src`.
+   - Names that start with an underscore are allowed to be unused (rest destructuring that drops keys).
+   - Everything else the first run reported was fixed in the code: unused imports and variables, errors thrown without `cause`, expressions used as statements, one lifecycle interface, and one unused argument pair in a test helper (`pixel` ignored its `x` and `y`).
+5. **Git hooks are plain shell scripts in `.githooks/`.** `npm install` runs `scripts/prepare.mjs`, which sets `core.hooksPath` and `commit.template` only when they are unset, and does nothing without git or without a `.git` folder (a zip). The `commit-msg` hook only warns, so a hook can never block work. The pull request title check in CI does fail, because the title becomes the squash commit.
+6. **Commit style: `type(scope): summary`, imperative, no trailer lines**, checked by `scripts/commit-message.mjs`. Existing history before this change does not follow it and is not rewritten for that.
+7. **CI is written but has not run on GitHub.** Each command was run locally. The browser job installs Chromium with `npx playwright-core install --with-deps chromium` and passes its path as `CHROME_PATH`, which is what the test scripts read.
+8. **The package stays `private: true`.** `repository`, `bugs` and `homepage` point to `https://github.com/slide-ng/slide.ng`. **The owner must confirm that organization and name** (CONTRIBUTING.md, SECURITY.md, the issue template configuration and CHANGELOG use the same address). `engines.node` is `>=22.22.3`, which the Angular CLI needs, and `.nvmrc` pins 22.23.3 for CI. `files` lists what a later publish would include.
+9. **`scripts/resign-history.sh` is written but not run on this repository**, because no signing key was available. Only its refusal path was tested, in a temporary repository. See `docs/SIGNING.md`.
+10. **The default branch is `master` locally.** The workflows and `commit-message.mjs` assume `main`; rename the branch when creating the GitHub repository.
