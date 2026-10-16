@@ -7,6 +7,7 @@ All slides live in one file, `slides.md`.
 A line with only `---` separates slides. A block of YAML between two `---`
 lines at the top of a slide is that slide's frontmatter.
 
+<!-- prettier-ignore -->
 ```md
 ---
 title: My talk # headmatter: frontmatter of the first slide, describes the deck
@@ -15,7 +16,6 @@ title: My talk # headmatter: frontmatter of the first slide, describes the deck
 # First slide
 
 ---
-
 layout: center
 class: text-red-500
 ---
@@ -491,10 +491,25 @@ Inline too: `{{ x }}` and `@if`.
 
 ## Using your own components
 
-Write a standalone Angular component, then add one line to `COMPONENTS` in
-`scripts/lib/registry.mjs` (class name, file under `src/app/`, and a pattern that finds
-its tag). The generator then imports it into every slide that uses it. See
-`src/app/lib/counter.ts` and its entry for an example.
+Write a standalone Angular component in a `components/` folder next to `slides.md` (a theme or addon can have one too):
+
+```ts
+// components/hello-box.ts
+import { Component, input } from '@angular/core';
+
+@Component({
+  selector: 'hello-box',
+  template: '<strong>{{ title() }}</strong><div><ng-content /></div>',
+})
+export class HelloBox {
+  title = input('Hello');
+}
+```
+
+Slides write `<hello-box title="Note">text</hello-box>`. The generator reads the file as text, so `selector` must be a string literal and
+`export class` must follow the decorator directly. It imports the component into every slide whose markup contains `<hello-box`. Only the
+`.ts` files directly in `components/` are scanned. Import slide.ng services with the alias `slide-ng/` (`src/app/`), for example
+`import { Nav } from 'slide-ng/lib/nav'`. (The built-in components are registered in `scripts/lib/registry.mjs`; a deck does not need that.)
 
 ## Styling
 
@@ -576,7 +591,7 @@ routerMode: hash # addresses look like /#/3 (default: history)
 ---
 ```
 
-Layers: add any of `src/app/layers/global-top.ts`, `global-bottom.ts`, `slide-top.ts`, `slide-bottom.ts`, each `export default` of a standalone component.
+Layers: add any of `layers/global-top.ts`, `global-bottom.ts`, `slide-top.ts`, `slide-bottom.ts` next to `slides.md` (or in a theme or addon), each `export default` of a standalone component.
 `global-*` appear once over or under all slides, `slide-*` inside every slide (inject `SLIDE_NO` to know which). They let clicks through; give your own elements `pointer-events: auto` if they need the mouse.
 
 ## Dev-only extras and remote use
@@ -666,19 +681,15 @@ The bar at the bottom left (fullscreen, previous, next, overview, dark mode, dra
 shows when the mouse is there. Drawing, presenter mode, camera and recording (when `record` is on) and the dev-only editor button are live. Right click opens a menu with the same actions;
 hold Shift while right clicking for the browser's own menu. Click the dark area beside the slide: right half = next, left half = previous.
 
-Change the keys by providing `SHORTCUTS_SETUP` in `src/app/app.config.ts`. It gets the default list and returns the list to use:
+Change the keys with a `setup/shortcuts.ts` file next to `slides.md` (see [SETUP.md](SETUP.md)). It gets the actions and the default list and returns the list to use:
 
 ```ts
-import { SHORTCUTS_SETUP } from './lib/shortcuts';
+// setup/shortcuts.ts
+import type { Shortcut, ShortcutActions } from 'slide-ng/lib/shortcuts';
 
-providers: [
-  {
-    provide: SHORTCUTS_SETUP,
-    useValue: (actions, list) => [
-      ...list.filter((s) => s.name !== 'next_space'), // remove one
-      { name: 'my_next', key: 'n', run: () => actions.next() }, // add one
-    ],
-  },
+export default (actions: ShortcutActions, list: Shortcut[]): Shortcut[] => [
+  ...list.filter((s) => s.name !== 'next_space'), // remove one
+  { name: 'my_next', key: 'n', run: () => actions.next() }, // add one
 ];
 ```
 
