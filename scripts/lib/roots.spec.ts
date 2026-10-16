@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { RootNotFoundError, findRootDir, mergeHeadmatter, readManifest, resolveRoots } from './roots.mjs';
+import { RootNotFoundError, candidateNames, findRootDir, mergeHeadmatter, packageToInstall, readManifest, resolveRoots } from './roots.mjs';
 
 const folder = () => mkdtempSync(join(tmpdir(), 'slide-ng-roots-'));
 const dirIn = (base: string, ...parts: string[]) => { const d = join(base, ...parts); mkdirSync(d, { recursive: true }); return d; };
@@ -27,6 +27,50 @@ describe('findRootDir', () => {
     expect(() => findRootDir('nope', 'addon', folder())).toThrow(RootNotFoundError);
     expect(() => findRootDir('./nope', 'theme', folder())).toThrow('is not a folder');
     expect(() => findRootDir('', 'theme', folder())).toThrow('expected a name');
+  });
+});
+
+describe('theme and addon names in node_modules (the rule of Slidev)', () => {
+  it('tries @slide-ng/theme-<name>, then slide-ng-theme-<name>, then <name>', () => {
+    expect(candidateNames('seriph', 'theme')).toEqual(['@slide-ng/theme-seriph', 'slide-ng-theme-seriph', 'seriph']);
+    expect(candidateNames('charts', 'addon')).toEqual(['@slide-ng/addon-charts', 'slide-ng-addon-charts', 'charts']);
+    expect(candidateNames('@me/theme-x', 'theme')).toEqual(['@me/theme-x']);
+  });
+  it('finds the official scoped package, in a parent folder too', () => {
+    const base = folder();
+    dirIn(base, 'node_modules', '@slide-ng', 'theme-seriph');
+    const deck = dirIn(base, 'talks', 'one');
+    expect(resolveRoots({ deckRoot: deck, headmatter: { theme: 'seriph' } }).map((r) => r.id)).toEqual(['theme-seriph', 'deck']);
+  });
+  it('prefers the scoped package over the prefixed one, and the prefixed one over the bare name', () => {
+    const base = folder();
+    ['slide-ng-theme-x', 'x'].forEach((n) => dirIn(base, 'node_modules', n));
+    expect(findRootDir('x', 'theme', base)).toContain('slide-ng-theme-x');
+    dirIn(base, 'node_modules', '@slide-ng', 'theme-x');
+    expect(findRootDir('x', 'theme', base)).toContain(join('@slide-ng', 'theme-x'));
+  });
+  it('uses a scoped name as it is and a full package name only as written', () => {
+    const base = folder();
+    dirIn(base, 'node_modules', '@me', 'theme-x');
+    expect(findRootDir('@me/theme-x', 'theme', base)).toContain(join('@me', 'theme-x'));
+    expect(() => findRootDir('@me/theme-y', 'theme', base)).toThrow('npm install -D @me/theme-y');
+  });
+  it('has no built-in folder: an official name that is not installed fails with its scoped package to install', () => {
+    for (const name of ['seriph', 'shibainu', 'bricks', 'apple-basic']) {
+      expect(() => resolveRoots({ deckRoot: folder(), headmatter: { theme: name } })).toThrow(`The theme "${name}" was not found. Install it with: npm install -D @slide-ng/theme-${name}`);
+    }
+  });
+  it('keeps default and none as the built-in look, with no root', () => {
+    expect(resolveRoots({ deckRoot: folder(), headmatter: { theme: 'default' } }).map((r) => r.id)).toEqual(['deck']);
+  });
+  it('names the install package: official themes are scoped, others and addons are slide-ng-<kind>-<name>', () => {
+    expect(packageToInstall('seriph', 'theme')).toBe('@slide-ng/theme-seriph');
+    expect(packageToInstall('ocean', 'theme')).toBe('slide-ng-theme-ocean');
+    expect(packageToInstall('seriph', 'addon')).toBe('slide-ng-addon-seriph');
+  });
+  it('does not take an official name as an addon, or as a path', () => {
+    expect(() => findRootDir('seriph', 'addon', folder())).toThrow(RootNotFoundError);
+    expect(() => findRootDir('./seriph', 'theme', folder())).toThrow('is not a folder');
   });
 });
 

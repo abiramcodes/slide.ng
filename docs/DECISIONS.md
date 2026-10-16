@@ -306,9 +306,9 @@ The owner decided "do it like Slidev" for every open choice. For each one, Slide
    `packages/client/env.ts` (`slideHeight = Math.ceil(width / aspect)`, so a printed page never gets an extra blank page). `readCanvasSize` (app) and `canvasSize`
    (generator, dev server) follow the same rule; the saved drawing files and the drawing preview use the canvas size instead of a fixed 960x540. Tests: `canvas.spec.ts`,
    `canvas-size.spec.ts`, `drawings.spec.ts`, the PDF page size (735x414 pt), PNG size, print page size and the 1:1 scale check in the browser tests.
-2. **A theme or addon that is not found is an error, like Slidev's resolver** (`packages/slidev/node/resolver.ts`, `createResolver`). Slidev looks for `name`, `@slidev/theme-name`,
-   `slidev-theme-name`; slide.ng looks for `slide-ng-theme-name`, then `name`. Not found: in a terminal it asks "install it now?" and runs the package manager; without a terminal it exits
-   with an error. slide.ng does the same and the error carries the install command (`npm install -D slide-ng-theme-x`, or `pnpm add -D` / `yarn add -D` / `bun add -d` by the lock file in the deck's
+2. **A theme or addon that is not found is an error, like Slidev's resolver** (`packages/slidev/node/resolver.ts`, `createResolver`). Slidev looks for `@slidev/theme-name`,
+   `slidev-theme-name`, then `name`; slide.ng looks for `@slide-ng/theme-name`, `slide-ng-theme-name`, then `name` (see 10). Not found: in a terminal it asks "install it now?" and runs the package manager; without a terminal it exits
+   with an error. slide.ng does the same and the error carries the install command (`npm install -D slide-ng-theme-x`, or `@slide-ng/theme-x` for an official name; or `pnpm add -D` / `yarn add -D` / `bun add -d` by the lock file in the deck's
    folder). The question is only asked on the first generator run (not in watch mode, not in CI). Also like Slidev: a name with a slash that does not start with `@` is a path, `@/x` is relative
    to the deck's folder, and a name that is not a valid npm package name is refused. Tests: `roots.spec.ts`, `install-root.spec.ts`, `tests/export/theme.mjs` (the build stops, names the command, writes nothing).
 3. **`--remote` works like Slidev's: the password is optional.** Slidev (`packages/slidev/node/cli.ts`): `--remote` is a string option; `--remote` alone means no password, `--remote=secret` sets one;
@@ -346,11 +346,15 @@ The owner decided "do it like Slidev" for every open choice. For each one, Slide
    from the provider, as Slidev, not copied into the build; since then `fonts.selfHost` copies them, see Offline use 8); the `contextMenu`, `presenter` and `editor` headmatter switches (`true`, `false`, `dev`, `build`; `lib/switches.ts`); touch swipes with Slidev's thresholds
    (`composables/useSwipeControls.ts`: 30% of the width or 75px for clicks, 40% of the height or 200px for slides, off while drawing). Left listed in PARITY.md: `selectable`, `themeConfig`, `TitleRenderer`, `notesAutoRuby`,
    MDC, slide hooks, custom transition objects, `clickAnimation`, `preloadImages`; `--tunnel` stays refused.
-10. **The official themes are folders in `themes/`, looked up before `node_modules`.** Options: (a) separate npm packages `slide-ng-theme-seriph` and so on, (b) a built-in table inside `src/app`,
-    (c) a `themes/` folder in this package. (c) won: a theme is already "a folder with the contract" (docs/THEMES.md), so the five themes need no new mechanism, `theme eject` and `--theme` work on them
-    unchanged, nothing is installed, and a deck built outside the repository finds them through the package root (`themes` is in `package.json#files`). The only code is in `scripts/lib/roots.mjs`:
-    for a `theme` (not an addon), a bare name is first looked for in `themes/<name>`, then in `node_modules` as before. A path, a name with a slash and a scoped name never use the built-in folder, and an
-    installed copy with the same name is still reachable by its full package name (`slide-ng-theme-seriph`). Tests: `builtin-themes.spec.ts`, `tests/export/theme.mjs`, `tests/e2e/themes.mjs`.
+10. **The official themes live in a separate repository, as npm packages `@slide-ng/theme-<name>`.** Owner decision, like Slidev's `slidevjs/themes` (a monorepo of `packages/theme-*`, each published as
+    `@slidev/theme-<name>`). It supersedes the first version of this decision, which put the themes in a `themes/` folder of this package and searched it before `node_modules`. That folder is gone,
+    and `themes` is no longer in `package.json#files`. `theme: <name>` now resolves from `node_modules` only, with Slidev's rule and slide.ng's prefixes: `@slide-ng/theme-<name>`, `slide-ng-theme-<name>`, `<name>`
+    (addons: `@slide-ng/addon-<name>`, ...); a scoped name is used as written, a path stays a path. `scripts/lib/roots.mjs` has `candidateNames` and `packageToInstall`. The official names `seriph`, `shibainu`,
+    `bricks` and `apple-basic` are not built in: when they are missing the error says `npm install -D @slide-ng/theme-seriph` (any other missing name says `slide-ng-theme-<name>`; Slidev's `officials` table does the same job).
+    The themes repository (`slide.ng-themes`, npm workspaces) holds the four packages, their READMEs and showcase decks, and its own tests: a package check and a browser test that builds every deck with this
+    package's command line (`SLIDE_NG_DIR` points at the checkout). This package keeps `examples/theme-minimal` and a build test that copies it into a deck's `node_modules/@slide-ng/theme-demo`
+    and uses `theme: demo`, which proves the lookup end to end. Tests: `roots.spec.ts` (name rules), `install-root.spec.ts`, `tests/export/theme.mjs`; the theme tests are in the themes repository.
+    Why: a theme release does not need a release of the core, the core stays small, and a theme author sees the same shape as an outside author.
     - **`default` is not a folder.** The built-in look (`src/app/layouts`, `src/styles/layouts.css`) already is the port of `@slidev/theme-default` (same six layouts, same sizes); `theme: default` and `none` add no root.
       Slidev's default theme also sets web fonts (Avenir Next, Nunito Sans, Fira Code). They are not loaded for `default` on purpose: every existing deck would start asking a network for fonts, and the offline
       tests and builds would depend on it. A deck that wants them writes `fonts:` itself.

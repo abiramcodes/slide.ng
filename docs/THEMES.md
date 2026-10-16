@@ -15,33 +15,38 @@ addons:
 ```
 
 - `theme: default` (or `none`, or no `theme:`) is the built-in theme.
-- `theme: seriph`, `shibainu`, `bricks` and `apple-basic` are the official themes that ship in this package's [`themes/`](../themes) folder (see below). Nothing is installed.
-- Any other name that is not a path is looked up in `node_modules` (from the deck's folder upwards) as `slide-ng-theme-<name>`, then as `<name>`.
-  The built-in `themes/` folder is searched before `node_modules`; to use an installed copy of the same name, write its full package name (`slide-ng-theme-seriph`).
-  Addons use `slide-ng-addon-<name>`, then `<name>`.
+- Any other name that is not a path is looked up in `node_modules` (from the deck's folder upwards), like Slidev does it: `@slide-ng/theme-<name>`,
+  then `slide-ng-theme-<name>`, then `<name>`. A scoped name (`@scope/theme-x`) is used as written. Addons use `@slide-ng/addon-<name>`,
+  `slide-ng-addon-<name>`, then `<name>`.
+- The official themes `seriph`, `shibainu`, `bricks` and `apple-basic` are not part of this package. They live in their own repository
+  (slide.ng-themes, one package each): `npm i -D @slide-ng/theme-seriph`, then `theme: seriph` (see below).
 - A path that is not a folder is an error, and so is a package name that is not installed, as in Slidev: the build stops with
-  `The theme "x" was not found. Install it with: npm install -D slide-ng-theme-x` (`pnpm add -D` or `yarn add -D` when the deck has that lock file).
+  `The theme "x" was not found. Install it with: npm install -D slide-ng-theme-x` (for an official name the package is `@slide-ng/theme-<name>`;
+  `pnpm add -D` or `yarn add -D` when the deck has that lock file).
   In a terminal, `dev` and `build` ask first whether to install it now. A name with a slash (`themes/mine`) is a path, `@/themes/mine` is relative to the deck's folder.
 - `SLIDE_NG_THEME=<name|path>` in the environment overrides the headmatter (the generator reads it).
 - `slide-ng theme eject` copies the theme in use into `./theme` and sets `theme: ./theme` (see below).
 
 ## The official themes
 
-Rebuilt from the five official Slidev themes (MIT; the layouts, names, slots, CSS values and font settings are ported, the components are new Angular code).
-Each is a folder in `themes/` that follows the contract below, with a README that credits the original author and lists what is ported and what is simplified.
-`examples/themes/<name>.md` has a slide for every layout of each theme.
+They are rebuilt from the official Slidev themes (MIT; the layouts, names, slots, CSS values and font settings are ported, the components are new Angular code)
+and published from a separate repository, slide.ng-themes, the way Slidev keeps its themes in `slidevjs/themes`: a monorepo of packages
+`@slide-ng/theme-<name>` that follow the contract below. Each has a README that credits the original author and lists what is ported and what is simplified,
+and the repository's `examples/<name>.md` has a slide for every layout.
 
-| `theme:` | Original | Fonts (`fonts` in theme.json) | Layouts | Notes |
-| --- | --- | --- | --- | --- |
-| `default` | `@slidev/theme-default` | none (the built-in look) | `cover`, `intro`, `fact`, `statement`, `quote`, `section` | Not a folder: it is the built-in theme (`src/app/layouts`, `src/styles/layouts.css`), already a port of Slidev's default theme. Slidev's default web fonts (Avenir Next, Nunito Sans) are not loaded for it; set `fonts:` to get them. |
-| `seriph` | `@slidev/theme-seriph` | PT Serif, PT Mono, italic | `cover` | Blue-grey accent, serif text. The original's random cover photo is a CSS gradient here. |
-| `shibainu` | `@slidev/theme-shibainu` | Titillium Web, Fira Code; `colorSchema: dark` | `cover`, `default`, `center`, `section`, `section-2`, `section-3`, `default-2` to `default-7`, `right`, `quote` | Backgrounds are CSS gradients in the original palette. |
-| `bricks` | `@slidev/theme-bricks` | Signika Negative, Sigmar One, Fira Code; `colorSchema: light` | `cover`, `intro` (`::left::`), `default`, `section` (`::right::`), `items` (`cols`, `::items::`), `quote`, `fact`, `statement`, `blank`; components `<polygon-1 />` to `<polygon-11 />` | Backgrounds are CSS gradients in the original palette. |
-| `apple-basic` | `@slidev/theme-apple-basic` | Helvetica Neue (local) | `intro`, `intro-image`, `intro-image-right`, `image-right`, `bullets`, `section`, `statement`, `fact`, `quote`, `3-images` | Photo layouts take an address or a colour. |
+| `theme:` | Package | Original | Layouts |
+| --- | --- | --- | --- |
+| `default` | none: the built-in theme (`src/app/layouts`, `src/styles/layouts.css`) | `@slidev/theme-default` | `cover`, `intro`, `fact`, `statement`, `quote`, `section` |
+| `seriph` | `@slide-ng/theme-seriph` | `@slidev/theme-seriph` | `cover` |
+| `shibainu` | `@slide-ng/theme-shibainu` | `@slidev/theme-shibainu` | 14 (`cover`, `default`, `center`, `section`, `default-2` to `default-7`, `right`, `quote`, ...) |
+| `bricks` | `@slide-ng/theme-bricks` | `@slidev/theme-bricks` | 9; components `<polygon-1 />` to `<polygon-11 />` |
+| `apple-basic` | `@slide-ng/theme-apple-basic` | `@slidev/theme-apple-basic` | 10 |
+
+`default` is a port of Slidev's default theme already; its web fonts (Avenir Next, Nunito Sans) are not loaded for it, set `fonts:` to get them.
 
 Fonts in a theme's `theme.json` are loaded from the provider like Slidev's `fonts` option (a Google Fonts style sheet). A deck's own `fonts` are merged over them key by key,
 so `fonts: { mono: 'Fira Code' }` keeps the theme's `sans`, and `fonts: { provider: none }` loads nothing.
-The images and other assets of the originals are CC BY-NC-SA and are not included; see [themes/README.md](../themes/README.md).
+The images and other assets of the Slidev themes are CC BY-NC-SA and are not included in the packages.
 
 ## The roots, and who wins
 

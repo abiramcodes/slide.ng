@@ -13,7 +13,7 @@ const MANAGERS = [
   ['bun.lockb', 'bun', 'add -d'],
 ];
 
-/** `{ command: 'npm install -D slide-ng-theme-x', file, args }` for a package, run in the deck's folder. */
+/** `{ command: 'npm install -D @slide-ng/theme-x', file, args }` for a package, run in the deck's folder. */
 export function installCommand(deckRoot, pkg) {
   const [, file, verb] = MANAGERS.find(([lock]) => existsSync(join(deckRoot, lock))) ?? ['', 'npm', 'install -D'];
   const args = [...verb.split(' '), pkg];

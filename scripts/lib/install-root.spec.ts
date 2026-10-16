@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { offerInstall, installCommand } from './install-root.mjs';
 
 const folder = () => mkdtempSync(join(tmpdir(), 'slide-ng-install-'));
-const error = { kind: 'theme', spec: 'seriph', pkg: 'slide-ng-theme-seriph' };
+const error = { kind: 'theme', spec: 'seriph', pkg: '@slide-ng/theme-seriph' };
 
 describe('installCommand', () => {
   it('is npm without a lock file', () => {
@@ -26,7 +26,7 @@ describe('offerInstall', () => {
   it('installs when the answer is yes', async () => {
     const run = vi.fn(() => true);
     expect(await offerInstall(error, folder(), { isTTY: true, ask: async () => true, run })).toBe(true);
-    expect(run).toHaveBeenCalledWith('npm', ['install', '-D', 'slide-ng-theme-seriph']);
+    expect(run).toHaveBeenCalledWith('npm', ['install', '-D', '@slide-ng/theme-seriph']);
   });
   it('does not install when the answer is no', async () => {
     const run = vi.fn(() => true);
