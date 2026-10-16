@@ -38,7 +38,7 @@ command line as a package, themes and addons, an example theme, the MCP server a
 - Setup hooks for Shiki, KaTeX, Mermaid, Monaco and the markdown pipeline; Monaco type loading; `fonts`; MDC/Comark; `notesAutoRuby`; slide hooks; custom transition objects; touch controls. The full list is in docs/PARITY.md.
 - PWA: no install icons, no "available offline" indicator. Remote pictures are not cached in dev.
 - MCP: slide 1 cannot be removed or moved; insert, remove and move need all slides in the entry file.
-- The first load of a deck with Monaco and KaTeX is about 850 kB (budget raised to 1 MB / 2 MB).
+- The first load of a deck with Monaco and KaTeX is about 850 kB (budget 1.5 MB / 3 MB).
 - Recording: no `fix-webm-duration`, no separate camera file, no cloud upload (as before). No HTTPS for `--remote` (as before).
 - Phase 2 and phase 3 lists still apply (Monaco and Mermaid limits, `v-motion` limits, footnote limits, resizing a rotated `v-drag` box, `{monaco-write}` limits, imported slides outside the deck's folder cannot be edited by the dev server).
 

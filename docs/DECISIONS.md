@@ -328,3 +328,6 @@ The owner decided "do it like Slidev" for every open choice. For each one, Slide
    is imported only when the editor opens, and only in the dev build (`load-highlighter.prod.ts` replaces the loader in production), so a built or exported deck carries none of it.
    The textarea and the coloured copy share every font and wrapping rule (`styles/editor.css`). The dev server's path confinement is unchanged. Tests: `editor-highlight.spec.ts`, and `tests/e2e/dev-server.mjs`
    (no highlighter before the editor opens, extra files after, more than one colour, a transparent textarea, equal metrics, typed text is coloured).
+7. **Initial bundle budget: 1.5 MB warning, 3 MB error** (was 1 MB / 2 MB). Slidev has no size budget, so this is only a guard. Measured first load (raw, before compression) of the test decks:
+   default deck 453 kB, showcase 473 kB, phase 3 deck 448 kB, phase 4 deck 857 kB, phase 2 deck (Monaco, KaTeX, Mermaid) 945 kB, which sat 5% under the old warning. The new warning is about 1.5 times the largest
+   deck we build, so a deck that adds setup hooks, an addon or more features does not warn, while a real jump (a second large library in the first load) still does. The side editor's highlighter adds nothing (it is lazy and dev only).

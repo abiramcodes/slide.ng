@@ -193,7 +193,7 @@ Slidev is Vue and Vite; slide.ng is Angular. Anything that is about Vue, Vite pl
 | Hash routing for hosts without rewrites | guide/hosting.md | done | test: hash routing under /sub/dir/ |
 | Download button with a PDF made at build (`download`) | features/build-with-pdf.md | done | test: clicking it downloads talk.pdf |
 | Bundle remote assets (`remoteAssets`) | features/bundle-remote-assets.md | done | images only; test: remoteAssets: both pictures were downloaded into the build |
-| Build size budgets | ng build | partial | raised to 1MB warn / 2MB error because Monaco and KaTeX decks reach ~850 kB; not verified (no test) |
+| Build size budgets | ng build | partial | raised to 1.5MB warn / 3MB error (decks measure 450-945 kB); the numbers are in DECISIONS.md, not enforced by a test |
 
 ## Head, SEO, PWA
 
@@ -247,5 +247,5 @@ browser exporter page and `overviewSnapshots`. (They are also listed in the rows
 8. **Syntax**: MDC/Comark syntax is not parsed.
 9. **CLI**: dev `--base`, `--tunnel`, build `--router-mode`, `--inspect`; the dev server's default port differs (4230).
 10. **Recording and PWA**: the webm has no duration field and no separate camera file; the PWA has no icons and no offline indicator.
-11. **Size**: the first load of a deck with Monaco and KaTeX is about 850 kB (budget raised to 1 MB warning, 2 MB error).
+11. **Size**: the first load of a deck with Monaco and KaTeX is about 850 kB (budget raised to 1.5 MB warning, 3 MB error).
 12. **Unverified ground**: Firefox and Safari, real devices over a LAN, a real screen-share picker, wake lock behaviour and hosts that need hash routing were not tried (STATUS.md, NOT VERIFIED).
