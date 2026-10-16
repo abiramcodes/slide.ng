@@ -65,3 +65,7 @@ Small files, plain comments, few dependencies. The rules are in [docs/contributi
 - Keep a pull request to one change, with tests and docs.
 - Fill in the template. The Docs check workflow warns when `src` or `scripts` change with no change in `docs/`; if none is needed, add the `no-docs` label and say why.
 - Open an issue first for large changes, so we can agree on the approach.
+
+## Recognising contributions
+
+Everyone who helps is listed in the Contributors section of the README, whatever the kind of help: code, docs, design, review or triage. To add someone, comment `@all-contributors please add @user for code` on an issue or pull request (use another type such as `doc`, `review` or `bug` when it fits). The bot opens a pull request that updates `.all-contributorsrc` and the README.
