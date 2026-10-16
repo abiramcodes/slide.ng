@@ -180,6 +180,8 @@ try {
     'a drawing is saved to .slide-ng/drawings/2.svg next to the deck (drawings.persist)',
     drawn && /<svg[^>]*>.*<path/s.test(readFileSync(`${DIR}/drawings/2.svg`, 'utf8')),
   );
+  // Let the save settle first, so the clear is not swallowed by a save that is still running.
+  await sleep(1000);
   await page.keyboard.press('c');
   let gone = false;
   for (let i = 0; i < 40 && !gone; i++) {

@@ -393,7 +393,7 @@ Verified by running the built decks in Chromium; the tests are `tests/export/off
 
 ## Made while preparing the repository for open source
 
-1. **Formatting is Prettier only, with the settings already in `.prettierrc`.** `npm run format` writes, `npm run format:check` is what CI runs. The files `.prettierignore` skips are build output, the generated slides, the lock file, and decks and markdown fixtures that tests feed to the generator (reformatting a deck could change what it means). Two specs that read source text were made independent of formatting (the layout padding check) or given room on a slow machine (the first twoslash run).
+1. **Formatting is Prettier only, with the settings already in `.prettierrc`.** `npm run format` writes, `npm run format:check` is what CI runs. The files `.prettierignore` skips are build output, the generated slides, the lock file, and decks and markdown fixtures that tests feed to the generator (reformatting a deck could change what it means). Two specs that read source text were made independent of formatting (the layout padding check) or given room on a slow machine (the first twoslash run). The dev server suite also waits a second before clearing a drawing, because the clear sometimes raced the save that came before it.
 2. **Linting is ESLint 10 with a flat config** (`eslint.config.mjs`). `src` gets `typescript-eslint` and `angular-eslint` recommended rules, `.mjs` files and tests get ESLint's recommended rules only. No type-aware rules, which keeps `npm run lint` fast and the config short.
 3. **New development dependencies, each with a reason:**
    - `eslint`: the linter.
