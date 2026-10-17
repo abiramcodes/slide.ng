@@ -36,6 +36,17 @@ describe('toTemplate: Angular syntax is protected', () => {
 });
 
 describe('toTemplate: plain text is made safe', () => {
+  it('treats a line of only non-breaking spaces as blank', () => {
+    expect(toTemplate('# A\n\u00a0\n\ntext')).toBe('<h1>A</h1>\n<p>text</p>\n');
+  });
+  it('leaves a link alone whose @ or # is only in an attribute value', () => {
+    expect(toTemplate('Mail <a href="mailto:a@b.com">a@b.com</a> now')).toBe(
+      '<p>Mail <a href="mailto:a&#64;b.com">a&#64;b.com</a> now</p>\n',
+    );
+    expect(toTemplate('See <a href="https://x.org/#top">https://x.org</a>')).not.toContain(
+      '<a href="https://x.org">',
+    );
+  });
   it('escapes a lone @ and braces in normal text', () => {
     const html = toTemplate('mail me@example.com {not a block}');
     expect(html).toContain('me&#64;example.com');
@@ -71,6 +82,51 @@ describe('toTemplate: code is literal', () => {
     const html = toTemplate('Use `{{ x }}` and `@if` here');
     expect(html).toContain('<code ngNonBindable>&#123;&#123; x &#125;&#125;</code>');
     expect(html).toContain('<code ngNonBindable>&#64;if</code>');
+  });
+  it('keeps the lines inside a wrapper tag with bindings as they are, like the same tag without them', () => {
+    const md = '<card-frame [accent]="true">\n<b card-title>T</b>\nbody\n</card-frame>';
+    expect(toTemplate(md)).toBe(
+      '<card-frame [accent]="true">\n<b card-title>T</b>\nbody\n</card-frame>',
+    );
+    expect(toTemplate('<ng-template #row let-p>\n**{{ p }}**\n</ng-template>')).not.toContain(
+      '<p>',
+    );
+  });
+  it('shows a pair of escaped braces as text, not as an interpolation', () => {
+    expect(toTemplate('Show \\{\\{ name \\}\\} literally.')).toBe(
+      "<p>Show {{ '{' }}&#123; name &#125;&#125; literally.</p>\n",
+    );
+  });
+  it('reads a type in prose as text and an escaped backtick as a backtick', () => {
+    expect(toTemplate('It returns Promise<void> or Map<string, number>.')).toContain(
+      'Promise&lt;void&gt; or Map&lt;string, number&gt;',
+    );
+    expect(toTemplate('Escaped \\`not code\\` here')).toBe('<p>Escaped `not code` here</p>\n');
+  });
+  it('draws a code fence inside a list item', () => {
+    const html = toTemplate('- A shell:\n\n  ```bash\n  npm ci\n  ```\n- next');
+    expect(html).toContain('<pre');
+    expect(html).not.toContain('NGFENCE');
+    expect(html).not.toContain('<code>`</code>');
+  });
+  it('keeps an inline tag with a binding at the start of a line in its paragraph', () => {
+    expect(toTemplate(`<span [title]="'x'">A</span>\n\n<span [title]="'y'">B</span>`)).toBe(
+      `<p><span [title]="'x'">A</span></p>\n<p><span [title]="'y'">B</span></p>\n`,
+    );
+  });
+  it('joins a tag or @let written over several lines', () => {
+    const html = toTemplate('<input\n  type="range"\n  [value]="v()"\n  (input)="set($event)"\n/>');
+    expect(html).toContain('<input type="range" [value]="v()" (input)="set($event)"/>');
+    expect(html).not.toContain('&lt;');
+    expect(toTemplate("@let team = [\n  'a',\n  'b',\n];\n\n{{ team.length }}")).toContain(
+      "@let team = [ 'a', 'b', ];",
+    );
+  });
+  it('reads \\| in inline code of a table cell as a pipe, and keeps it elsewhere', () => {
+    expect(toTemplate('| a | b |\n|---|---|\n| `x \\| y` | 1 |')).toContain(
+      '<code ngNonBindable>x | y</code>',
+    );
+    expect(toTemplate('Escape it as `a \\| b`.')).toContain('<code ngNonBindable>a \\| b</code>');
   });
 });
 

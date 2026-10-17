@@ -1,6 +1,8 @@
 import { Component, computed, inject, input, numberAttribute } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Nav } from '../lib/nav';
-import { TocItem, filterToc } from '../lib/toc-tree';
+import { SLIDE_NO } from '../lib/slide-context';
+import { TocItem, buildTocTree, filterToc } from '../lib/toc-tree';
 import { SlideLink } from './slide-link';
 
 // One level of the list. It uses itself for the children.
@@ -20,7 +22,13 @@ import { SlideLink } from './slide-link';
             [class.slidev-toc-item-active]="item.active"
             [class.slidev-toc-item-parent-active]="item.activeParent"
           >
-            <slide-ng-link [to]="item.path">{{ item.title }}</slide-ng-link>
+            <slide-ng-link [to]="item.path">
+              @if (item.titleHtml) {
+                <span [innerHTML]="trusted(item.titleHtml)"></span>
+              } @else {
+                {{ item.title }}
+              }
+            </slide-ng-link>
             <app-toc-list
               [list]="item.children"
               [level]="level() + 1"
@@ -48,8 +56,14 @@ export class TocList {
       `slidev-toc-list-level-${this.level()}`,
     ].join(' '),
   );
-  // `listStyle` can give one list-style per level, like Slidev.
-  protected style = computed(() => [this.listStyle()].flat()[this.level() - 1] || null);
+  // The generator drew the title's math with KaTeX from the deck's own markdown; the sanitizer would strip KaTeX's styles.
+  private sanitizer = inject(DomSanitizer);
+  protected trusted = (html: string): SafeHtml => this.sanitizer.bypassSecurityTrustHtml(html);
+  // `listStyle` gives one list-style per level, like Slidev; a single style applies at every level.
+  protected style = computed(() => {
+    const style = this.listStyle();
+    return (Array.isArray(style) ? style[this.level() - 1] : style) || null;
+  });
 }
 
 // <slide-ng-toc /> is the table of contents, built from the slides' titles and levels (Slidev's <Toc />).
@@ -75,8 +89,10 @@ export class SlideToc {
   mode = input<'all' | 'onlyCurrentTree' | 'onlySiblings'>('all');
 
   private nav = inject(Nav);
+  // The slide the list is on decides what is "current" (in the PDF every slide is drawn at once, Nav.no() stays 1).
+  private no = inject(SLIDE_NO);
   protected items = computed(() =>
-    filterToc(this.nav.tocTree(), {
+    filterToc(buildTocTree(this.nav.tocSlides, this.no), {
       minDepth: this.minDepth(),
       maxDepth: this.maxDepth(),
       mode: this.mode(),

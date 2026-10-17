@@ -83,6 +83,9 @@ export class MonacoEditor {
   private ready: Promise<void>;
   private markReady!: () => void;
   private setups = inject(MONACO_SETUP);
+  // The editor theme in light and in dark mode. `theme` from setup/monaco.ts is one name for both, or `{ light, dark }`.
+  private themes = signal({ light: 'vs', dark: 'vs-dark' });
+  private theme = computed(() => this.themes()[this.dark.isDark() ? 'dark' : 'light']);
 
   protected height = computed(() => {
     const h = this.heightOption();
@@ -95,7 +98,11 @@ export class MonacoEditor {
     this.ready = new Promise((resolve) => (this.markReady = resolve));
     afterNextRender(() => void this.start());
     inject(DestroyRef).onDestroy(() => this.disposables.disposeAll());
-    effect(() => this.monaco?.editor.setTheme(this.dark.isDark() ? 'vs-dark' : 'vs'));
+    // Read the mode first: before Monaco loads the call below is skipped, and an effect that read nothing never runs again.
+    effect(() => {
+      const theme = this.theme();
+      this.monaco?.editor.setTheme(theme);
+    });
   }
 
   private async start() {
@@ -113,8 +120,23 @@ export class MonacoEditor {
     this.monaco = monaco;
     // setup/monaco.ts of the roots: they get `monaco`, and the options they return apply to every editor.
     const fromSetup: Monaco.editor.IStandaloneEditorConstructionOptions = {};
-    for (const setup of this.setups) Object.assign(fromSetup, await setup(monaco));
+    for (const setup of this.setups) {
+      try {
+        Object.assign(fromSetup, await setup(monaco));
+      } catch (e) {
+        // One broken setup file must not leave every editor blank (and an exporter waiting for them): say so and go on.
+        console.error(
+          'slide.ng: setup/monaco.ts failed, the editors start without its settings',
+          e,
+        );
+      }
+    }
     if (this.disposables.isDisposed) return;
+    const theme: unknown = fromSetup.theme;
+    delete fromSetup.theme;
+    if (typeof theme === 'string') this.themes.set({ light: theme, dark: theme });
+    else if (theme && typeof theme === 'object')
+      this.themes.update((t) => ({ ...t, ...(theme as { light?: string; dark?: string }) }));
     const lang = LANGUAGES[this.lang()] ?? this.lang();
     const ext = EXTENSIONS[lang] ?? lang;
     const newModel = (value: string) =>
@@ -143,7 +165,7 @@ export class MonacoEditor {
       fontFamily: 'var(--slidev-code-font-family)',
       scrollBeyondLastLine: false,
       useInlineViewWhenSpaceIsLimited: false,
-      theme: this.dark.isDark() ? 'vs-dark' : 'vs',
+      theme: this.theme(),
     } as const;
     const options: Monaco.editor.IStandaloneEditorConstructionOptions = { ...base, ...fromSetup };
 
@@ -152,13 +174,14 @@ export class MonacoEditor {
       this.contentHeight.set(height);
     };
     if (modified != null) {
+      // The model first: disposal runs backwards, and the editor must let go of its models before they go.
+      const changed = newModel(modified);
       const editor = this.disposables.add(
         monaco.editor.createDiffEditor(this.box().nativeElement, {
           renderOverviewRuler: false,
           ...options,
         }),
       );
-      const changed = newModel(modified);
       editor.setModel({ original: model, modified: changed });
       const [a, b] = [editor.getOriginalEditor(), editor.getModifiedEditor()];
       const resize = () => grow(Math.max(a.getContentHeight(), b.getContentHeight()) + 4);
@@ -200,9 +223,22 @@ export class MonacoEditor {
 
   protected execute = async (code: string) => {
     await this.ready;
-    // A runner from a theme replaces the built-in one for its language.
-    const custom = this.runners[this.model?.getLanguageId() ?? ''];
-    if (custom) return custom(code);
+    // A runner from a theme replaces the built-in one for its language. The code block's language picks it (as in Slidev),
+    // also one Monaco does not know (the editor then shows plain text).
+    const modelLang = this.model?.getLanguageId() ?? '';
+    const custom = this.runners[this.lang()] ?? this.runners[modelLang];
+    // A runner that throws shows its error like the built-in one does, instead of "Running..." for ever.
+    if (custom)
+      try {
+        return await custom(code);
+      } catch (e) {
+        return { lines: [], error: e instanceof Error ? e.message : String(e) };
+      }
+    if (modelLang !== 'javascript' && modelLang !== 'typescript')
+      return {
+        lines: [],
+        error: `No code runner for "${this.lang()}": add one in setup/code-runners.ts (see docs/SETUP.md)`,
+      };
     let js = code;
     if (this.model && this.model.getLanguageId() === 'typescript') {
       const worker = await this.monaco!.typescript.getTypeScriptWorker();

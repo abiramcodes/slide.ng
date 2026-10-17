@@ -9,11 +9,12 @@ import {
   watch,
   writeFileSync,
 } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import { coalesce } from './lib/coalesce.mjs';
 import { offerInstall } from './lib/install-root.mjs';
 import { parseDeck } from './lib/parse-deck.mjs';
 import { RootNotFoundError } from './lib/roots.mjs';
+import { copyLocalAssets } from './lib/local-assets.mjs';
 import { checkToolDir } from './lib/tool-dir.mjs';
 import { ROOT_FOLDERS } from './lib/roots.mjs';
 import { slideName, slideSource } from './lib/emit.mjs';
@@ -22,6 +23,7 @@ import { layoutName } from './lib/layouts.mjs';
 import { makeCss, tsFiles } from './lib/make-css.mjs';
 import { detectFeatures } from './lib/features.mjs';
 import { initHighlighter } from './lib/code/highlighter.mjs';
+import { snippetFiles } from './lib/code/snippet.mjs';
 import { setKatexOptions } from './lib/math.mjs';
 import { katexOptions, shikiSetup, transformersSetup } from './lib/setup/node-setups.mjs';
 import { applyPreTransformers } from './lib/setup/pre-transform.mjs';
@@ -57,6 +59,11 @@ function featureCss(features) {
   if (features.twoslash) imports.push("@import '@shikijs/twoslash/style-rich.css';");
   if (features.monaco)
     imports.push("@import '../../../node_modules/monaco-editor/min/vs/editor/editor.main.css';");
+  // Rules after every @import: an @import that follows a rule is ignored by the browser.
+  if (features.math)
+    imports.push(
+      '.slidev-layout .katex { direction: ltr; unicode-bidi: isolate; } /* math reads left to right in an RTL deck */',
+    );
   return imports.length ? imports.join('\n') + '\n' : '/* no feature styles needed */\n';
 }
 
@@ -93,6 +100,7 @@ async function readDeck() {
 }
 
 async function generate() {
+  snippetFiles.clear();
   const deck = await readDeck();
   deckRead = true;
   const build = buildOptions();
@@ -150,16 +158,23 @@ async function generate() {
         'uno.css',
         'features.css',
         'remote-assets',
+        'local-assets',
         'fonts',
         'roots',
+        'roots.json',
+        'problem.ts',
         'public',
       ),
   );
   for (const f of readdirSync(OUT)) if (!wanted.has(f)) rmSync(OUT + f, { recursive: true });
   resetMonacoWriteTargets();
+  deck.localAssets = new Set();
   deck.slides.forEach((s, i) => write(`${OUT}${slideName(i + 1)}.ts`, slideSource(s, i + 1, deck)));
+  copyLocalAssets(deck.root, deck.localAssets, `${OUT}local-assets`);
   writeMonacoTargets(deck.root);
   write(`${OUT}index.ts`, indexSource(deck));
+  // The dev server shows a generator error in the page (dev/problem-banner.ts); a good run clears it.
+  write(`${OUT}problem.ts`, "export const PROBLEM = '';\n");
   write(`${OUT}features.css`, featureCss(features));
   // The generated slides are scanned too: icon tags and alerts only become class names there.
   const slideFiles = deck.slides.map((_, i) => `${OUT}${slideName(i + 1)}.ts`);
@@ -171,7 +186,11 @@ async function generate() {
     ),
   );
   console.log(`[slides] generated ${deck.slides.length} slides`);
-  return { files: deck.files, folders: rootFolders(deck.roots) };
+  // A file a {monaco-write} editor saves to is not watched: the editor shows it already, and a regeneration on each save would
+  // take the focus from the editor while the speaker types.
+  const written = new Set(Object.values(monacoWriteTargets()).map((p) => resolve(deck.root, p)));
+  const snippets = [...snippetFiles].filter((f) => !written.has(f));
+  return { files: [...deck.files, ...snippets], folders: rootFolders(deck.roots) };
 }
 
 // What to watch for the roots: a theme or addon folder as a whole, and only the known folders of the deck's own folder
@@ -181,7 +200,15 @@ const rootFolders = (roots) =>
     .flatMap((r) => (r.kind === 'deck' ? ROOT_FOLDERS.map((f) => join(r.dir, f)) : [r.dir]))
     .filter((d) => existsSync(d));
 
-const { files, folders } = await generate();
+// A failed first run prints its message, not Node's stack trace (SLIDE_NG_DEBUG=1 shows the stack).
+let first;
+try {
+  first = await generate();
+} catch (e) {
+  console.error(`[slides] ${process.env.SLIDE_NG_DEBUG ? e.stack : e.message}`);
+  process.exit(1);
+}
+const { files, folders } = first;
 if (process.argv.includes('--watch')) {
   let timer;
   const watched = new Set();
@@ -189,16 +216,30 @@ if (process.argv.includes('--watch')) {
   const regenerate = coalesce(() =>
     generate()
       .then(watchAll)
-      .catch((e) => console.error(e.message)),
+      .catch((e) => {
+        console.error(e.message);
+        write(`${OUT}problem.ts`, `export const PROBLEM = ${JSON.stringify(e.message)};\n`);
+      }),
   );
   // Editors save in bursts; wait a moment so we generate once.
   const onChange = () => {
     clearTimeout(timer);
     timer = setTimeout(regenerate, 100);
   };
-  // The entry file, every file it imports with `src:`, and the folders of themes and addons.
+  // The entry file, every file it imports with `src:` or `<<<`, and the folders of themes and addons. A file is watched through
+  // its folder: an editor that saves by writing a new file and renaming it over the old one ends a watch on the file itself.
+  const names = new Map(); // folder -> the file names wanted in it
   const watchAll = ({ files, folders }) => {
-    for (const f of files) if (!watched.has(f)) (watched.add(f), watch(f, onChange));
+    for (const f of files) {
+      const dir = dirname(f);
+      if (!names.has(dir)) {
+        names.set(dir, new Set());
+        watch(dir, (_, name) => {
+          if (name && names.get(dir).has(String(name))) onChange();
+        });
+      }
+      names.get(dir).add(basename(f));
+    }
     for (const d of folders)
       if (!watched.has(d)) (watched.add(d), watch(d, { recursive: true }, onChange));
   };

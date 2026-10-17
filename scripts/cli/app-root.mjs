@@ -1,8 +1,17 @@
 // Where the Angular app is built for a deck.
 //   A deck inside this repository (tests, examples, `npm start`) is built in place.
-//   Any other deck (a folder made by `slide-ng create`) gets a working copy of the app in `<deck>/.slide-ng/app`,
-//   made fresh from this package each time, so nothing is ever written into the installed package.
-import { cpSync, existsSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+//   Any other deck (a folder made by `slide-ng create`) gets a working copy of the app in `<deck>/.slide-ng/app` (dev),
+//   `app-build` or `app-export`, made fresh from this package each time, so nothing is ever written into the installed package.
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join, resolve, sep } from 'node:path';
 import { checkToolDir, refuseLink, removeInside } from '../lib/tool-dir.mjs';
@@ -18,10 +27,16 @@ export function isInPlace(entry) {
   );
 }
 
-export const appRootFor = (entry) =>
-  isInPlace(entry) ? packageRoot : join(dirname(resolve(entry)), '.slide-ng', 'app');
+// `folder` keeps the commands apart: `dev` uses `app`, a build `app-build` and an export `app-export`, so a build or an
+// export while the dev server runs does not replace the files under it.
+export const appRootFor = (entry, folder = 'app') =>
+  isInPlace(entry) ? packageRoot : join(dirname(resolve(entry)), '.slide-ng', folder);
 
 /** The `ng` program of this package's @angular/cli, wherever npm put it. */
+/** The path of @angular/core's package.json as this package resolves it. */
+const ngCore = () =>
+  createRequire(join(packageRoot, 'package.json')).resolve('@angular/core/package.json');
+
 export function ngBinary() {
   const pkg = createRequire(join(packageRoot, 'package.json')).resolve('@angular/cli/package.json');
   return join(dirname(pkg), 'bin', 'ng.js');
@@ -36,12 +51,45 @@ const RUNTIME_FILES = [
   'proxy.conf.mjs',
 ];
 
+// The dev server keeps its pre-bundled packages in `.angular/cache`, keyed by the lock file of the folder it runs in. The
+// copy has none, so a package the deck updates (`npm i chart.js@5` next to slides.md) would be served from the old bundle:
+// the cache is dropped whenever the deck's installed packages change.
+const LOCK_FILES = [
+  'package.json',
+  'package-lock.json',
+  'pnpm-lock.yaml',
+  'yarn.lock',
+  'bun.lock',
+  'bun.lockb',
+  'node_modules/.package-lock.json',
+];
+export function forgetStaleDeps(root, deckDir) {
+  const stamp = LOCK_FILES.map((f) => {
+    try {
+      const s = statSync(join(deckDir, f));
+      return `${f}:${s.size}:${s.mtimeMs}`;
+    } catch {
+      return '';
+    }
+  }).join('|');
+  const file = join(root, '.deck-packages');
+  let old = null;
+  try {
+    old = readFileSync(file, 'utf8');
+  } catch {
+    // first run
+  }
+  if (old !== null && old !== stamp) removeInside(join(root, '.angular', 'cache'), root);
+  rmSync(file, { force: true }); // a link here is removed, never written through
+  writeFileSync(file, stamp);
+}
+
 /**
  * Makes the folder the app is built in and returns it. For a deck outside this package it is a copy of `src/`,
  * the Angular and TypeScript settings and `public/`; the generated slides (`src/slides/generated`) are left out, the generator writes them.
  */
-export function prepareApp(entry) {
-  const root = appRootFor(entry);
+export function prepareApp(entry, folder = 'app') {
+  const root = appRootFor(entry, folder);
   checkToolDir(dirname(resolve(entry))); // a symlinked .slide-ng would make the steps below write into another folder
   if (root === packageRoot) return root;
   refuseLink(root);
@@ -59,15 +107,22 @@ export function prepareApp(entry) {
     rmSync(join(root, file), { force: true }); // a link here is removed, never written through
     cpSync(join(packageRoot, file), join(root, file));
   }
+  forgetStaleDeps(root, dirname(resolve(entry)));
   rmSync(join(root, 'package.json'), { force: true });
   writeFileSync(
     join(root, 'package.json'),
     '{ "name": "slide-ng-app", "private": true, "type": "module" }\n',
   );
 
-  // Use the packages next to this one (Angular and friends). Without a copy of its own, npm has put them higher up and the lookup finds them.
-  if (existsSync(join(packageRoot, 'node_modules')) && !existsSync(join(root, 'node_modules'))) {
-    symlinkSync(join(packageRoot, 'node_modules'), join(root, 'node_modules'), 'dir');
-  }
+  // Use the packages next to this one (Angular and friends): the folder that holds @angular/core, which npm may have put
+  // higher up. It is linked as the copy's own node_modules, and the build keeps that path (preserveSymlinks), because the
+  // dev server only serves files under <copy>/node_modules: Monaco's icon font was refused from the real path.
+  const modules = dirname(dirname(dirname(ngCore())));
+  if (!existsSync(join(root, 'node_modules')))
+    symlinkSync(modules, join(root, 'node_modules'), 'dir');
+  const config = JSON.parse(readFileSync(join(root, 'angular.json'), 'utf8'));
+  for (const project of Object.values(config.projects ?? {}))
+    if (project.architect?.build?.options) project.architect.build.options.preserveSymlinks = true;
+  writeFileSync(join(root, 'angular.json'), JSON.stringify(config, null, 2) + '\n');
   return root;
 }

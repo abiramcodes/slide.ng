@@ -89,7 +89,7 @@ import { BRUSH_COLORS, Drawings, ToolMode } from './drawings';
             icon-btn
             class="color-btn"
             [attr.data-color]="color"
-            title="Set brush color"
+            [title]="'Brush color: ' + colorNames[color]"
             [active]="drawings.brush().color === color && drawings.mode() !== 'eraseLine'"
             (click)="drawings.pickColor(color)"
           >
@@ -151,7 +151,11 @@ import { BRUSH_COLORS, Drawings, ToolMode } from './drawings';
           <button
             icon-btn
             id="draw-close"
-            [title]="drawings.pinned() ? 'Drawing pinned' : 'Drawing unpinned'"
+            [title]="
+              drawings.pinned()
+                ? 'Close the drawing tools (the drawing stays)'
+                : 'Close the drawing tools'
+            "
             (click)="drawings.enabled.set(false)"
           >
             <div [class]="drawings.pinned() ? 'i-carbon:error' : 'i-carbon:close-outline'"></div>
@@ -164,6 +168,16 @@ import { BRUSH_COLORS, Drawings, ToolMode } from './drawings';
 export class DrawingControls {
   protected drawings = inject(Drawings);
   protected colors = BRUSH_COLORS;
+  // Each colour button says which colour it is (a screen reader would hear seven equal buttons otherwise).
+  protected colorNames: Record<string, string> = {
+    '#ff595e': 'red',
+    '#ffca3a': 'yellow',
+    '#8ac926': 'green',
+    '#1982c4': 'blue',
+    '#6a4c93': 'purple',
+    '#ffffff': 'white',
+    '#000000': 'black',
+  };
   protected widthOpen = signal(false);
   protected tools: { mode: ToolMode; title: string; icon: string }[] = [
     { mode: 'stylus', title: 'Draw with stylus', icon: 'i-carbon:pen' },

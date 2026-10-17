@@ -1,4 +1,4 @@
-import { extractMath, renderMath } from './math.mjs';
+import { extractMath, renderMath, titleHtml } from './math.mjs';
 import { hasMath } from './features.mjs';
 
 const found = (md: string) => extractMath(md) as { markdown: string; maths: any[] };
@@ -8,6 +8,17 @@ describe('extractMath', () => {
     const r = found('so $x^2 + y_1$ here');
     expect(r.markdown).toBe('so NGMATH0X here');
     expect(r.maths).toEqual([{ block: false, latex: 'x^2 + y_1' }]);
+  });
+  it('leaves $ in Angular bindings, interpolations and control flow alone', () => {
+    const md =
+      '@for (x of xs; track x; let l = $last) {\n<div [class.b]="$first" [class.i]="$last">{{ \'$\' + x }}</div>\n}';
+    expect(found(md)).toEqual({ markdown: md, maths: [] });
+    expect(found('<b [title]="$first">x</b> and $y^2$').maths).toEqual([
+      { block: false, latex: 'y^2' },
+    ]);
+  });
+  it('keeps {{ inside inline math as math', () => {
+    expect(found('So ${{a}} + b$ here').maths).toEqual([{ block: false, latex: '{{a}} + b' }]);
   });
   it('does not treat prices as math', () => {
     expect(found('it costs $5 and $10 today').maths).toHaveLength(0);
@@ -53,5 +64,15 @@ describe('hasMath (feature detection)', () => {
     expect(hasMath('```sh\necho $HOME and $PATH\n```')).toBe(false);
     expect(hasMath('use `$x$` here')).toBe(false);
     expect(hasMath('costs $5 or $6')).toBe(false);
+  });
+});
+
+describe('titleHtml', () => {
+  it('draws the math of a title and escapes the rest, or gives null without math', () => {
+    const html = titleHtml('A <b> title $x^2$')!;
+    expect(html.startsWith('A &lt;b&gt; title ')).toBe(true);
+    expect(html).toContain('class="katex"');
+    expect(titleHtml('Plain title, $5 and $10')).toBeNull();
+    expect(titleHtml(null)).toBeNull();
   });
 });

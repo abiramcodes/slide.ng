@@ -51,7 +51,7 @@ describe('footnotes', () => {
   it('writes superscript numbers and the list', () => {
     const html = finishFootnotes('<p>aNGFOOT1X</p>', ['n'], (s) => s);
     expect(html).toBe(
-      '<p>a<sup class="footnote-ref">1</sup></p>\n<section class="footnotes"><ol><li>n</li></ol></section>',
+      '<p>a<sup class="footnote-ref">[1]</sup></p>\n<hr class="footnotes-sep" /><section class="footnotes"><ol class="footnotes-list"><li class="footnote-item">n</li></ol></section>',
     );
   });
   it('adds nothing when there are no notes', () => {
@@ -67,6 +67,11 @@ describe('rewriteIcons', () => {
     );
     expect(rewriteIcons('<mdi-account-circle/>', sets)).toBe(
       '<span class="i-mdi:account-circle"></span>',
+    );
+  });
+  it('keeps an icon with class inline visible (inline-block)', () => {
+    expect(rewriteIcons('<carbon-arrow-right class="inline ml-1" />', sets)).toBe(
+      '<span class="i-carbon:arrow-right inline-block ml-1"></span>',
     );
   });
   it('adds to an existing class and keeps other attributes', () => {
@@ -102,8 +107,8 @@ describe('markdown extras in a slide', () => {
     );
     expect(html).toContain('markdown-alert-tip');
     expect(html).toContain('<input checked="" disabled="" type="checkbox">');
-    expect(html).toContain('<sup class="footnote-ref">1</sup>');
+    expect(html).toContain('<sup class="footnote-ref">[1]</sup>');
     expect(html).toContain('<span class="i-carbon:apps"></span>');
-    expect(html).toContain('<li>Because &#123;&#123; x &#125;&#125;</li>'); // braces are protected
+    expect(html).toContain('<li class="footnote-item">Because &#123;&#123; x &#125;&#125;</li>'); // braces are protected
   });
 });

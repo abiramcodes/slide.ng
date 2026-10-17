@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { manifestJson, pwaEnabled, serviceWorkerSource, writePwa } from './pwa.mjs';
+import { manifestJson, pwaEnabled, serviceWorkerSource, shortName, writePwa } from './pwa.mjs';
 
 describe('pwaEnabled', () => {
   it('is on for true and build only', () => {
@@ -49,6 +49,11 @@ describe('serviceWorkerSource', () => {
     expect(text).toContain("'slide-ng-v1'");
     expect(text).toContain('["index.html","a/b.js"]');
     expect(() => new Function(text)).not.toThrow(); // it is valid JavaScript
+  });
+  it('writes file names as addresses, so a space or # does not break the install', () => {
+    expect(serviceWorkerSource(['img dir/plan #1.png'], 'v1')).toContain(
+      '["img%20dir/plan%20%231.png"]',
+    );
   });
 });
 
@@ -107,5 +112,18 @@ describe('writePwa', () => {
     writeFileSync(join(dir, 'main.js'), 'if (a < 1) go();'); // one character, same length
     writePwa(dir, {});
     expect(version()).not.toBe(first);
+  });
+});
+
+describe('manifest names and colours', () => {
+  it('cuts the short name between words', () => {
+    expect(shortName('Blueprints for the web')).toBe('Blueprints');
+    expect(shortName('Short')).toBe('Short');
+    expect(shortName('Supercalifragilistic')).toBe('Supercalifra');
+  });
+  it('takes themeColor and the colour schema', () => {
+    const m = manifestJson({ title: 'x', themeColor: '#0f2c4c', colorSchema: 'dark' });
+    expect([m.theme_color, m.background_color]).toEqual(['#0f2c4c', '#121212']);
+    expect(manifestJson({ title: 'x', themeColor: 'red;}' }).theme_color).toBe('#16131A');
   });
 });

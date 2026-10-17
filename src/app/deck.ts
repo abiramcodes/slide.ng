@@ -1,5 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
+import { SLIDES } from '../slides/generated';
 import { DragControls } from './drag/drag-controls';
+import { ProblemBanner } from './dev/problem-banner';
 import { SideEditor } from './dev/side-editor';
 import { SideEditorState } from './dev/side-editor-state';
 import { WebCamera } from './record/web-camera';
@@ -9,6 +11,7 @@ import { DrawingControls } from './drawing/drawing-controls';
 import { DrawingLayer } from './drawing/drawing-layer';
 import { Nav } from './lib/nav';
 import { swipeAction } from './lib/swipe';
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from './lib/canvas';
 import { contextMenuEnabled } from './lib/switches';
 import { SlideShow } from './lib/slide-show';
 import { keyHandler } from './lib/key-handler';
@@ -39,9 +42,15 @@ import { Overview } from './ui/overview';
     InfoDialog,
     ContextMenu,
     OfflineBadge,
+    ProblemBanner,
   ],
   providers: [Nav, Ui, Drawings],
-  host: { '(window:keydown)': 'key($event)' },
+  host: {
+    '(window:keydown)': 'key($event)',
+    '(window:resize)':
+      'size.set({ w: $any($event.target).innerWidth, h: $any($event.target).innerHeight })',
+    '(click)': 'anchor($event)',
+  },
   template: `
     <div
       class="stage"
@@ -49,14 +58,17 @@ import { Overview } from './ui/overview';
       [class.slidev-nav-go-forward]="nav.direction() > 0"
       [class.slidev-nav-go-backward]="nav.direction() < 0"
       (contextmenu)="contextMenu($event)"
-      (pointerdown)="swipeStart($event)"
-      (pointerup)="swipeEnd($event)"
+      (touchstart)="swipeStart($event)"
+      (touchmove)="swipeMove($event)"
+      (touchend)="swipeEnd()"
+      (touchcancel)="swipeCancel()"
     >
       <app-slide-show context="slide"
         ><app-drawing-layer /><app-drag-controls /><app-presenter-cursor
       /></app-slide-show>
       <div
         class="absolute bottom-0 left-0 p-2 transition duration-300 opacity-0 hover:opacity-100 focus-within:opacity-100"
+        [style.opacity]="portrait() ? 1 : null"
       >
         <app-nav-bar />
       </div>
@@ -69,18 +81,42 @@ import { Overview } from './ui/overview';
     <app-goto />
     <app-info-dialog />
     <app-context-menu />
-    <div id="hud">
+    <app-problem-banner />
+    <div id="hud" aria-hidden="true">
       slide {{ nav.no() }}/{{ nav.total }} clicks {{ nav.clicks() }}/{{ nav.clicksTotal() }}
     </div>
+    <!-- Screen readers hear the new slide's number and title (not every click) -->
+    <div class="sr-only" aria-live="polite" aria-atomic="true">{{ announcement() }}</div>
   `,
 })
 export class Deck {
   protected nav = inject(Nav);
   private ui = inject(Ui);
+  // `[results](#results)` to a heading of the same slide: the page's <base href> would turn it into another address and
+  // leave the deck, so the slide scrolls to the element instead. `#/3` (hash routing) is a slide address and stays as it is.
+  protected anchor(e: MouseEvent) {
+    const link = (e.target as Element | null)?.closest?.('a[href^="#"]');
+    const id = link?.getAttribute('href')?.slice(1);
+    if (!link || !id || id.startsWith('/')) return;
+    e.preventDefault();
+    document.getElementById(decodeURIComponent(id))?.scrollIntoView({ block: 'nearest' });
+  }
+  protected announcement = computed(() => {
+    const no = this.nav.no();
+    const title = SLIDES[no - 1]?.title;
+    return `Slide ${no} of ${this.nav.total}${title ? `: ${title}` : ''}`;
+  });
   protected editor = inject(SideEditorState);
   protected key = keyHandler(this.nav, this.ui);
   private drawings = inject(Drawings);
   private swipeFrom: { x: number; y: number } | null = null;
+  private swipeAt = { x: 0, y: 0 };
+  // On a screen taller than the slide (a phone held upright) the bar always shows below it, as in Slidev: there is no
+  // hover, and a first tap on the hidden bar would already press a button.
+  protected size = signal({ w: window.innerWidth, h: window.innerHeight });
+  protected portrait = computed(
+    () => this.size().h - (this.size().w * CANVAS_HEIGHT) / CANVAS_WIDTH > 120,
+  );
 
   constructor() {
     hideIdleCursor(() => this.ui.hideIdleCursor());
@@ -88,21 +124,31 @@ export class Deck {
   }
 
   // Touch swipes move through the deck (not while drawing, as in Slidev).
-  swipeStart(e: PointerEvent) {
+  // One finger. Touch events, not pointer events: the stage has `touch-action: pan-y` (styles.css), and once the browser
+  // takes an up or down swipe as panning it cancels the pointer, while touchmove still comes.
+  swipeStart(e: TouchEvent) {
+    const t = e.touches[0];
     this.swipeFrom =
-      e.pointerType === 'touch' && !this.drawings.enabled() ? { x: e.clientX, y: e.clientY } : null;
+      e.touches.length === 1 && !this.drawings.enabled() ? { x: t.clientX, y: t.clientY } : null;
+    if (this.swipeFrom) this.swipeAt = { ...this.swipeFrom };
   }
 
-  swipeEnd(e: PointerEvent) {
+  swipeMove(e: TouchEvent) {
+    if (e.touches.length > 1) this.swipeFrom = null; // a pinch
+    const t = e.touches[0];
+    if (this.swipeFrom && t) this.swipeAt = { x: t.clientX, y: t.clientY };
+  }
+
+  swipeCancel() {
+    this.swipeFrom = null;
+  }
+
+  swipeEnd() {
     const from = this.swipeFrom;
     this.swipeFrom = null;
-    if (!from || e.pointerType !== 'touch' || this.drawings.enabled()) return;
-    const action = swipeAction(
-      e.clientX - from.x,
-      e.clientY - from.y,
-      window.innerWidth,
-      window.innerHeight,
-    );
+    if (!from || this.drawings.enabled()) return;
+    const to = this.swipeAt;
+    const action = swipeAction(to.x - from.x, to.y - from.y, window.innerWidth, window.innerHeight);
     if (action) this.nav[action]();
   }
 

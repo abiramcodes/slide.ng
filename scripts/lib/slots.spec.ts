@@ -37,8 +37,28 @@ describe('extractStyles', () => {
     const md = '```html\n<style>a{}</style>\n```';
     expect(extractStyles(md)).toEqual({ markdown: md, css: '' });
   });
+  it('leaves a style tag inside an attribute value alone', () => {
+    const md = '<iframe srcdoc="<style>p{color:red}</style><p>red</p>"></iframe>';
+    expect(extractStyles(md)).toEqual({ markdown: md, css: '' });
+  });
+  it('leaves a style tag in inline code alone, and still finds the real block', () => {
+    const { markdown, css } = extractStyles(
+      'Write a `<style>` block:\n\n<style>\nh1 { color: red }\n</style>',
+    );
+    expect(markdown).toContain('`<style>`');
+    expect(css).toBe('h1 { color: red }');
+  });
   it('scopes css under the slide tag using nesting', () => {
     expect(scopeCss('h1 { color: red }', 'slide-003')).toBe('slide-003 {\nh1 { color: red }\n}');
     expect(scopeCss('', 'slide-003')).toBe('');
+    // rules that cannot be nested stay outside the slide's scope
+    expect(
+      scopeCss(
+        '.spin { animation: spin 2s } @keyframes spin { to { transform: rotate(1turn) } } @import url(x.css);',
+        'slide-001',
+      ),
+    ).toBe(
+      '@keyframes spin { to { transform: rotate(1turn) } }\n@import url(x.css);\nslide-001 {\n.spin { animation: spin 2s }  \n}',
+    );
   });
 });

@@ -9,6 +9,8 @@ const BLOCK =
   /^\$\$[ \t]*(?:\{([\w,|*-]+)\})?[ \t]*(\{[^}\n]*\})?[ \t]*\n([\s\S]*?)\n?[ \t]*\$\$[ \t]*$/gm;
 const BLOCK_ONE_LINE = /^\$\$[ \t]*([^\n{][^\n]*?)[ \t]*\$\$[ \t]*$/gm;
 // $latex$ : no space after the first $ or before the last, and the last is not followed by a digit (so "$5 and $10" is text)
+// interpolations, opening tags (with their bindings) and control-flow lines
+const ANGULAR = /\{\{[\s\S]*?\}\}|<[A-Za-z][^<>]*>|^[ \t]*@[A-Za-z]+[^\n]*$/gm;
 const INLINE = /(?<![\\$])\$(?![\s$])((?:\\.|[^$\\\n])+?)(?<![\s\\])\$(?!\d)/g;
 
 /** Cuts the math out of the markdown. Each piece is replaced by a word NGMATH<n>X; `maths` lists them. */
@@ -20,7 +22,14 @@ export function extractMath(markdown) {
     (_, ranges, options, latex) => `\n${put({ block: true, latex, ranges, options })}\n`,
   );
   md = md.replace(BLOCK_ONE_LINE, (_, latex) => `\n${put({ block: true, latex })}\n`);
-  md = md.replace(INLINE, (_, latex) => put({ block: false, latex }));
+  // `$` in Angular code is not math: `[class.x]="$first"`, `{{ '$' + n }}`, `@for (...; let l = $last)`.
+  // Those pieces are set aside while inline math is looked for, then put back.
+  const kept = [];
+  md = md.replace(ANGULAR, (code) => `NGKEEP${kept.push(code) - 1}X`);
+  const restore = (text) => text.replace(/NGKEEP(\d+)X/g, (_, i) => kept[+i]);
+  // `${{a}} + b$`: what was set aside inside a formula is math again.
+  md = md.replace(INLINE, (_, latex) => put({ block: false, latex: restore(latex) }));
+  md = restore(md);
   return { markdown: md, maths };
 }
 
@@ -35,6 +44,11 @@ function render(latex, displayMode) {
     // `output: 'html'`: the MathML part is left out because Angular does not know MathML-only tags like <annotation>.
     return katex.renderToString(latex, {
       throwOnError: false,
+      // KaTeX's own strict warnings name no formula; say which one (a deck's setup/katex.ts `strict` still wins).
+      strict: (code, message) => {
+        console.warn(`[slides] math "${latex.trim().slice(0, 50)}": ${message}`);
+        return 'ignore';
+      },
       ...katexOptions,
       displayMode,
       output: 'html',
@@ -61,4 +75,19 @@ export function renderMath({ block, latex, ranges, options }) {
     startLine: o.startLine,
   });
   return `<slide-ng-katex-block-wrapper${a}><div ngNonBindable>${drawn}</div></slide-ng-katex-block-wrapper>`;
+}
+
+/** A slide title with `$math$` as HTML (for the table of contents), or null when it has no math. Text is escaped. */
+export function titleHtml(title) {
+  if (!title) return null;
+  const { markdown, maths } = extractMath(title);
+  if (!maths.length) return null;
+  const text = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return markdown
+    .split(/(NGMATH\d+X)/)
+    .map((part) => {
+      const m = /^NGMATH(\d+)X$/.exec(part);
+      return m ? render(maths[+m[1]].latex, false) : text(part);
+    })
+    .join('');
 }

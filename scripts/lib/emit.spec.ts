@@ -1,6 +1,14 @@
 import { LAYOUTS, layoutName } from './layouts.mjs';
-import { slideSource } from './emit.mjs';
-import { indexSource } from './index-source.mjs';
+import {
+  closeEntities,
+  keepSpaces,
+  safeLinks,
+  slideLinks,
+  slideSource,
+  usesCustomElements,
+  warnInlineControlFlow,
+} from './emit.mjs';
+import { indexSource, plainTitle } from './index-source.mjs';
 import { parseDeck } from './parse-deck.mjs';
 import { initHighlighter } from './code/highlighter.mjs';
 
@@ -122,6 +130,20 @@ describe('slideSource: layout props and slots', () => {
     expect(src).toContain('<sn-image-left image=\\"/a.png\\" backgroundSize=\\"contain\\">');
     expect(src).not.toContain('other');
   });
+  it('binds a list or an object to the layout input, keeps text and numbers as attributes', () => {
+    const layouts = {
+      ...LAYOUTS,
+      brief: { ...LAYOUTS['default'], tag: 'deck-brief', props: ['owners', 'code', 'meta'] },
+    };
+    const src = slideSource(
+      slide({ layout: 'brief', owners: ['Priya', 'Jonas'], code: 7, meta: { a: 1 } }, 'x'),
+      2,
+      { layouts },
+    );
+    expect(src).toContain(
+      '<deck-brief [owners]=\\"[&quot;Priya&quot;,&quot;Jonas&quot;]\\" code=\\"7\\" [meta]=\\"&#123;&quot;a&quot;:1&#125;\\">',
+    );
+  });
   it('sends `class` to the content for layouts with a class prop, to the layout element otherwise', () => {
     expect(slideSource(slide({ layout: 'two-cols', class: 'c' }, 'x'), 2)).toContain(
       '<sn-two-cols contentClass=',
@@ -190,6 +212,18 @@ describe('indexSource', () => {
   });
 });
 
+describe('plainTitle', () => {
+  it('drops the markdown of a heading, keeps words with underscores', () => {
+    expect(plainTitle('With `code` and [a link](https://x.org)')).toBe('With code and a link');
+    expect(plainTitle('**Bold** and _it_ and snake_case_name')).toBe(
+      'Bold and it and snake_case_name',
+    );
+    expect(plainTitle('H<sub>2</sub>O and <ruby>振<rt>ふ</rt></ruby>り仮名')).toBe(
+      'H2O and 振り仮名',
+    );
+  });
+});
+
 describe('slideSource: built-in components are imported when the slide uses them', () => {
   const imports = (md: string) => /imports: \[(.*)\]/.exec(slideSource(slide({}, md), 2))![1];
   it('finds each tag', () => {
@@ -208,7 +242,138 @@ describe('slideSource: built-in components are imported when the slide uses them
     expect(imports('<span [slide-ng-mark]="{ at: 2 }">x</span>')).toContain('SlideNgMark');
     expect(imports('<div slide-ng-motion :enter="{ x: 0 }">x</div>')).toContain('SlideNgMotion');
   });
+  it('imports common directives and pipes from @angular/common in one line', () => {
+    const src = slideSource(
+      slide({}, '<ng-container *ngTemplateOutlet="t" />\n\n{{ 0.5 | percent }}'),
+      2,
+    );
+    expect(src).toContain("import { NgTemplateOutlet, PercentPipe } from '@angular/common';");
+    expect(src).toContain('imports: [DefaultLayout, NgTemplateOutlet, PercentPipe]');
+  });
+  it('reads a <code> written in HTML as live markup, and markdown code as text', () => {
+    expect(imports("<code>{{ 'a' | uppercase }}</code>")).toContain('UpperCasePipe');
+    expect(imports("`{{ 'a' | uppercase }}`")).toBe('DefaultLayout');
+  });
   it('does not mix <slide-ng-transform> up with the longer names or other words', () => {
     expect(imports('plain text about a transformation')).toBe('DefaultLayout');
+  });
+});
+
+describe('slideSource: drag positions and renamed names', () => {
+  it('warns about a drag position name that dragPos does not have', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    slideSource(
+      slide({ dragPos: { square: '1,2,3,4' } }, '<div slide-ng-drag="square">a</div>'),
+      2,
+    );
+    expect(warn).not.toHaveBeenCalled();
+    slideSource(slide({}, '<div slide-ng-drag="circle">a</div>'), 3);
+    expect(warn.mock.calls[0][0]).toContain('"circle" is not in this slide\'s dragPos');
+    warn.mockRestore();
+  });
+  it('warns about a Vue slot template', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    slideSource(slide({}, '<slide-ng-switch><template #1>a</template></slide-ng-switch>'), 2);
+    expect(warn.mock.calls[0][0]).toContain("Vue's slot syntax");
+    warn.mockRestore();
+  });
+  it('lists every renamed name of a slide at once', () => {
+    expect(() =>
+      slideSource(slide({}, '<v-clicks>\n\n- a\n\n</v-clicks>\n\n<div v-click>b</div>'), 2),
+    ).toThrow(/slide 2: "v-clicks" was renamed to .*"v-click" was renamed to/);
+  });
+});
+
+describe('keepSpaces', () => {
+  it('keeps a space between two tags on one line, like Vue', () => {
+    expect(keepSpaces('<p><strong>bold</strong> <em>italic</em></p>')).toBe(
+      '<p><strong>bold</strong>&ngsp;<em>italic</em></p>',
+    );
+  });
+  it('leaves line breaks between blocks and code samples alone', () => {
+    expect(keepSpaces('<h1>a</h1>\n<p>b</p>')).toBe('<h1>a</h1>\n<p>b</p>');
+    expect(keepSpaces('<pre><span>a</span> <span>b</span></pre>')).toBe(
+      '<pre><span>a</span> <span>b</span></pre>',
+    );
+    // a Twoslash popup holds its own <pre> inside the code block
+    const nested =
+      '<pre class="shiki"><span>a</span><pre>x</pre><span>b</span> <span>c</span></pre> <b>d</b>';
+    expect(keepSpaces(nested)).toBe(
+      '<pre class="shiki"><span>a</span><pre>x</pre><span>b</span> <span>c</span></pre>&ngsp;<b>d</b>',
+    );
+  });
+});
+
+describe('custom elements', () => {
+  it('gives the schema only to slides that use a listed web component', () => {
+    const deck = { headmatter: { customElements: ['model-viewer', 'sl-*'] } };
+    const used = slideSource(slide({}, '<model-viewer src="a.glb"></model-viewer>'), 2, deck);
+    expect(used).toContain('schemas: [CUSTOM_ELEMENTS_SCHEMA]');
+    expect(used).toContain("import { CUSTOM_ELEMENTS_SCHEMA, Component } from '@angular/core';");
+    expect(slideSource(slide({}, '<other-thing></other-thing>'), 2, deck)).not.toContain('schemas');
+    expect(slideSource(slide({}, '<model-viewer></model-viewer>'), 2)).not.toContain('schemas');
+  });
+  it('matches names, prefixes and true', () => {
+    expect(usesCustomElements('<sl-button>', ['sl-*'])).toBe(true);
+    expect(usesCustomElements('<sl-button>', 'sl-button')).toBe(true);
+    expect(usesCustomElements('<sl-button>', ['model-viewer'])).toBe(false);
+    expect(usesCustomElements('<x-y>', true)).toBe(true);
+    expect(usesCustomElements('<p>', true)).toBe(false);
+  });
+});
+
+describe('slideLinks', () => {
+  it('turns links to slide numbers and aliases into slide links, and leaves other addresses', () => {
+    expect(slideLinks('<a href="/4">four</a>')).toBe('<slide-ng-link to="4">four</slide-ng-link>');
+    expect(slideLinks('<a href="/pricing">p</a>', ['pricing'])).toBe(
+      '<slide-ng-link to="pricing">p</slide-ng-link>',
+    );
+    expect(slideLinks('<a href="/about">a</a>')).toBe('<a href="/about">a</a>');
+  });
+});
+
+describe('closeEntities', () => {
+  it('closes the old entities without ;, outside code', () => {
+    expect(closeEntities('<p>Option&ltA> &copy 2024 &lt; &ltimes;</p>')).toBe(
+      '<p>Option&lt;A> &copy; 2024 &lt; &ltimes;</p>',
+    );
+    expect(closeEntities('<pre>&amp</pre>')).toBe('<pre>&amp</pre>');
+    expect(closeEntities('<a href="/s?q=x&copy=1">a</a>')).toBe('<a href="/s?q=x&copy=1">a</a>');
+    expect(closeEntities('<img alt="&copy 2024">')).toBe('<img alt="&copy; 2024">');
+    expect(closeEntities('<a title="a>b" href="?x&copy=1">a</a>')).toBe(
+      '<a title="a>b" href="?x&copy=1">a</a>',
+    );
+  });
+});
+
+describe('safeLinks', () => {
+  it('replaces script addresses in href and src, and leaves normal ones', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(safeLinks('<a href="javascript:alert(1)">x</a> <a href="https://a.b">y</a>', 3)).toBe(
+      '<a href="#">x</a> <a href="https://a.b">y</a>',
+    );
+    expect(safeLinks("<iframe src=' JavaScript:x'></iframe>", 3)).toBe('<iframe src="#"></iframe>');
+    // a quote of the other kind, an entity or a tab in the scheme, and no quotes at all
+    expect(safeLinks(`<a href="javascript:alert('x')">a</a>`, 3)).toBe('<a href="#">a</a>');
+    expect(safeLinks('<a href="java&#115;cript:x">a</a>', 3)).toBe('<a href="#">a</a>');
+    expect(safeLinks('<a href="java\tscript:x">a</a>', 3)).toBe('<a href="#">a</a>');
+    expect(safeLinks('<a href=javascript:x>a</a>', 3)).toBe('<a href="#">a</a>');
+    // a code sample that shows such a link is text and stays as it is
+    const sample = '<p><code ngNonBindable>&lt;a href=javascript:x&gt;</code> here</p>';
+    expect(safeLinks(sample, 3)).toBe(sample);
+    expect(warn).toHaveBeenCalledTimes(6);
+    warn.mockRestore();
+  });
+});
+
+describe('warnInlineControlFlow', () => {
+  it('warns about @if in the middle of a line, not on its own line or in code', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    warnInlineControlFlow('Status: @if (on) { yes }', 2);
+    warnInlineControlFlow('@if (on) {\nyes\n} @else if (x) {\nno\n}', 2);
+    warnInlineControlFlow('Use `x @if (y) {` like this\n\n```ts\nconst a = 1; @if (b) {\n```', 2);
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0][0]).toContain('slide 2');
+    warn.mockRestore();
   });
 });

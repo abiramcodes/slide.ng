@@ -58,6 +58,19 @@ describe('theme and addon names in node_modules (the rule of Slidev)', () => {
     ]);
     expect(candidateNames('@me/theme-x', 'theme')).toEqual(['@me/theme-x']);
   });
+  it("reads the deck's own theme.json, so its layouts can declare inputs and slots", () => {
+    const deck = folder();
+    writeFileSync(
+      join(deck, 'theme.json'),
+      JSON.stringify({ layouts: { recipe: { props: ['serves'], slots: ['ingredients'] } } }),
+    );
+    const roots = resolveRoots({ deckRoot: deck, headmatter: {} });
+    expect(roots.at(-1)?.manifest.layouts['recipe']).toEqual({
+      props: ['serves'],
+      slots: ['ingredients'],
+      classProp: undefined,
+    });
+  });
   it('finds the official scoped package, in a parent folder too', () => {
     const base = folder();
     dirIn(base, 'node_modules', '@slide-ng', 'theme-seriph');
@@ -122,7 +135,16 @@ describe('readManifest', () => {
     expect(m.name).toBe('x');
     expect(m.headmatter).toEqual({ colorSchema: 'dark' });
     expect(m.layouts['hero']).toEqual({ props: ['image'], slots: ['right'], classProp: true });
-    expect(m.layouts['odd']).toEqual({ props: [], slots: [], classProp: false });
+    // keys that are not set stay unset, so a replaced built-in layout keeps its own
+    expect(m.layouts['odd']).toEqual({ props: undefined, slots: undefined, classProp: undefined });
+  });
+  it('warns about keys it does not read', () => {
+    const dir = folder();
+    writeFileSync(join(dir, 'theme.json'), JSON.stringify({ colorSchema: 'dark' }));
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    readManifest(dir);
+    expect(warn.mock.calls[0][0]).toContain('"colorSchema" is not read');
+    warn.mockRestore();
   });
   it('refuses broken JSON with the file name', () => {
     const dir = folder();
@@ -203,6 +225,16 @@ describe('mergeHeadmatter', () => {
       fonts: { mono: 'Fira Code' },
     });
     expect(merged).toMatchObject({ fonts: { sans: 'PT Serif', mono: 'Fira Code' } });
+  });
+  it('keeps the mode of a theme made for one mode', () => {
+    expect(
+      mergeHeadmatter([root({ colorSchema: 'light' })], { colorSchema: 'auto' }),
+    ).toMatchObject({
+      colorSchema: 'light',
+    });
+    expect(mergeHeadmatter([root({})], { colorSchema: 'dark' })).toMatchObject({
+      colorSchema: 'dark',
+    });
   });
   it('merges defaults key by key', () => {
     const merged = mergeHeadmatter([root({ defaults: { layout: 'center', class: 'a' } })], {

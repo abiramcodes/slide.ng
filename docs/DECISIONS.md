@@ -442,3 +442,45 @@ Source: an independent review of the repository (nine findings). Each fix has a 
 2. **Clean break, no aliases.** Nothing was published, so there is no shim and no deprecation period. The generator refuses a slide that still uses an old name and says what to write instead (`scripts/lib/renamed.mjs`, tested in `renamed.spec.ts`). That is an error message, not an alias: the old name never works. The check skips an old name that the deck's own components declare as a selector, and it does not look into code samples.
 3. **What did not change:** layout names and the `sn-*` tags they use, headmatter and frontmatter keys, CSS classes (`slidev-*`), `$clicks`-style variables, the `::code-group` markdown block, the `drag-site` and `mark-mods` attributes that the generator writes for the runtime, and the internal `app-*` components. `<slide-ng-total>` replaces `<slides-total>`, and `slide-ng-magic-move` replaces `shiki-magic-move`, because the prefix goes in front of the name without a repeated word.
 4. **Hyphenated attribute selectors such as `[slide-ng-click]` are legal in Angular** and compile under AOT (checked with `ng build`). The class names follow the files: `SlideNgClick`, `SlideNgMark`, `SlideNgDrag` and so on.
+
+## Made while testing for 1.0.0 (thirty real decks)
+
+1. **`@angular/forms` is a dependency.** Slide components that use `ReactiveFormsModule` or `FormsModule` did not build, and installing
+   the package in the deck loaded a second copy of `@angular/core` (a blank page). It is part of Angular, at the same version as `@angular/core`,
+   and only the decks that import it pay for it. `@angular/animations` is not added: it is deprecated, and Angular's own `animate.enter` /
+   `animate.leave` work in slides.
+2. **Pipes in a deck's `components/` are imported like components**, by the pipe's `name` used in a slide's expressions (`{{ x | initials }}`),
+   and Angular's common pipes are imported when a slide uses them.
+3. **A slide's frontmatter with broken YAML stops the build** with the file, line and slide, like a broken headmatter; it used to lose keys silently.
+4. **`download: true` in the headmatter makes the PDF when it can**: without a working Chromium the build warns and the button stays disabled.
+   `--download` keeps failing, because it asks for the PDF explicitly.
+5. **Build budgets are guards, not limits: 6 MB warning, 100 MB error for the first load; 64 kB / 1 MB for a component's styles.** Every
+   slide is in the first bundle and highlighted code compiles to a lot of markup, so a 70-slide workshop with a code block per slide is
+   over 3 MB and failed to build. A deck is opened once and kept; the warning still says when a deck is large.
+6. **`ngNonBindable` or `\{\{` for a literal `{{`.** Angular decodes `&#123;&#123;` back to `{{` and reads an interpolation, so the generator
+   writes the first brace of an escaped pair as `{{ '{' }}`.
+7. **Angular's common and forms directives are imported by the slides that use them**, as the pipes are; the rest of `@angular/common`
+   and `@angular/forms` stays out of the bundle.
+8. **`<slide-ng-drag-arrow pos>` is `x,y,width,height`, as Slidev's `v-drag-arrow`** (from (x, y) to (x + width, y + height), sizes may be
+   negative). It was `x1,y1,x2,y2`, which drew a ported Slidev arrow somewhere else.
+9. **`dev`, `build` and `export` each have their own working copy** (`.slide-ng/app`, `app-build`, `app-export`). They shared one, so a
+   build while the dev server ran replaced the files under it and stopped it. The price is a slower first build for each command (each has
+   its own Angular cache).
+10. **Of two shortcuts with the same key, the later one wins.** The list is built theme, addons, deck, so appending
+    `{ key: 'k' }` replaces an earlier root's `k` or a built-in key. Slidev runs every match; one action per key is easier to predict. For the
+    same reason a deck's `CODE_RUNNERS` provider comes after every root's `setup/code-runners.ts`.
+11. **A theme made for one mode keeps it.** `colorSchema: light` or `dark` in a `theme.json` means the theme has no colours for the other
+    mode, so a deck's `auto` (or the other mode) would show unstyled slides; the deck keeps the theme's mode and the generator says so.
+    This matches Slidev's `colorSchema` in a theme's package.
+12. **`--remote` logins are signed with the password** (`id.expiry.HMAC`) instead of being kept in the server's memory, so restarting the
+    dev server mid-talk does not ask every device for the password again. A login still runs out after 8 hours; changing the password ends
+    every login at once, and that is the only way to end one early (as before, there is no log-out).
+13. **Web components are allowed per tag (`customElements: [...]`), per slide.** `CUSTOM_ELEMENTS_SCHEMA` on every slide would hide
+    every mistyped component name; only the slides that use a listed tag get it.
+14. **Swipes use touch events**, with `touch-action: pan-y pinch-zoom` on the stage: a sideways swipe is the deck's, pinch zoom stays the
+    browser's, and an up or down swipe still counts after the browser has taken it as panning (which cancels pointer events).
+15. **`<slide-ng-clicks>` gives a click to each child, as Slidev's `v-clicks` does**: each item of a single list, each body row of a
+    single table, otherwise each child element. It used to count list items only, so a ported `v-clicks` over paragraphs showed everything.
+16. **A relative picture next to `slides.md` is copied into the build** (`/_local/...`) when `public/` does not have it. Slidev decks
+    write `./images/x.png` because Vite bundles it; failing silently with a 404 made those decks look broken. Files outside the deck's
+    folder are never copied.

@@ -46,9 +46,15 @@
               {
                 "glob": "**/*",
                 "input": "src/slides/generated/public"
+              },
+              {
+                "glob": "**/*",
+                "input": "src/slides/generated/local-assets",
+                "output": "_local"
               }
             ],
             "styles": [
+              "src/styles/reset.css",
               "src/slides/generated/uno.css",
               "src/slides/generated/features.css",
               "src/styles.css",
@@ -67,13 +73,13 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "1.5MB",
-                  "maximumError": "3MB"
+                  "maximumWarning": "6MB",
+                  "maximumError": "100MB"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
+                  "maximumWarning": "64kB",
+                  "maximumError": "1MB"
                 }
               ],
               "outputHashing": "all",

@@ -10,7 +10,7 @@ import { Thumbnail } from './thumbnail';
 @Component({
   selector: 'app-overview',
   imports: [Thumbnail, IconBtn],
-  host: { '(window:resize)': 'measure()' },
+  host: { '(window:resize)': 'measure()', '(window:blur)': 'keepFocus()' },
   template: `
     @if (ui.overview()) {
       <div
@@ -52,7 +52,14 @@ import { Thumbnail } from './thumbnail';
         </div>
       </div>
       <div class="fixed top-4 right-4 z-modal text-gray-400">
-        <button icon-btn id="overview-close" class="text-2xl" title="Close" (click)="close()">
+        <button
+          #closeButton
+          icon-btn
+          id="overview-close"
+          class="text-2xl"
+          title="Close"
+          (click)="close()"
+        >
           <div class="i-carbon:close"></div>
         </button>
       </div>
@@ -65,9 +72,24 @@ export class Overview {
   protected width = signal(window.innerWidth);
   protected cardWidth = 300;
   private dialog = viewChild<ElementRef<HTMLElement>>('dialog');
+  private closeButton = viewChild('closeButton', { read: ElementRef<HTMLElement> });
+
+  // A page in a thumbnail's iframe that focuses itself would take the keys (Escape, arrows) away from the overview; the
+  // thumbnails are inert, but a frame's own script can still focus it. Take the focus back.
+  protected keepFocus() {
+    setTimeout(() => {
+      const active = document.activeElement;
+      if (this.ui.overview() && active instanceof HTMLIFrameElement && active.closest('#overview'))
+        this.dialog()?.nativeElement.focus();
+    });
+  }
 
   constructor() {
-    focusWhileOpen(this.ui.overview, () => this.dialog()?.nativeElement);
+    focusWhileOpen(
+      this.ui.overview,
+      () => this.dialog()?.nativeElement,
+      () => [this.closeButton()?.nativeElement],
+    );
     effect(() => {
       // Every time the overview opens, highlight the slide on screen, and tell the keys how wide a row is.
       if (!this.ui.overview()) return;

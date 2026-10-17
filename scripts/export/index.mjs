@@ -18,6 +18,16 @@ const filterOptions = (options, served) => ({
 
 const EXTENSION = { pdf: '.pdf', pptx: '.pptx', md: '.md', png: '' };
 
+/** The slide numbers `range` picks; an error when it picks none (checked before the deck is built, too). */
+export function pagesToExport(deck, range) {
+  const total = deck.slides.length;
+  // Slidev's parser returns 0 for `0`; only real slides count.
+  const pages = parseRangeString(total, range).filter((n) => n >= 1 && n <= total);
+  if (!pages.length)
+    throw new Error(`export: the range "${range}" matches no slide (the deck has ${total})`);
+  return pages;
+}
+
 /**
  * `deck` is the parsed deck (slides, headmatter), `served` is `{ origin, base }` of the running copy,
  * `outBase` the output path without extension (see filename.mjs). Returns the path that was written.
@@ -30,12 +40,7 @@ export async function exportSlides({
   outBase,
   log = console.log,
 }) {
-  const total = deck.slides.length;
-  const pages = parseRangeString(total, options.range);
-  if (!pages.length)
-    throw new Error(
-      `export: the range "${options.range}" matches no slide (the deck has ${total})`,
-    );
+  const pages = pagesToExport(deck, options.range);
   const target = outBase + EXTENSION[options.format];
   await mkdir(dirname(outBase), { recursive: true });
 
@@ -121,7 +126,8 @@ export async function exportNotes({ options, served, routerMode, outBase, log = 
     );
     const page = await context.newPage();
     await page.emulateMedia({ media: 'screen' });
-    await page.goto(printUrl({ ...served, routerMode, query: '', path: 'presenter/print' }), {
+    const query = options.range ? new URLSearchParams({ range: options.range }).toString() : '';
+    await page.goto(printUrl({ ...served, routerMode, query, path: 'presenter/print' }), {
       waitUntil: options.waitUntil,
       timeout: options.timeout,
     });
@@ -133,6 +139,7 @@ export async function exportNotes({ options, served, routerMode, outBase, log = 
         margin: { top: 0, right: 0, bottom: 0, left: 0 },
         printBackground: true,
         preferCSSPageSize: true,
+        tagged: true, // headings, lists and text are marked for screen readers
       }),
     );
     log('notes written');

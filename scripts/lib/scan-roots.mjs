@@ -4,6 +4,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { COMPONENTS, LAYOUTS } from './registry.mjs';
+import { pipeNames } from './pipes.mjs';
 
 // `@Component({ ... selector: 'x' ... }) export class Name` (also @Directive).
 const DECLARATION =
@@ -14,12 +15,29 @@ export function declarations(source) {
   return [...source.matchAll(DECLARATION)].map((m) => ({ selector: m[1], className: m[2] }));
 }
 
-/** The text a slide must contain for this selector to be in use: `<my-tag` for a tag, ` my-thing` for `[my-thing]`. */
+// `@Pipe({ name: 'initials' }) export class InitialsPipe`
+const PIPE = /@Pipe\(\{[\s\S]*?name:\s*['"]([^'"]+)['"][\s\S]*?\}\)\s*export\s+class\s+(\w+)/g;
+
+/** `[{ name, className }]` for every pipe declared in some source text. */
+export function pipeDeclarations(source) {
+  return [...source.matchAll(PIPE)].map((m) => ({ name: m[1], className: m[2] }));
+}
+
+/**
+ * The text a slide must contain for this selector to be in use: `<my-tag` for a tag, ` my-thing` (or `*my-thing`,
+ * `[my-thing]`) for `[my-thing]`, `<button ... appRipple` for `button[appRipple]`. A list (`a, [b]`) matches any of its parts.
+ */
 export function selectorTest(selector) {
-  const attribute = /^\[([\w-]+)\]$/.exec(selector);
   const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  if (attribute) return new RegExp(`[\\s[]${escape(attribute[1])}[\\s=>/\\]]`);
-  return new RegExp(`<${escape(selector)}[\\s>/]`);
+  const attr = (name) => `[\\s[*]${escape(name)}[\\s=>/\\]]`;
+  const parts = selector.split(',').flatMap((part) => {
+    const [, tag, attrs] = /^\s*([\w-]*)((?:\[[^\]]+\])*)/.exec(part);
+    const name = /\[([\w-]+)/.exec(attrs)?.[1];
+    if (tag && name) return [`<${escape(tag)}(?=\\s)[^>]*?${attr(name)}`]; // the attribute may come first
+    if (tag) return [`<${escape(tag)}[\\s>/]`];
+    return name ? [attr(name)] : [];
+  });
+  return new RegExp(parts.join('|') || '(?!)');
 }
 
 const tsFilesIn = (dir) =>
@@ -42,7 +60,9 @@ export function scanRoots(roots) {
   for (const root of roots) {
     for (const file of tsFilesIn(join(root.dir, 'layouts'))) {
       const name = file.slice(0, -3);
-      const found = declarations(readFileSync(join(root.dir, 'layouts', file), 'utf8'))[0];
+      const text = readFileSync(join(root.dir, 'layouts', file), 'utf8');
+      const found = declarations(text)[0];
+      if (!found && !text.includes('@Component')) continue; // a helper file (an ejected theme has background.ts)
       if (!found) {
         problems.push(
           `${root.id}/layouts/${file}: no component with a selector and an exported class, ignored`,
@@ -62,9 +82,27 @@ export function scanRoots(roots) {
       };
     }
     for (const file of tsFilesIn(join(root.dir, 'components'))) {
-      for (const d of declarations(readFileSync(join(root.dir, 'components', file), 'utf8'))) {
-        const known = components.findIndex((c) => c.className === d.className);
-        if (known >= 0) components.splice(known, 1); // same class name: the later root replaces it
+      const text = readFileSync(join(root.dir, 'components', file), 'utf8');
+      // A pipe is in use when a slide's expressions name it (`{{ x | initials }}`).
+      for (const p of pipeDeclarations(text)) {
+        const known = components.findIndex(
+          (c) => c.pipe === p.name || (c.className === p.className && !c.importPath),
+        );
+        if (known >= 0) components.splice(known, 1);
+        components.push({
+          className: p.className,
+          pipe: p.name,
+          importPath: `./roots/${root.id}/components/${file.slice(0, -3)}`,
+          test: { test: (markup) => pipeNames(markup).has(p.name) },
+        });
+      }
+      for (const d of declarations(text)) {
+        // The same selector, or the class name of a built-in one: the later root replaces it. Two roots may both have a
+        // `Badge` class with other selectors: both stay (one is imported under another name, see below).
+        const known = components.findIndex(
+          (c) => c.selector === d.selector || (c.className === d.className && !c.importPath),
+        );
+        if (known >= 0) components.splice(known, 1);
         components.push({
           className: d.className,
           selector: d.selector,
@@ -72,6 +110,22 @@ export function scanRoots(roots) {
           test: selectorTest(d.selector),
         });
       }
+    }
+  }
+  // A class name that two files export gets an `as` name in the slides that import it (`Badge` and `Badge_2`).
+  // (Copies: the built-in entries are shared by every scan.)
+  for (const name of Object.keys(layouts)) layouts[name] = { ...layouts[name] };
+  components.forEach((c, i) => (components[i] = { ...c }));
+  const seen = new Map();
+  for (const c of [...Object.values(layouts), ...components]) {
+    const from = c.importPath ?? c.file;
+    const first = seen.get(c.className);
+    if (first === undefined) seen.set(c.className, from);
+    else if (first !== from) {
+      let n = 2;
+      while (seen.has(`${c.className}_${n}`)) n++;
+      c.alias = `${c.className}_${n}`;
+      seen.set(c.alias, from);
     }
   }
   return { layouts, components, problems };

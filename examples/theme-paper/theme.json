@@ -1,0 +1,21 @@
+{
+  "name": "paper",
+  "headmatter": {
+    "colorSchema": "light",
+    "transition": "fade",
+    "fonts": {
+      "sans": "Source Sans 3",
+      "serif": "Fraunces",
+      "mono": "JetBrains Mono"
+    },
+    "themeColor": "#f4efe6"
+  },
+  "layouts": {
+    "cover": {
+      "props": ["background", "issue", "date"]
+    },
+    "section": {
+      "props": ["no"]
+    }
+  }
+}

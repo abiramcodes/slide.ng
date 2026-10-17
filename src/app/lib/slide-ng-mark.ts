@@ -62,10 +62,16 @@ export class SlideNgMark implements OnInit, OnDestroy {
     this.options = markOptions(this.value(), this.mods());
     const at = this.options.at;
     if (at !== true && at !== 'true' && at !== false && at !== 'false') {
-      const info = this.ctx.calculate(at as never);
-      this.info.set(info);
-      this.ctx.register(this, info); // ngOnInit runs in template order, so "+1" works like slide-ng-click
+      const place = () => {
+        const info = this.ctx.calculate(at as never);
+        this.info.set(info);
+        this.ctx.register(this, info); // ngOnInit runs in template order, so "+1" works like slide-ng-click
+      };
+      place();
+      this.ctx.track(this, this.el, place);
     }
+    // rough-notation measures the element once: wait for the web fonts, or a late font moves the text from under the mark.
+    await document.fonts?.ready;
     const { annotate } = await import('rough-notation');
     if (this.gone) return;
     const { at: _at, delay: _d, opacity: _o, ...config } = this.options;

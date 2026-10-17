@@ -29,10 +29,25 @@ command line as a package, themes and addons, an example theme, the MCP server a
 ## Test results (last run, Node 22.23.3, Chromium from `/opt/pw-browsers`)
 
 - `npm run build`: succeeds.
-- `npm test`: 90 files, **718** tests passed (theme and addon names: `roots.spec.ts`; the agent skill: `skills.spec.ts`, `hash.spec.ts`, `samples.spec.ts`).
-- `npm run test:e2e`: starter deck **45**, showcase **144**, code and content **125**, phase 3 decks **154**, print route **24**, setup hooks **24**, 0 failed. The official theme tests (every layout of four themes, fonts, PNG export) moved to the slide.ng-themes repository.
-- `npm run test:dev`: live update **6**, dev server **46**; 0 failed (one timing check of the dev server failed in two earlier runs, a different one each time, and passed on the third).
-- `npm run test:export`: export command **33**, build **47**, theme **21**, scaffold **13**, MCP **22**, offline folder from disk **40**, network off **13**, agent skill samples **72** (generated one by one, then built together); 0 failed.
+- `npm test`: 120 files, **914** tests passed (theme and addon names: `roots.spec.ts`; the agent skill: `skills.spec.ts`, `hash.spec.ts`, `samples.spec.ts`).
+- `npm run test:e2e`: starter deck **45**, showcase **144**, code and content **128**, phase 3 decks **185**, print route **24**, setup hooks **24**, 0 failed. The official theme tests (every layout of four themes, fonts, PNG export) moved to the slide.ng-themes repository.
+- `npm run test:dev`: live update **6**, dev server **52**; 0 failed.
+- `npm run test:export`: export command **34**, sandbox filter **4**, build **47**, theme **22**, example themes (paper, moss, blueprint) **28**, scaffold **13**, MCP **23**, offline folder from disk **40**, network off **13**, agent skill samples **74** (generated one by one, then built together); 0 failed.
+
+## Testing for 1.0.0 (fifty decks and a real port)
+
+Fifty decks written for the purpose (different subjects, themes, Angular features and Slidev features) and a port of a real Slidev talk
+were built, exported and presented, in two rounds of thirty and twenty; turning thirty-one of them into a showcase found a few more.
+Round one found about ninety problems and round two about ninety more; all are fixed except the ones below, each with a test where
+one can be written. The decisions are in DECISIONS.md ("Made while testing for 1.0.0"), the list in CHANGELOG.md.
+
+- `:emoji:` shortcodes are not converted (it would need a new dependency); the docs and the skill say to type the emoji.
+- Behind some test servers the PDF button's `HEAD` probe is reported as a failed request; real hosts answer it, nothing to fix in slide.ng.
+- A paragraph right after a heading is dimmed (`h1 + p`, as in Slidev), also when it holds only a component; a theme can undo it.
+- A dark-only theme forced into light with `colorSchema` keeps its dark panels with light code colours.
+- In `dev`, a device that joins later sees drawings saved earlier only after the next regeneration.
+- Keyboard and screen reader use of the menus is not complete: Escape does not always give focus back, the overview moves a highlight
+  instead of the focus, and the context menu has no arrow-key support.
 
 ## Not done
 
@@ -79,7 +94,7 @@ command line as a package, themes and addons, an example theme, the MCP server a
 
 ## NOT VERIFIED
 
-- **A real `npm install slide-ng` from a registry** and a publish: the package is private; the scaffold test links this repository into the new deck's `node_modules`.
+- **A real install from the registry**: `@slide-ng/core` 0.1.0 is on npm, but the scaffold test links this repository into the new deck's `node_modules`, and a new deck asks for `^0.1.0`, so it gets the published 0.1.0, not this repository's changes, until the next version is published.
 - `dev --open` opening a real browser window: the flag is passed to `ng serve --open` and parsed in a unit test only.
 - `CODE_RUNNERS` (a theme replacing how `{monaco-run}` runs code): written, documented, no test.
 - Addons end to end: resolution and merge order are unit-tested, but no deck was built with an addon.
@@ -101,4 +116,3 @@ Run with `CHROME_PATH` set and `VSCODE_CWD` unset (the icon generator skips loca
 - Fixed on the Mac: a blank last page in PDF export (Chrome), `--out` through a symbolic link such as `/var` bypassing the current-folder guard, three dev-test races (`localhost` vs `127.0.0.1`, typed text coloured, a refused huge upload reset by the server).
 - `npm audit`: 6 high (`braces`, `chokidar`, `image-size` through `pptxgenjs`, `@slidev/types`, `vite-plugin-static-copy`), 0 critical. `pdf-lib` was replaced by the maintained fork `@cantoo/pdf-lib`.
 - Docker image: builds and serves. PDF export in the container needs `SLIDE_NG_NO_SANDBOX=1` (owner decision). A deck bind-mounted read-write fails on Docker Desktop for Mac; mount it `:ro`.
-- Starter: `npm install` fails until `slide-ng` is on npm.

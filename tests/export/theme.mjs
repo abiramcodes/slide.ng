@@ -16,6 +16,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { launch, reporter } from '../e2e/browser.mjs';
 import { serveDirectory } from '../../scripts/export/static-server.mjs';
+import { consoleProblem } from '../console-problem.mjs';
 
 const t = reporter();
 const bin = resolve('bin/slide-ng.mjs');
@@ -70,6 +71,14 @@ t.ok(
     /^theme: \.\/theme$/m.test(readFileSync(join(ejected, 'slides.md'), 'utf8')),
   ejectOut.trim(),
 );
+// A theme folder outside the deck (here given by its absolute path) is copied in like a package.
+const shared = deck('shared', `theme: ${themeDir}\n`, true);
+await cli(['theme', 'eject'], shared);
+t.ok(
+  'theme eject copies a theme folder from outside the deck',
+  existsSync(join(shared, 'theme/layouts/cover.ts')) &&
+    /^theme: \.\/theme$/m.test(readFileSync(join(shared, 'slides.md'), 'utf8')),
+);
 const ejectedFiles = readdirSync(join(ejected, 'theme/layouts')).map((f) =>
   readFileSync(join(ejected, 'theme/layouts', f), 'utf8'),
 );
@@ -88,7 +97,8 @@ async function look(site, path) {
   ).newPage();
   const problems = [];
   page.on('console', (m) => {
-    if (['error', 'warning'].includes(m.type())) problems.push(m.text());
+    const problem = consoleProblem(m);
+    if (problem) problems.push(problem);
   });
   page.on('pageerror', (e) => problems.push(String(e)));
   await page.goto(`${served.origin}${path}`);

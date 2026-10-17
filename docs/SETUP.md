@@ -37,6 +37,7 @@ There are two kinds of hooks:
 Returns the options of Shiki's `codeToHtml`, used when slides are generated. As in Slidev, `langs` adds languages (names, or grammar objects with a
 `name`), `transformers` change the HTML of every block, and `theme` or `themes` choose the colours (`themes` wins when both are given).
 The options of later roots are put over earlier ones; `langs` of all roots are collected.
+The example uses `@shikijs/transformers`, which is not part of slide.ng: install it in the deck first (`npm i -D @shikijs/transformers`).
 
 ```ts
 // setup/shiki.ts
@@ -113,7 +114,7 @@ export default () => ({ theme: 'base', themeVariables: { primaryColor: '#ff0000'
 
 ## Monaco: `setup/monaco.ts`
 
-Runs once Monaco is loaded (only for decks that have an editor). It gets the `monaco` module, so it can add themes or languages (the `monaco.languages.typescript` namespace is deprecated and has no types in this Monaco version),
+Runs once Monaco is loaded (only for decks that have an editor). It gets the `monaco` module, so it can add themes or languages (TypeScript settings are `monaco.typescript.typescriptDefaults`; the old `monaco.languages.typescript` is undefined in this Monaco version; an editor's model is `file:///model-N.mts`, so an extra library for `import './context'` goes at `file:///context.ts`),
 and the object it returns is merged into the options of every editor. It may be async.
 
 ```ts
@@ -121,15 +122,22 @@ and the object it returns is merged into the options of every editor. It may be 
 import type * as Monaco from 'monaco-editor';
 
 export default (monaco: typeof Monaco) => {
-  monaco.editor.defineTheme('mine', { base: 'vs-dark', inherit: true, rules: [], colors: {} });
-  return { fontSize: 14, minimap: { enabled: true }, theme: 'mine' };
+  monaco.editor.defineTheme('mine-light', { base: 'vs', inherit: true, rules: [], colors: {} });
+  monaco.editor.defineTheme('mine-dark', { base: 'vs-dark', inherit: true, rules: [], colors: {} });
+  return {
+    fontSize: 14,
+    minimap: { enabled: true },
+    theme: { light: 'mine-light', dark: 'mine-dark' },
+  };
 };
 ```
+
+`theme` is one name for light and dark mode alike, or `{ light, dark }` to follow the deck's mode (the default is `vs` and `vs-dark`).
 
 ## Code runners: `setup/code-runners.ts`
 
 Returns a map from the editor's language id to a function. `{monaco-run}` editors of that language run the function instead of the built-in JavaScript
-runner. The function gets the editor's text and returns `{ lines: string[][], error?: string }` (each inner list is one output line).
+runner. The function gets the editor's text and returns `{ lines: string[][], error?: string }` (or a promise of it) (each inner list is one output line).
 
 ```ts
 // setup/code-runners.ts
@@ -142,6 +150,7 @@ export default () => ({
 
 Gets the actions and the list so far, and returns the list to use. A shortcut is `{ name, key, run, when? }`; `key` is a `KeyboardEvent.key`
 name, with `shift+` in front if needed, and `space` for the space bar. The roots are chained: each gets the list the one before returned.
+When two shortcuts have the same key, the one later in the list wins: appending one replaces a built-in key or an earlier root's.
 
 ```ts
 // setup/shortcuts.ts

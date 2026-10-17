@@ -19,7 +19,7 @@ export const resetMonacoWriteTargets = () => {
 function writeIdFor(fence, ctx) {
   if (!fence.file || fence.partial) {
     console.warn(
-      '[slides] {monaco-write} needs a whole file: use `<<< ./file.ts {monaco-write}` (not a #region), the editor is shown without saving',
+      `[slides] ${ctx.slide ? `slide ${ctx.slide.no}: ` : ''}{monaco-write} needs a whole file: use \`<<< ./file.ts {monaco-write}\` (not a #region), the editor is shown without saving`,
     );
     return undefined;
   }
@@ -63,6 +63,10 @@ export function renderMonaco(fence, ctx = {}) {
     autorun: options.autorun === undefined ? undefined : String(options.autorun),
     showOutputAt: options.showOutputAt,
   });
+  if (kind === 'monaco-diff' && modified === undefined)
+    console.warn(
+      `[slides] ${ctx.slide ? `slide ${ctx.slide.no}: ` : ''}{monaco-diff} has no line with only ~~~ between the original and the changed text, so it shows one editor`,
+    );
   const diff = modified === undefined ? '' : ` diff="${pack(modified)}"`;
   return `<slide-ng-monaco${a} packed="${pack(original)}"${diff}></slide-ng-monaco>`;
 }

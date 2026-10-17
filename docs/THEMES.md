@@ -3,6 +3,10 @@
 A theme or addon is a folder (or an npm package) that adds to the built-in look. This page is the reference; the step-by-step
 guide is [WRITING-A-THEME.md](WRITING-A-THEME.md). The working example is [`examples/theme-minimal`](../examples/theme-minimal).
 
+The repository has three more example themes to copy or use as they are: [`theme-paper`](../examples/theme-paper) (light, editorial: serif
+headlines, a vermilion accent), [`theme-moss`](../examples/theme-moss) (dark, forest green and clay) and [`theme-blueprint`](../examples/theme-blueprint)
+(navy drafting grid, amber marks). Each README lists its layouts, inputs and component.
+
 ## Using one
 
 ```yaml
@@ -81,7 +85,8 @@ A layout is a standalone Angular component with a `selector` and an exported cla
 (`@Component({ ... selector: '...' ... }) export class Name`), so keep the selector as a string literal. Slide content goes into
 `<ng-content />`. A layout that replaces a built-in one **keeps the built-in layout's inputs** (for example `cover` keeps `background`):
 the frontmatter keys that are inputs become attributes of your tag, so give your component inputs of the same names. To change the list,
-use `theme.json`.
+use `theme.json`. Text, numbers and booleans arrive as text, as for any HTML attribute: use `input(0, { transform: numberAttribute })` or
+`booleanAttribute` for them (`draft: false` is the text `"false"` otherwise). A list or an object (`owners: [Priya, Jonas]`) is bound as its value.
 
 ### Components
 
@@ -109,10 +114,14 @@ import { SHORTCUTS_SETUP } from 'slide-ng/lib/shortcuts';
 }
 ```
 
-- `headmatter`: defaults for the deck. The deck's own headmatter wins. `defaults:` (the frontmatter every slide starts from) and the objects `fonts`, `drawings`, `htmlAttrs`
+- `headmatter`: defaults for the deck. The deck's own headmatter wins, except `colorSchema`: a theme that sets `light` or `dark` has
+  colours for that mode only, so the deck keeps it (as in Slidev; the generator says so when the deck asks for another). `defaults:` (the frontmatter every slide starts from) and the objects `fonts`, `drawings`, `htmlAttrs`
   and `themeConfig` are merged key by key, as in Slidev.
 - `layouts.<name>`: `props` are the frontmatter keys that become inputs, `slots` are the names accepted after `::name::`,
   `classProp: true` sends the slide's `class` to the input `contentClass` instead of the tag.
+  A slot's content reaches the layout as an element with the slot's name as an attribute, so the layout places it with
+  `<ng-content select="[name]" />` (the built-in `two-cols` uses `select="[left]"` and `select="[right]"`).
+- The deck's own folder can have a `theme.json` too, to declare the inputs and slots of its own layouts.
 
 ## Setup hooks
 
@@ -122,7 +131,7 @@ The hooks of a theme or addon work the same as in a deck and are listed, with ex
 
 | Token             | From                      | Use                                                                                                                                                                                             |
 | ----------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SHORTCUTS_SETUP` | `slide-ng/lib/shortcuts`  | A function `(actions, list) => list`: add, change or remove keyboard shortcuts. One provider is used; the last root that provides it wins.                                                      |
+| `SHORTCUTS_SETUP` | `slide-ng/lib/shortcuts`  | A function `(actions, list) => list`: add, change or remove keyboard shortcuts. One provider is used (the last root's); the `setup/shortcuts.ts` files of all roots run after it.               |
 | `CODE_RUNNERS`    | `slide-ng/code/runners`   | `{ provide: CODE_RUNNERS, multi: true, useValue: { javascript: (code) => result } }`: replace how `{monaco-run}` runs a language. The key is Monaco's language id (`javascript`, `typescript`). |
 | `SYNC_TRANSPORTS` | `slide-ng/sync/transport` | Another way to carry presenter sync (multi).                                                                                                                                                    |
 
@@ -132,9 +141,14 @@ The hooks of a theme or addon work the same as in a deck and are listed, with ex
 slide-ng theme eject [slides.md] [--dir theme]
 ```
 
-Copies the theme in use into `./theme` and sets `theme: ./theme`. For the built-in theme this copies every layout (their imports
-are rewritten to `slide-ng/...`) and the layouts' CSS as `styles/index.css`. For a package it copies the whole package folder without
+Copies the theme in use into `./theme` and sets `theme: ./theme` (`--theme` or `SLIDE_NG_THEME` picks another theme). For the
+built-in theme this copies every layout (their imports are rewritten to `slide-ng/...`, including the helpers `background` and `frame`,
+which stay in the package) and the layouts' CSS as `styles/index.css`. For a package it copies the whole package folder without
 `node_modules`, `.git` and symbolic links. It refuses a folder that is not empty.
+
+The built-in styles still load before the ejected `styles/index.css`: your copy overrides them rule by rule, so deleting a rule from the
+copy brings the built-in one back (to undo it, override it, for example `.slidev-layout.end { background: none }`). A later slide.ng
+version can change the built-in rules under your copy.
 
 ## How it works (for debugging)
 

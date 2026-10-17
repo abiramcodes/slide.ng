@@ -6,12 +6,28 @@ import { checkRouteAlias } from './route-alias.mjs';
 import { noteToHtml } from './note-html.mjs';
 import { downloadTarget } from '../export/filename.mjs';
 import { pwaEnabled } from '../build/pwa.mjs';
+import { titleHtml } from './math.mjs';
+import { LAYOUTS } from './registry.mjs';
+
+// A heading's markdown as text for the tab title, the outline and the overview: `[a](b)` is `a`, `code` and **b** lose their marks,
+// and HTML tags go.
+export function plainTitle(title) {
+  return String(title)
+    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/`([^`]*)`/g, '$1')
+    .replace(/(\*\*|\*|~~)(\S(?:.*?\S)?)\1/g, '$2')
+    .replace(/(?<!\w)(__|_)(\S(?:.*?\S)?)\1(?!\w)/g, '$2')
+    .replace(/<(rt|rp)\b[^>]*>[\s\S]*?<\/\1>/gi, '') // a ruby reading is not part of the title text
+    .replace(/<\/?[A-Za-z][^>]*>/g, '') // H<sub>2</sub>O is H2O
+    .trim();
+}
 
 // What the app needs to know about one slide, besides its component.
 function metaOf(slide, index) {
   const f = slide.frontmatter;
   return {
-    title: slide.title ?? null,
+    title: slide.title == null ? null : plainTitle(slide.title),
+    titleHtml: titleHtml(slide.title), // only when the title has $math$
     level: slide.level ?? null,
     layout: slide.layout ?? layoutName(f, index),
     note: slide.note ?? null,
@@ -36,9 +52,16 @@ export function indexSource(deck) {
     typeof deck.headmatter.info === 'string'
       ? marked.parse(deck.headmatter.info, { async: false })
       : null;
+  // The page for an address with no slide: the `404` layout, so a theme's or the deck's own replaces the built-in one.
+  const notFound = deck.layouts?.['404'] ?? LAYOUTS['404'];
+  const notFoundFrom = notFound.importPath ?? `../../app/${notFound.file}`;
   return `// GENERATED from slides.md - do not edit
 import type { SlideMeta } from '../../app/lib/slide-meta';
+import { ${notFound.className} as NotFoundPage } from '${notFoundFrom}';
 ${imports.join('\n')}
+
+/** Shown for an address that matches no slide. */
+export const NOT_FOUND = NotFoundPage;
 
 export const HEADMATTER: Record<string, unknown> = ${JSON.stringify(deck.headmatter)};
 export const INFO_HTML: string | null = ${JSON.stringify(info)};

@@ -34,6 +34,16 @@ describe('selectorTest', () => {
     expect(selectorTest('[my-glow]').test('<p [my-glow]="x">')).toBe(true);
     expect(selectorTest('[my-glow]').test('<p my-glowing>')).toBe(false);
   });
+  it('matches a structural use, a tag with an attribute and a list', () => {
+    expect(selectorTest('[repeatTimes]').test('<li *repeatTimes="3; let n">')).toBe(true);
+    expect(selectorTest('button[appRipple]').test('<button class="a" appRipple>')).toBe(true);
+    expect(selectorTest('button[appRipple]').test('<button appRipple>')).toBe(true);
+    expect(selectorTest('ng-template[uiTab]').test('<ng-template uiTab="Install">')).toBe(true);
+    expect(selectorTest('button[appRipple]').test('<a appRipple>')).toBe(false);
+    expect(selectorTest('[appAutofocus], [focus-me]').test('<input focus-me>')).toBe(true);
+    expect(selectorTest('my-card, my-panel').test('<my-panel>')).toBe(true);
+    expect(selectorTest('.only-a-class').test('<p class="only-a-class">')).toBe(false);
+  });
 });
 
 function root(id: string, files: Record<string, string>, layouts = {}) {
@@ -86,12 +96,42 @@ describe('scanRoots', () => {
   it('adds components, tests for their use, and reports unusable files', () => {
     const r = root('deck', {
       'components/box.ts': "@Component({ selector: 'my-box' }) export class MyBox {}",
-      'layouts/broken.ts': 'export const nothing = 1;',
+      'layouts/broken.ts': "@Component({ template: '' }) class NotExported {}",
+      'layouts/helper.ts': 'export const nothing = 1;', // a helper (an ejected theme has background.ts)
     });
     const { components, problems } = scanRoots([r]);
     const box = components.find((c: any) => c.className === 'MyBox');
     expect(box.importPath).toBe('./roots/deck/components/box');
     expect(box.test.test('<my-box>')).toBe(true);
     expect(problems[0]).toContain('broken.ts');
+    expect(problems.join()).not.toContain('helper.ts');
+  });
+  it('adds pipes, in use when a slide names them in an expression', () => {
+    const r = root('deck', {
+      'components/initials.pipe.ts':
+        "@Pipe({ name: 'initials' }) export class InitialsPipe { transform(v: string) { return v; } }",
+    });
+    const pipe = scanRoots([r]).components.find((c: any) => c.className === 'InitialsPipe');
+    expect(pipe.importPath).toBe('./roots/deck/components/initials.pipe');
+    expect(pipe.test.test("<p>{{ 'Ada Lovelace' | initials }}</p>")).toBe(true);
+    expect(pipe.test.test('<td>a | initials</td>')).toBe(false);
+  });
+  it("keeps two roots' components with the same class name, and lets a later one take a selector", () => {
+    const a = root('addon-a', {
+      'components/badge.ts': "@Component({ selector: 'sw-badge' }) export class Badge {}",
+      'components/chip.ts': "@Component({ selector: 'x-chip' }) export class X1Chip {}",
+    });
+    const b = root('addon-b', {
+      'components/badge.ts': "@Component({ selector: 'poll-badge' }) export class Badge {}",
+      'components/chip.ts': "@Component({ selector: 'x-chip' }) export class X2Chip {}",
+    });
+    const { components } = scanRoots([a, b]);
+    const badges = components.filter((c: any) => c.className === 'Badge');
+    expect(badges.map((c: any) => [c.selector, c.alias])).toEqual([
+      ['sw-badge', undefined],
+      ['poll-badge', 'Badge_2'],
+    ]);
+    const chips = components.filter((c: any) => c.selector === 'x-chip');
+    expect(chips.map((c: any) => c.className)).toEqual(['X2Chip']);
   });
 });

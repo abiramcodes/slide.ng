@@ -1,6 +1,6 @@
 // The generator's part of the theme contract (docs/THEMES.md): copies the roots into the app, and writes
 // `layers.ts`, `setup.ts` and `theme.css` from what they bring. Also returns their UnoCSS settings and files for class scanning.
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { fontsCss } from './fonts.mjs';
@@ -25,13 +25,19 @@ export function setupSource(roots) {
   const has = (r, name) => existsSync(join(r.dir, 'setup', `${name}.ts`));
   const imports = [];
   const list = [];
-  roots
-    .filter((r) => has(r, 'providers'))
-    .forEach((r, i) => {
+  // `providers.ts` and `code-runners.ts` are in root order together: both can give a CODE_RUNNERS entry, and the later one wins.
+  roots.forEach((r, i) => {
+    if (has(r, 'providers')) {
       imports.push(`import providers${i} from './roots/${r.id}/setup/providers';`);
       list.push(`...providers${i}`);
-    });
+    }
+    if (has(r, 'code-runners')) {
+      imports.push(`import codeRunners${i} from './roots/${r.id}/setup/code-runners';`);
+      list.push(`...codeRunnerProviders([codeRunners${i}])`);
+    }
+  });
   for (const [name, helper] of BROWSER_SETUPS) {
+    if (name === 'code-runners') continue;
     const names = roots
       .filter((r) => has(r, name))
       .map((r) => {
@@ -52,9 +58,29 @@ export const SETUP_PROVIDERS: (Provider | EnvironmentProviders)[] = [${list.join
 `;
 }
 
+// `@apply` (UnoCSS's directive, common in Slidev themes) is not transformed: the rule would silently do nothing.
+const warnedApply = new Set();
+function warnApply(roots) {
+  for (const r of roots) {
+    const dir = join(r.dir, 'styles');
+    if (!existsSync(dir)) continue;
+    for (const f of readdirSync(dir, { recursive: true })) {
+      const file = join(dir, String(f));
+      if (!String(f).endsWith('.css') || warnedApply.has(file)) continue;
+      if (/@apply\b/.test(readFileSync(file, 'utf8'))) {
+        warnedApply.add(file);
+        console.warn(
+          `[slides] ${file}: @apply does nothing here (there is no UnoCSS directive transformer); write the CSS out, or put the classes on the elements`,
+        );
+      }
+    }
+  }
+}
+
 /** `src/slides/generated/theme.css`: the deck's `fonts`, then the style sheets of the roots (`styles/index.css`), weakest first. */
 /** @param {{ id: string, dir: string }[]} roots @param {Record<string, any>} [headmatter] @param {string | null} [fontFaces] */
 export function themeCss(roots, headmatter = {}, fontFaces = null) {
+  warnApply(roots);
   const imports = roots
     .filter((r) => existsSync(join(r.dir, 'styles', 'index.css')))
     .map((r) => `@import './roots/${r.id}/styles/index.css';`);
@@ -75,6 +101,11 @@ export function themeCss(roots, headmatter = {}, fontFaces = null) {
 export async function applyRoots(deck, out, write, warn) {
   const generated = resolve(out);
   syncRoots(deck.roots, generated);
+  // Where each copy came from, so a build error in `roots/deck/components/x.ts` can name the author's own file (cli/runtime.mjs).
+  write(
+    `${out}roots.json`,
+    JSON.stringify(Object.fromEntries(deck.roots.map((r) => [r.id, r.dir])), null, 2) + '\n',
+  );
   const scanned = scanRoots(deck.roots);
   scanned.problems.forEach(warn);
   deck.layouts = scanned.layouts;

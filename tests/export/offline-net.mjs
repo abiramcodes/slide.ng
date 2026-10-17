@@ -9,6 +9,7 @@ import { join, resolve } from 'node:path';
 import { launch, reporter } from '../e2e/browser.mjs';
 import { serveDirectory } from '../../scripts/export/static-server.mjs';
 import { fontProvider, remotePictures } from './offline-fixtures.mjs';
+import { consoleProblem } from '../console-problem.mjs';
 
 const t = reporter();
 const bin = resolve('bin/slide-ng.mjs');
@@ -83,8 +84,11 @@ const context = await browser.newContext({ viewport: { width: 1280, height: 720 
 const problems = [];
 const watch = (page) => {
   page.on('console', (m) => {
-    if (['error', 'warning'].includes(m.type()))
-      problems.push(`${m.type()}: ${m.text().slice(0, 200)}`);
+    const problem = consoleProblem(m);
+    // Chrome fetches the tab's icon itself, past the service worker, so with the network off that request can fail
+    // (it is not the deck's: every other file comes from the worker, which the checks above prove).
+    if (problem && !/ERR_INTERNET_DISCONNECTED \(\S*\/favicon\.ico\)$/.test(problem))
+      problems.push(problem.slice(0, 300));
   });
   page.on('pageerror', (e) => problems.push(String(e).slice(0, 200)));
 };

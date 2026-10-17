@@ -9,8 +9,8 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import { NotFoundLayout } from '../layouts/404';
-import { HEADMATTER } from '../../slides/generated';
+import { NgComponentOutlet } from '@angular/common';
+import { HEADMATTER, NOT_FOUND } from '../../slides/generated';
 import { CANVAS_HEIGHT, CANVAS_WIDTH, fitScale } from './canvas';
 import { hostSize } from './element-size';
 import { Nav } from './nav';
@@ -28,8 +28,13 @@ import { documentTitle } from './page-title';
 // inside `<app-slide-show>...</app-slide-show>` (drawing layer, laser pointer) is drawn on top, in canvas coordinates.
 @Component({
   selector: 'app-slide-show',
-  host: { id: 'slide-container', class: 'slide-show', '(pointerdown)': 'hostClick($event)' },
-  imports: [NotFoundLayout, SlideLayer],
+  host: {
+    id: 'slide-container',
+    class: 'slide-show',
+    '(pointerdown)': 'hostClick($event)',
+    '(click)': 'hostTap($event)',
+  },
+  imports: [NgComponentOutlet, SlideLayer],
   template: `
     <div
       #canvas
@@ -39,12 +44,12 @@ import { documentTitle } from './page-title';
       [style.height.px]="height"
       [style]="canvasStyle()"
     >
-      <app-slide-layer name="global-bottom" />
+      <app-slide-layer name="global-bottom" [no]="nav.no()" />
       <ng-container #host />
       @if (nav.notFound()) {
-        <sn-404 />
+        <ng-container *ngComponentOutlet="notFound" />
       }
-      <app-slide-layer name="global-top" />
+      <app-slide-layer name="global-top" [no]="nav.no()" />
       <ng-content />
     </div>
   `,
@@ -53,6 +58,7 @@ export class SlideShow {
   /** 'slide' for the audience's page, 'presenter' for the presenter's main pane. */
   context = input<RenderContext>('slide');
   protected nav = inject(Nav);
+  protected notFound = NOT_FOUND; // the deck's or theme's `404` layout, or the built-in one
   private ui = inject(Ui);
   private view = inject(ViewPrefs);
   private self = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
@@ -117,7 +123,14 @@ export class SlideShow {
   }
 
   // Clicking the dark area beside the slide goes forward (right half) or back (left half), like Slidev.
+  // A finger counts when it is lifted without moving (a click): on pointerdown, the start of a swipe would already move.
   protected hostClick(e: PointerEvent) {
+    if (e.pointerType !== 'touch') this.besideSlide(e);
+  }
+  protected hostTap(e: MouseEvent) {
+    if ((e as PointerEvent).pointerType === 'touch') this.besideSlide(e);
+  }
+  private besideSlide(e: MouseEvent) {
     if (this.context() !== 'slide' || e.button !== 0 || e.target !== this.self) return;
     if (e.pageX / window.innerWidth > 0.5) this.nav.next();
     else this.nav.prev();

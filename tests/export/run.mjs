@@ -78,6 +78,7 @@ t.ok(
   pdfInfo(pdf).match(/Page size.*/)[0],
 );
 t.ok('the pdf title comes from the headmatter', /Title:\s+Print deck/.test(pdfInfo(pdf)));
+t.ok('the pdf is tagged for screen readers', /Tagged:\s+yes/.test(pdfInfo(pdf)), pdfInfo(pdf));
 t.ok(
   'the pdf has real text, including lazy Magic Move code',
   text(pdf).includes('Moving code') && text(pdf).includes('const'),
@@ -320,5 +321,31 @@ t.ok(
   String(pages(join(r.dir, 'starter.pdf'))),
 );
 execFileSync(process.execPath, ['scripts/generate.mjs'], { stdio: 'ignore' });
+
+// ---- a Mermaid diagram taller than the slide is clipped in the PDF, like on screen, not lost
+const tallDir = join(scratch, 'tall');
+mkdirSync(tallDir, { recursive: true });
+writeFileSync(
+  join(tallDir, 'slides.md'),
+  `# Tall\n\n\`\`\`mermaid\nflowchart TD\n${[
+    'Alpha',
+    'Bravo',
+    'Charlie',
+    'Delta',
+    'Echo',
+    'Foxtrot',
+    'Golf',
+  ]
+    .map((n, i, all) => (i ? `  ${all[i - 1]}step --> ${n}step` : ''))
+    .filter(Boolean)
+    .join('\n')}\n\`\`\`\n\n---\n\n# After\n`,
+);
+r = slideNg('export --output tall.pdf', { entry: join(tallDir, 'slides.md') });
+const tallText = text(join(r.dir, 'tall.pdf'));
+t.ok(
+  'a diagram taller than the slide is still in the PDF (its top part)',
+  tallText.includes('Alphastep') && tallText.includes('Bravostep'),
+  tallText.replace(/\s+/g, ' ').slice(0, 120),
+);
 
 process.exit(t.done());
