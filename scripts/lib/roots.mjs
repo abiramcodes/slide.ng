@@ -26,7 +26,7 @@ export class RootNotFoundError extends Error {
   }
 }
 
-// The official themes are packages in the separate slide.ng-themes repository (`@slide-ng/theme-<name>`).
+// The official themes are packages in the separate slide-ng/themes repository (`@slide-ng/theme-<name>`).
 const OFFICIAL_THEMES = ['seriph', 'shibainu', 'bricks', 'apple-basic', 'adev'];
 
 // A scoped package name such as @scope/slide-ng-theme-x (the same rule as Slidev's resolver for the name).

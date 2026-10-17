@@ -195,7 +195,7 @@ t.ok(
 );
 
 // ---- a theme by name from node_modules: a copy of the example theme stands in for the package @slide-ng/theme-demo
-// (the way the official themes of the slide.ng-themes repository are found), and its eject
+// (the way the official themes of the slide-ng/themes repository are found), and its eject
 const named = deck('named', 'theme: demo\n', true);
 cpSync(themeDir, join(named, 'node_modules/@slide-ng/theme-demo'), { recursive: true });
 const namedSite = await build(named);

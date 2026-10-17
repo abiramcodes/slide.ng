@@ -18,7 +18,7 @@ command line as a package, themes and addons, an example theme, the MCP server a
    `examples/theme-minimal` (docs/THEMES.md, docs/WRITING-A-THEME.md). The example theme changes the rendered output and its component is used from slides (browser test).
 8. **MCP server** `slide-ng mcp`: seven tools, tested with a scripted client over stdio (initialize, tools/list, get, update, insert, move, remove, refusals, path confinement).
 9. **Polish**: the PDF button in the bar (enabled only when the PDF exists), `dev --open`, `--theme`, the side editor takes over outside edits, the next-step preview draws global layers, slide-ng-drag boxes were already drawn in thumbnails.
-10. **Official themes**: `seriph`, `shibainu`, `bricks` and `apple-basic` are npm packages `@slide-ng/theme-<name>` in the separate slide.ng-themes repository (DECISIONS.md 10), with the layouts, components, fonts,
+10. **Official themes**: `seriph`, `shibainu`, `bricks` and `apple-basic` are npm packages `@slide-ng/theme-<name>` in the separate slide-ng/themes repository (DECISIONS.md 10), with the layouts, components, fonts,
     READMEs, showcase decks, NOTICE and tests. This package resolves `theme: <name>` from `node_modules` like Slidev (`@slide-ng/theme-<name>`, `slide-ng-theme-<name>`, `<name>`); `default` is the built-in look.
     A missing official theme stops the build with `npm install -D @slide-ng/theme-<name>`. A fake `@slide-ng/theme-demo` package (a copy of `examples/theme-minimal`) is built end to end in `tests/export/theme.mjs`.
 11. **docs/PARITY.md**: 173 rows, a test found for each `done` row, and a ranked list of gaps.
@@ -30,7 +30,7 @@ command line as a package, themes and addons, an example theme, the MCP server a
 
 - `npm run build`: succeeds.
 - `npm test`: 120 files, **914** tests passed (theme and addon names: `roots.spec.ts`; the agent skill: `skills.spec.ts`, `hash.spec.ts`, `samples.spec.ts`).
-- `npm run test:e2e`: starter deck **45**, showcase **144**, code and content **128**, phase 3 decks **185**, print route **24**, setup hooks **24**, 0 failed. The official theme tests (every layout of four themes, fonts, PNG export) moved to the slide.ng-themes repository.
+- `npm run test:e2e`: starter deck **45**, showcase **144**, code and content **128**, phase 3 decks **185**, print route **24**, setup hooks **24**, 0 failed. The official theme tests (every layout of four themes, fonts, PNG export) moved to the slide-ng/themes repository.
 - `npm run test:dev`: live update **6**, dev server **52**; 0 failed.
 - `npm run test:export`: export command **34**, sandbox filter **4**, build **47**, theme **22**, example themes (paper, moss, blueprint) **28**, scaffold **13**, MCP **23**, offline folder from disk **40**, network off **13**, agent skill samples **74** (generated one by one, then built together); 0 failed.
 
@@ -54,7 +54,7 @@ one can be written. The decisions are in DECISIONS.md ("Made while testing for 1
 - **Editable PPTX** (out of scope on purpose). PPTX holds pictures and notes only.
 - `export` takes one entry; no `--format pptx-editable`.
 - `dev --tunnel` (needs a tunnel service; refused with a message) and `dev --base` (refused with a message); `build --router-mode` (use `routerMode`).
-- Prettier plugin, Vue-syntax converter, community themes, browser exporter page, `overviewSnapshots` (out of scope). A VS Code extension exists in the slide.ng-vscode repository (first version, not released, never run inside VS Code).
+- Prettier plugin, Vue-syntax converter, community themes, browser exporter page, `overviewSnapshots` (out of scope). A VS Code extension exists in the slide-ng/vscode repository (first version, not released, never run inside VS Code).
 - Monaco type loading; MDC/Comark; `notesAutoRuby`; slide hooks; custom transition objects; touch tuning for drawing and drag. The full list is in docs/PARITY.md.
 - Offline: PlantUML, `<slide-ng-youtube>`, `<slide-ng-tweet>` and `<slide-ng-blue-sky>` need the network, also in an offline folder. A deck with Monaco and Mermaid becomes one large script in an offline folder (27 MB folder, 16 MB script for the phase 2 test deck).
 - PWA: the first visit must be online (a browser that never opened the deck cannot get it offline). Remote pictures are not cached in dev. Icons are drawn with Chromium at build time (a build without one warns and has no icons).

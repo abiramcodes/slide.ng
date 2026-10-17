@@ -72,7 +72,7 @@ right after a heading (`h1 + p`, a subtitle); set its `opacity` in your CSS if y
 A footer or page number goes in `layers/global-top.ts`. Read the slide's number with `inject(SLIDE_NO)` (from `slide-ng/lib/slide-context`):
 `Nav.no()` is the presented slide, so in the PDF it would print the same number on every page. `layers/global-bottom.ts` is drawn under
 the slide, so a theme that paints the slide background on `.slidev-layout` hides it.
-The official themes (the slide.ng-themes repository, `packages/theme-*`) are larger examples: `bricks` has components, `apple-basic` has layouts with props, `shibainu` has many layouts.
+The official themes (the slide-ng/themes repository, `packages/theme-*`) are larger examples: `bricks` has components, `apple-basic` has layouts with props, `shibainu` has many layouts.
 
 ## Extra: setup hooks
 
@@ -120,7 +120,7 @@ slide.ng looks for the name in `node_modules` as `@slide-ng/theme-<name>`, then 
 }
 ```
 
-The official packages follow this layout; see the slide.ng-themes repository and its CONTRIBUTING.md for adding one. Start from the built-in look
+The official packages follow this layout; see the slide-ng/themes repository and its CONTRIBUTING.md for adding one. Start from the built-in look
 instead of from nothing with `slide-ng theme eject`.
 
 ## Checking your theme

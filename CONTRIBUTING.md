@@ -60,7 +60,7 @@ Small files, plain comments, few dependencies. The rules are in [docs/contributi
 
 **A setup hook.** The hooks (`setup/shiki.ts`, `shortcuts.ts`, ...) are listed in [docs/SETUP.md](docs/SETUP.md). A new one needs three things: the place where the generator or the app looks for the file, how the answers of the deck, addons and theme are combined, and a deck in `tests/e2e/phase5` that uses it. Add a row to the table in `docs/SETUP.md`.
 
-**A theme.** Follow [docs/WRITING-A-THEME.md](docs/WRITING-A-THEME.md). `examples/theme-minimal` is a small finished theme, and `tests/export/theme.mjs` checks it end to end. The official themes live in the separate slide.ng-themes repository.
+**A theme.** Follow [docs/WRITING-A-THEME.md](docs/WRITING-A-THEME.md). `examples/theme-minimal` is a small finished theme, and `tests/export/theme.mjs` checks it end to end. The official themes live in the separate slide-ng/themes repository.
 
 ## Pull requests
 

@@ -284,7 +284,7 @@ plain Node.
 24. **Two phase 3 limits were smaller than written:** `slide-ng-drag` boxes are drawn in the right place in overview thumbnails (they are only not editable there), and the presenter's next-step preview now draws the global layers. Slidev does not draw global
     layers in overview thumbnails either, so they were left out there.
 25. **The four layer files of the layout test deck live in its own folder** (`tests/e2e/phase3/layout/layers/`) instead of being copied into `src/app/layers` during the build; that is the deck-folder feature doing the job.
-26. **Left out on purpose:** editable PPTX, the prettier plugin, the Vue-syntax converter, community themes, the browser exporter page and `overviewSnapshots` (as asked; the VS Code extension was left out of the core and became the separate slide.ng-vscode repository). Also left out because they would not fit: `--tunnel`,
+26. **Left out on purpose:** editable PPTX, the prettier plugin, the Vue-syntax converter, community themes, the browser exporter page and `overviewSnapshots` (as asked; the VS Code extension was left out of the core and became the separate slide-ng/vscode repository). Also left out because they would not fit: `--tunnel`,
     Monaco type loading, `fonts`, MDC/Comark.
 
 ### Open decisions (for the person to settle)
@@ -349,7 +349,7 @@ The owner decided "do it like Slidev" for every open choice. For each one, Slide
     and `themes` is no longer in `package.json#files`. `theme: <name>` now resolves from `node_modules` only, with Slidev's rule and slide.ng's prefixes: `@slide-ng/theme-<name>`, `slide-ng-theme-<name>`, `<name>`
     (addons: `@slide-ng/addon-<name>`, ...); a scoped name is used as written, a path stays a path. `scripts/lib/roots.mjs` has `candidateNames` and `packageToInstall`. The official names `seriph`, `shibainu`,
     `bricks` and `apple-basic` are not built in: when they are missing the error says `npm install -D @slide-ng/theme-seriph` (any other missing name says `slide-ng-theme-<name>`; Slidev's `officials` table does the same job).
-    The themes repository (`slide.ng-themes`, npm workspaces) holds the four packages, their READMEs and showcase decks, and its own tests: a package check and a browser test that builds every deck with this
+    The themes repository (`slide-ng/themes`, npm workspaces) holds the four packages, their READMEs and showcase decks, and its own tests: a package check and a browser test that builds every deck with this
     package's command line (`SLIDE_NG_DIR` points at the checkout). This package keeps `examples/theme-minimal` and a build test that copies it into a deck's `node_modules/@slide-ng/theme-demo`
     and uses `theme: demo`, which proves the lookup end to end. Tests: `roots.spec.ts` (name rules), `install-root.spec.ts`, `tests/export/theme.mjs`; the theme tests are in the themes repository.
     Why: a theme release does not need a release of the core, the core stays small, and a theme author sees the same shape as an outside author.

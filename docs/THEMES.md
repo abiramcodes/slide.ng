@@ -23,7 +23,7 @@ addons:
   then `slide-ng-theme-<name>`, then `<name>`. A scoped name (`@scope/theme-x`) is used as written. Addons use `@slide-ng/addon-<name>`,
   `slide-ng-addon-<name>`, then `<name>`.
 - The official themes `seriph`, `shibainu`, `bricks`, `apple-basic` and `adev` are not part of this package. They live in their own repository
-  (slide.ng-themes, one package each): `npm i -D @slide-ng/theme-seriph`, then `theme: seriph` (see below).
+  (slide-ng/themes, one package each): `npm i -D @slide-ng/theme-seriph`, then `theme: seriph` (see below).
 - A path that is not a folder is an error, and so is a package name that is not installed, as in Slidev: the build stops with
   `The theme "x" was not found. Install it with: npm install -D slide-ng-theme-x` (for an official name the package is `@slide-ng/theme-<name>`;
   `pnpm add -D` or `yarn add -D` when the deck has that lock file).
@@ -34,7 +34,7 @@ addons:
 ## The official themes
 
 They are rebuilt from the official Slidev themes (MIT; the layouts, names, slots, CSS values and font settings are ported, the components are new Angular code)
-and published from a separate repository, slide.ng-themes, the way Slidev keeps its themes in `slidevjs/themes`: a monorepo of packages
+and published from a separate repository, slide-ng/themes, the way Slidev keeps its themes in `slidevjs/themes`: a monorepo of packages
 `@slide-ng/theme-<name>` that follow the contract below. Each has a README that credits the original author and lists what is ported and what is simplified,
 and the repository's `examples/<name>.md` has a slide for every layout.
 
