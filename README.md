@@ -76,4 +76,4 @@ Thanks to everyone who has helped. This project follows the [all-contributors](h
 
 ## License
 
-[MIT](LICENSE). slide.ng is an independent community project. It is not affiliated with, or endorsed by, Google, the Angular team or the Slidev team.
+MIT License © 2026 [Erkam Yaman](https://github.com/erkamyaman). slide.ng is an independent community project. It is not affiliated with, or endorsed by, Google, the Angular team or the Slidev team.

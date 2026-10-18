@@ -10,6 +10,7 @@
     "slidev",
     "slide-deck"
   ],
+  "author": "Erkam Yaman (https://github.com/erkamyaman)",
   "license": "MIT",
   "homepage": "https://github.com/slide-ng/slide.ng#readme",
   "bugs": {
