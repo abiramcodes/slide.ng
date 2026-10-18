@@ -4,6 +4,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-18
+
 ### Added
 
 - Three example themes: `examples/theme-paper` (light, editorial), `examples/theme-moss` (dark, green and clay) and `examples/theme-blueprint` (navy drafting grid, with a light "whiteprint" palette), each with a cover and a section layout, a component and a README.
@@ -120,5 +122,6 @@ The first version, built in phases.
 
 See `docs/STATUS.md` for what is missing or not verified.
 
-[Unreleased]: https://github.com/slide-ng/slide.ng/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/slide-ng/slide.ng/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/slide-ng/slide.ng/compare/v0.1.0...v1.0.0
 [0.1.0]: https://github.com/slide-ng/slide.ng/commits/main

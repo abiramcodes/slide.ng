@@ -87,14 +87,14 @@ one can be written. The decisions are in DECISIONS.md ("Made while testing for 1
 
 ## Not done: official themes
 
-- The themes are not published to npm and the themes repository has no remote yet; the packages are used from a checkout (`npm install` links them, or `file:` paths).
+- The themes are on npm as `@slide-ng/theme-<name>` and live in the slide-ng/themes repository; a deck installs them like any package.
 - The original background illustrations (shibainu, bricks) and the random cover photo (seriph) are not used (CC BY-NC-SA, non-commercial): CSS gradients in the same palette stand in.
 - `themeConfig` (for example seriph's `primary`) is not read; Prism style sheets are not ported; Slidev's default theme fonts are not loaded for `theme: default`.
 - The themes tests stub the font style sheet, so the fonts themselves were not seen rendered (the request and the CSS font names are checked).
 
 ## NOT VERIFIED
 
-- **A real install from the registry**: `@slide-ng/core` 0.1.0 is on npm, but the scaffold test links this repository into the new deck's `node_modules`, and a new deck asks for `^0.1.0`, so it gets the published 0.1.0, not this repository's changes, until the next version is published.
+- **A real install from the registry**: `@slide-ng/core` 1.0.0 is on npm and a new deck asks for `^1.0.0`; the scaffold test still links this repository into the new deck's `node_modules`, so it checks this checkout, not the registry copy.
 - `dev --open` opening a real browser window: the flag is passed to `ng serve --open` and parsed in a unit test only.
 - `CODE_RUNNERS` (a theme replacing how `{monaco-run}` runs code): written, documented, no test.
 - Addons end to end: resolution and merge order are unit-tested, but no deck was built with an addon.
