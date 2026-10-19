@@ -8,21 +8,28 @@ import { marked } from 'marked';
 const RE_ESC = /[.*+?^${}()|[\]\\]/g;
 const escapeRe = (s) => s.replace(RE_ESC, '\\$&');
 const escapeHtml = (s) => s.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
+// marked writes these characters of the text as entities, so a listed word is matched in that form.
+const MARKED_ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+const asMarked = (s) => s.replace(/[&<>"']/g, (c) => MARKED_ESC[c]);
 // Skip inside <pre>, <code> (code blocks and code spans) and an existing <ruby> (so its base text
-// is not wrapped again), and never touch what is inside an HTML tag (an attribute value is part of the tag)
-// or an entity such as `&amp;` or `&#39;`.
+// is not wrapped again), and never touch what is inside an HTML tag (an attribute value is part of the tag).
 const SKIP =
-  /<pre[\s>][\s\S]*?<\/pre>|<code[\s>][\s\S]*?<\/code>|<ruby[\s>][\s\S]*?<\/ruby>|<[^>]+>|&[#\w]+;/g;
+  /<pre[\s>][\s\S]*?<\/pre>|<code[\s>][\s\S]*?<\/code>|<ruby[\s>][\s\S]*?<\/ruby>|<[^>]+>/g;
 
 function applyRuby(html, rubyMap) {
   if (!rubyMap || typeof rubyMap !== 'object') return html;
-  const entries = Object.entries(rubyMap).filter(([w, r]) => w && typeof r === 'string');
+  const entries = Object.entries(rubyMap)
+    .filter(([w, r]) => w && typeof r === 'string')
+    .map(([w, r]) => [asMarked(w), escapeHtml(r)]);
   if (!entries.length) return html;
   entries.sort(([a], [b]) => b.length - a.length);
-  const readings = new Map(entries.map(([w, r]) => [w, escapeHtml(r)]));
-  const re = new RegExp(entries.map(([w]) => escapeRe(w)).join('|'), 'g');
+  const readings = new Map(entries);
+  // An entity such as `&amp;` is matched as a whole after the words, so a word like "amp" is not found inside it.
+  const re = new RegExp(`(${entries.map(([w]) => escapeRe(w)).join('|')})|&[#\\w]+;`, 'g');
   const wrap = (text) =>
-    text.replace(re, (word) => `<ruby>${word}<rt>${readings.get(word)}</rt></ruby>`);
+    text.replace(re, (m, word) =>
+      word ? `<ruby>${word}<rt>${readings.get(word)}</rt></ruby>` : m,
+    );
   let out = '';
   let last = 0;
   for (const m of html.matchAll(SKIP)) {

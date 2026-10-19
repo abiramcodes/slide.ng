@@ -61,6 +61,12 @@ describe('noteToHtml', () => {
       expect(html).not.toMatch(/href="[^"]*<ruby>/);
     });
 
+    it('finds a listed word that has &, < or a quote in it', () => {
+      const html = noteToHtml("R&D and Tom's", { 'R&D': 'r', "Tom's": 't' })!;
+      expect(html).toContain('<ruby>R&amp;D<rt>r</rt></ruby>');
+      expect(html).toContain('<ruby>Tom&#39;s<rt>t</rt></ruby>');
+    });
+
     it('does not match inside an HTML entity', () => {
       expect(noteToHtml("Tom & Jerry's", { amp: 'x', '39': 'y' })).toBe(
         noteToHtml("Tom & Jerry's"),
