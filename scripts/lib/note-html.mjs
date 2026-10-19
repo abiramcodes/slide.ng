@@ -9,9 +9,10 @@ const RE_ESC = /[.*+?^${}()|[\]\\]/g;
 const escapeRe = (s) => s.replace(RE_ESC, '\\$&');
 const escapeHtml = (s) => s.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
 // Skip inside <pre>, <code> (code blocks and code spans) and an existing <ruby> (so its base text
-// is not wrapped again), and never touch what is inside an HTML tag (an attribute value is part of the tag).
+// is not wrapped again), and never touch what is inside an HTML tag (an attribute value is part of the tag)
+// or an entity such as `&amp;` or `&#39;`.
 const SKIP =
-  /<pre[\s>][\s\S]*?<\/pre>|<code[\s>][\s\S]*?<\/code>|<ruby[\s>][\s\S]*?<\/ruby>|<[^>]+>/g;
+  /<pre[\s>][\s\S]*?<\/pre>|<code[\s>][\s\S]*?<\/code>|<ruby[\s>][\s\S]*?<\/ruby>|<[^>]+>|&[#\w]+;/g;
 
 function applyRuby(html, rubyMap) {
   if (!rubyMap || typeof rubyMap !== 'object') return html;

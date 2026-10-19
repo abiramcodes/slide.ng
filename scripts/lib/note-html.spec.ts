@@ -61,6 +61,12 @@ describe('noteToHtml', () => {
       expect(html).not.toMatch(/href="[^"]*<ruby>/);
     });
 
+    it('does not match inside an HTML entity', () => {
+      expect(noteToHtml("Tom & Jerry's", { amp: 'x', '39': 'y' })).toBe(
+        noteToHtml("Tom & Jerry's"),
+      );
+    });
+
     it('leaves existing <ruby> alone so its base text is not wrapped again', () => {
       const html = noteToHtml('<ruby>漢字<rt>かんじ</rt></ruby>', { 漢字: 'かんじ' })!;
       expect(html).toContain('<ruby>漢字<rt>かんじ</rt></ruby>');
