@@ -10,6 +10,12 @@
 
 Presentations written in markdown, with real Angular template syntax inside. Inspired by [Slidev](https://sli.dev), built for Angular.
 
+<p align="center">
+  <img alt="Typing a slides.md file while the slides take shape next to it" src="docs/assets/how-it-works.gif" width="420">
+  <br>
+  <sub>Type markdown, get slides.</sub>
+</p>
+
 ## Quick start
 
 You need Node 22.22.3 or newer.
