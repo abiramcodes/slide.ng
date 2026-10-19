@@ -75,6 +75,12 @@ describe('titleHtml', () => {
     expect(titleHtml('Plain title, $5 and $10')).toBe('Plain title, $5 and $10');
     expect(titleHtml(null)).toBeNull();
   });
+  it('shows raw HTML in a title as text', () => {
+    const html = titleHtml('A <img src=x onerror=alert(1)> and <b>tag</b>')!;
+    expect(html).not.toContain('<img');
+    expect(html).not.toContain('<b>');
+    expect(html).toContain('&lt;img src=x onerror=alert(1)&gt;');
+  });
   it('pairs markdown delimiters that wrap a formula', () => {
     const html = titleHtml('**Area $\\pi r^2$ formula**')!;
     expect(html).toContain('<strong>');

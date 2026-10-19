@@ -1,7 +1,7 @@
 // Writes generated/index.ts: the list of slides with their metadata, and the deck's headmatter.
 import { marked } from 'marked';
 import { layoutName } from './layouts.mjs';
-import { slideClass, slideName } from './emit.mjs';
+import { safeLinks, slideClass, slideName } from './emit.mjs';
 import { checkRouteAlias } from './route-alias.mjs';
 import { noteToHtml } from './note-html.mjs';
 import { downloadTarget } from '../export/filename.mjs';
@@ -27,7 +27,7 @@ function metaOf(slide, index) {
   const f = slide.frontmatter;
   return {
     title: slide.title == null ? null : plainTitle(slide.title),
-    titleHtml: titleHtml(slide.title), // inline markdown of the title (and $math$) as HTML
+    titleHtml: slide.title == null ? null : safeLinks(titleHtml(slide.title), index + 1), // inline markdown and $math$ as HTML
     level: slide.level ?? null,
     layout: slide.layout ?? layoutName(f, index),
     note: slide.note ?? null,

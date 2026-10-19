@@ -19,6 +19,6 @@ export class SlideTitleRenderer {
     const raw = this.no();
     const n = raw == null || raw === '' ? this.here : +raw;
     const meta = this.nav.slides[n - 1];
-    return this.sanitizer.bypassSecurityTrustHtml(meta?.titleHtml ?? meta?.title ?? '');
+    return this.sanitizer.bypassSecurityTrustHtml(meta?.titleHtml ?? '');
   });
 }
