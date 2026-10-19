@@ -110,7 +110,7 @@ try {
   fresh();
   browser = await launch();
 
-  // ===================================================================== local dev server
+  // ====== local dev server
   const PORT = 4220,
     base = `http://localhost:${PORT}`;
   stop = startDev(PORT);
@@ -426,7 +426,7 @@ try {
   stop();
   await sleep(2000);
 
-  // ===================================================================== --remote with a password
+  // ====== --remote with a password
   fresh();
   const RPORT = 4221,
     rbase = `http://127.0.0.1:${RPORT}`;
@@ -525,7 +525,7 @@ try {
   stop();
   await sleep(2000);
 
-  // ===================================================================== --remote without a password: a random one is made
+  // ====== --remote without a password: a random one is made
   fresh();
   const OPORT = 4232,
     obase = `http://127.0.0.1:${OPORT}`;

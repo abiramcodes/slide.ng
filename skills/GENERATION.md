@@ -127,10 +127,10 @@ setup file, a theme file) next to the samples of the same page. Fragments that c
       "sources": {
         "README.md": "3babbc46ff339d359553934fbc0a0bb73a9e201b796bc11625cbedc4dd9c18f9",
         "bin/slide-ng.mjs": "0d78404e93b5e06902c462aa9e75d83ff436523fa185672d382a50883e6621a2",
-        "docs/PARITY.md": "c1eb9af996f0518de850224ff611d3ec2451ab506107ecd83bb23b08e4b5d804",
+        "docs/PARITY.md": "aa4047b4d1804e6d672331b6746594827ae381f22bd920c270236041ac3cf7f6",
         "docs/SYNTAX.md": "4910f369cdfa66e728cdc6af33be0be091a9ae1ed621647223b3c940d4c7a24e"
       },
-      "hash": "ec3525005f9e45473cf6882ab92afdd02db99863327fe443a674f9e5ff0d3203"
+      "hash": "4a89a360e467e551c58772200e919a2debc51c6fee8688092596e6c6bfe86a0c"
     },
     "references/animation-click-lists.md": {
       "sources": {
@@ -140,10 +140,10 @@ setup file, a theme file) next to the samples of the same page. Fragments that c
     },
     "references/animation-click-marker.md": {
       "sources": {
-        "docs/PARITY.md": "c1eb9af996f0518de850224ff611d3ec2451ab506107ecd83bb23b08e4b5d804",
+        "docs/PARITY.md": "aa4047b4d1804e6d672331b6746594827ae381f22bd920c270236041ac3cf7f6",
         "docs/SYNTAX.md": "4910f369cdfa66e728cdc6af33be0be091a9ae1ed621647223b3c940d4c7a24e"
       },
-      "hash": "24effb052e7948e4596f44ba037d22e662951d8687add791ec6afb77d66cc6fe"
+      "hash": "b41cef9ee12415f29d4eaf0a89d54292c3fca1d8cff7d39dd908db6b8116731a"
     },
     "references/animation-clicks.md": {
       "sources": {
@@ -171,10 +171,10 @@ setup file, a theme file) next to the samples of the same page. Fragments that c
     },
     "references/animation-transitions.md": {
       "sources": {
-        "docs/PARITY.md": "c1eb9af996f0518de850224ff611d3ec2451ab506107ecd83bb23b08e4b5d804",
+        "docs/PARITY.md": "aa4047b4d1804e6d672331b6746594827ae381f22bd920c270236041ac3cf7f6",
         "docs/SYNTAX.md": "4910f369cdfa66e728cdc6af33be0be091a9ae1ed621647223b3c940d4c7a24e"
       },
-      "hash": "24effb052e7948e4596f44ba037d22e662951d8687add791ec6afb77d66cc6fe"
+      "hash": "b41cef9ee12415f29d4eaf0a89d54292c3fca1d8cff7d39dd908db6b8116731a"
     },
     "references/build-og-image.md": {
       "sources": {
@@ -241,10 +241,10 @@ setup file, a theme file) next to the samples of the same page. Fragments that c
     },
     "references/code-magic-move.md": {
       "sources": {
-        "docs/PARITY.md": "c1eb9af996f0518de850224ff611d3ec2451ab506107ecd83bb23b08e4b5d804",
+        "docs/PARITY.md": "aa4047b4d1804e6d672331b6746594827ae381f22bd920c270236041ac3cf7f6",
         "docs/SYNTAX.md": "4910f369cdfa66e728cdc6af33be0be091a9ae1ed621647223b3c940d4c7a24e"
       },
-      "hash": "24effb052e7948e4596f44ba037d22e662951d8687add791ec6afb77d66cc6fe"
+      "hash": "b41cef9ee12415f29d4eaf0a89d54292c3fca1d8cff7d39dd908db6b8116731a"
     },
     "references/code-max-height.md": {
       "sources": {
@@ -274,17 +274,17 @@ setup file, a theme file) next to the samples of the same page. Fragments that c
     },
     "references/code-twoslash.md": {
       "sources": {
-        "docs/PARITY.md": "c1eb9af996f0518de850224ff611d3ec2451ab506107ecd83bb23b08e4b5d804",
+        "docs/PARITY.md": "aa4047b4d1804e6d672331b6746594827ae381f22bd920c270236041ac3cf7f6",
         "docs/SYNTAX.md": "4910f369cdfa66e728cdc6af33be0be091a9ae1ed621647223b3c940d4c7a24e"
       },
-      "hash": "24effb052e7948e4596f44ba037d22e662951d8687add791ec6afb77d66cc6fe"
+      "hash": "b41cef9ee12415f29d4eaf0a89d54292c3fca1d8cff7d39dd908db6b8116731a"
     },
     "references/core-angular-syntax.md": {
       "sources": {
-        "docs/PARITY.md": "c1eb9af996f0518de850224ff611d3ec2451ab506107ecd83bb23b08e4b5d804",
+        "docs/PARITY.md": "aa4047b4d1804e6d672331b6746594827ae381f22bd920c270236041ac3cf7f6",
         "docs/SYNTAX.md": "4910f369cdfa66e728cdc6af33be0be091a9ae1ed621647223b3c940d4c7a24e"
       },
-      "hash": "24effb052e7948e4596f44ba037d22e662951d8687add791ec6afb77d66cc6fe"
+      "hash": "b41cef9ee12415f29d4eaf0a89d54292c3fca1d8cff7d39dd908db6b8116731a"
     },
     "references/core-cli.md": {
       "sources": {
@@ -296,19 +296,19 @@ setup file, a theme file) next to the samples of the same page. Fragments that c
     },
     "references/core-components.md": {
       "sources": {
-        "docs/PARITY.md": "c1eb9af996f0518de850224ff611d3ec2451ab506107ecd83bb23b08e4b5d804",
+        "docs/PARITY.md": "aa4047b4d1804e6d672331b6746594827ae381f22bd920c270236041ac3cf7f6",
         "docs/SYNTAX.md": "4910f369cdfa66e728cdc6af33be0be091a9ae1ed621647223b3c940d4c7a24e"
       },
-      "hash": "24effb052e7948e4596f44ba037d22e662951d8687add791ec6afb77d66cc6fe"
+      "hash": "b41cef9ee12415f29d4eaf0a89d54292c3fca1d8cff7d39dd908db6b8116731a"
     },
     "references/core-custom-components.md": {
       "sources": {
-        "docs/PARITY.md": "c1eb9af996f0518de850224ff611d3ec2451ab506107ecd83bb23b08e4b5d804",
+        "docs/PARITY.md": "aa4047b4d1804e6d672331b6746594827ae381f22bd920c270236041ac3cf7f6",
         "docs/SYNTAX.md": "4910f369cdfa66e728cdc6af33be0be091a9ae1ed621647223b3c940d4c7a24e",
         "docs/THEMES.md": "a3eb4310e885d9718227aac029cf633135c573a70e8bbda9dcf0b116d1b31ab7",
         "docs/WRITING-A-THEME.md": "e3dc9f1d02c6c6bbff98af713df1e132fe6c49f0cd233cefec21924027709f1e"
       },
-      "hash": "f8944ed9033f1537f9b7c241ef08758c5bad09f7c02915bcbb83aa75a325e46d"
+      "hash": "4991d22f0f663caf859095817b8a5d902cc934b43d568ef9caaad5a1df875cd6"
     },
     "references/core-fonts.md": {
       "sources": {
@@ -345,9 +345,9 @@ setup file, a theme file) next to the samples of the same page. Fragments that c
     "references/core-injection.md": {
       "sources": {
         "docs/ARCHITECTURE.md": "c5f6043a5be61ca70c1f3633d6791a0d929955dfa1b49f8e00d9bd5849bff2b6",
-        "docs/PARITY.md": "c1eb9af996f0518de850224ff611d3ec2451ab506107ecd83bb23b08e4b5d804"
+        "docs/PARITY.md": "aa4047b4d1804e6d672331b6746594827ae381f22bd920c270236041ac3cf7f6"
       },
-      "hash": "9220ab35406192236cbba8afb584a6461cae1478008eeae2181255e786b471f6"
+      "hash": "d885639892b9160d11c8dcfa11872bfb168ea97f39fe00fed0833c7abeae4512"
     },
     "references/core-markdown-extras.md": {
       "sources": {
@@ -357,17 +357,17 @@ setup file, a theme file) next to the samples of the same page. Fragments that c
     },
     "references/core-slidev-differences.md": {
       "sources": {
-        "docs/PARITY.md": "c1eb9af996f0518de850224ff611d3ec2451ab506107ecd83bb23b08e4b5d804",
+        "docs/PARITY.md": "aa4047b4d1804e6d672331b6746594827ae381f22bd920c270236041ac3cf7f6",
         "docs/SYNTAX.md": "4910f369cdfa66e728cdc6af33be0be091a9ae1ed621647223b3c940d4c7a24e"
       },
-      "hash": "24effb052e7948e4596f44ba037d22e662951d8687add791ec6afb77d66cc6fe"
+      "hash": "b41cef9ee12415f29d4eaf0a89d54292c3fca1d8cff7d39dd908db6b8116731a"
     },
     "references/core-styling.md": {
       "sources": {
-        "docs/PARITY.md": "c1eb9af996f0518de850224ff611d3ec2451ab506107ecd83bb23b08e4b5d804",
+        "docs/PARITY.md": "aa4047b4d1804e6d672331b6746594827ae381f22bd920c270236041ac3cf7f6",
         "docs/SYNTAX.md": "4910f369cdfa66e728cdc6af33be0be091a9ae1ed621647223b3c940d4c7a24e"
       },
-      "hash": "24effb052e7948e4596f44ba037d22e662951d8687add791ec6afb77d66cc6fe"
+      "hash": "b41cef9ee12415f29d4eaf0a89d54292c3fca1d8cff7d39dd908db6b8116731a"
     },
     "references/core-syntax.md": {
       "sources": {
@@ -377,11 +377,11 @@ setup file, a theme file) next to the samples of the same page. Fragments that c
     },
     "references/core-ui-shortcuts.md": {
       "sources": {
-        "docs/PARITY.md": "c1eb9af996f0518de850224ff611d3ec2451ab506107ecd83bb23b08e4b5d804",
+        "docs/PARITY.md": "aa4047b4d1804e6d672331b6746594827ae381f22bd920c270236041ac3cf7f6",
         "docs/SETUP.md": "9a0a786d64a32ffd51d62bc2637b6243b8930cb10d69e92250dad6803fefdf89",
         "docs/SYNTAX.md": "4910f369cdfa66e728cdc6af33be0be091a9ae1ed621647223b3c940d4c7a24e"
       },
-      "hash": "47c7c5f19b30fad4e62f92ccf6e0cff107b4ddd7124066658475f6e45a7d3d49"
+      "hash": "44c1dfbb5fe35b41014c2f0824445535d4ab297b078cdaf5d3170a40f833972f"
     },
     "references/diagram-latex.md": {
       "sources": {
@@ -434,10 +434,10 @@ setup file, a theme file) next to the samples of the same page. Fragments that c
     },
     "references/layout-builtin.md": {
       "sources": {
-        "docs/PARITY.md": "c1eb9af996f0518de850224ff611d3ec2451ab506107ecd83bb23b08e4b5d804",
+        "docs/PARITY.md": "aa4047b4d1804e6d672331b6746594827ae381f22bd920c270236041ac3cf7f6",
         "docs/SYNTAX.md": "4910f369cdfa66e728cdc6af33be0be091a9ae1ed621647223b3c940d4c7a24e"
       },
-      "hash": "24effb052e7948e4596f44ba037d22e662951d8687add791ec6afb77d66cc6fe"
+      "hash": "b41cef9ee12415f29d4eaf0a89d54292c3fca1d8cff7d39dd908db6b8116731a"
     },
     "references/layout-canvas-size.md": {
       "sources": {
@@ -486,11 +486,11 @@ setup file, a theme file) next to the samples of the same page. Fragments that c
     },
     "references/mcp-server.md": {
       "sources": {
-        "docs/PARITY.md": "c1eb9af996f0518de850224ff611d3ec2451ab506107ecd83bb23b08e4b5d804",
+        "docs/PARITY.md": "aa4047b4d1804e6d672331b6746594827ae381f22bd920c270236041ac3cf7f6",
         "docs/STATUS.md": "80b1d931f7b2f8efaceb746741c199b7c3c6b023431c0ea67c908c5593081537",
         "scripts/mcp/index.mjs": "89cb1ddb27da3be95f9d6148ee2cb9b6e74cc106198e5ad7ea96ce4dd9572cb8"
       },
-      "hash": "9103295fc3661da80007ad1cf6fb116059d02c8dc59e55986d95573a12e87dc7"
+      "hash": "9b0fa6bb7f5095c5ec209491046c6bdadba5d21d385235fa3bb6d39cb453cbb4"
     },
     "references/mcp-tools.md": {
       "sources": {
@@ -500,10 +500,10 @@ setup file, a theme file) next to the samples of the same page. Fragments that c
     },
     "references/not-supported.md": {
       "sources": {
-        "docs/PARITY.md": "c1eb9af996f0518de850224ff611d3ec2451ab506107ecd83bb23b08e4b5d804",
+        "docs/PARITY.md": "aa4047b4d1804e6d672331b6746594827ae381f22bd920c270236041ac3cf7f6",
         "docs/STATUS.md": "80b1d931f7b2f8efaceb746741c199b7c3c6b023431c0ea67c908c5593081537"
       },
-      "hash": "2aafbe2e0969d87dda2c8067e24170f226e99c1ea2affc55b3594604289eb84a"
+      "hash": "a52b7a679f920da05eb88ec4a8e59d00d280204c55f4b3df2563888a380de295"
     },
     "references/offline-checklist.md": {
       "sources": {
@@ -527,24 +527,24 @@ setup file, a theme file) next to the samples of the same page. Fragments that c
     },
     "references/presenter-dev-editor.md": {
       "sources": {
-        "docs/PARITY.md": "c1eb9af996f0518de850224ff611d3ec2451ab506107ecd83bb23b08e4b5d804",
+        "docs/PARITY.md": "aa4047b4d1804e6d672331b6746594827ae381f22bd920c270236041ac3cf7f6",
         "docs/SYNTAX.md": "4910f369cdfa66e728cdc6af33be0be091a9ae1ed621647223b3c940d4c7a24e"
       },
-      "hash": "24effb052e7948e4596f44ba037d22e662951d8687add791ec6afb77d66cc6fe"
+      "hash": "b41cef9ee12415f29d4eaf0a89d54292c3fca1d8cff7d39dd908db6b8116731a"
     },
     "references/presenter-notes.md": {
       "sources": {
-        "docs/PARITY.md": "c1eb9af996f0518de850224ff611d3ec2451ab506107ecd83bb23b08e4b5d804",
+        "docs/PARITY.md": "aa4047b4d1804e6d672331b6746594827ae381f22bd920c270236041ac3cf7f6",
         "docs/SYNTAX.md": "4910f369cdfa66e728cdc6af33be0be091a9ae1ed621647223b3c940d4c7a24e"
       },
-      "hash": "24effb052e7948e4596f44ba037d22e662951d8687add791ec6afb77d66cc6fe"
+      "hash": "b41cef9ee12415f29d4eaf0a89d54292c3fca1d8cff7d39dd908db6b8116731a"
     },
     "references/presenter-recording.md": {
       "sources": {
-        "docs/PARITY.md": "c1eb9af996f0518de850224ff611d3ec2451ab506107ecd83bb23b08e4b5d804",
+        "docs/PARITY.md": "aa4047b4d1804e6d672331b6746594827ae381f22bd920c270236041ac3cf7f6",
         "docs/SYNTAX.md": "4910f369cdfa66e728cdc6af33be0be091a9ae1ed621647223b3c940d4c7a24e"
       },
-      "hash": "24effb052e7948e4596f44ba037d22e662951d8687add791ec6afb77d66cc6fe"
+      "hash": "b41cef9ee12415f29d4eaf0a89d54292c3fca1d8cff7d39dd908db6b8116731a"
     },
     "references/presenter-remote.md": {
       "sources": {
@@ -555,10 +555,10 @@ setup file, a theme file) next to the samples of the same page. Fragments that c
     },
     "references/presenter-switches.md": {
       "sources": {
-        "docs/PARITY.md": "c1eb9af996f0518de850224ff611d3ec2451ab506107ecd83bb23b08e4b5d804",
+        "docs/PARITY.md": "aa4047b4d1804e6d672331b6746594827ae381f22bd920c270236041ac3cf7f6",
         "docs/SYNTAX.md": "4910f369cdfa66e728cdc6af33be0be091a9ae1ed621647223b3c940d4c7a24e"
       },
-      "hash": "24effb052e7948e4596f44ba037d22e662951d8687add791ec6afb77d66cc6fe"
+      "hash": "b41cef9ee12415f29d4eaf0a89d54292c3fca1d8cff7d39dd908db6b8116731a"
     },
     "references/presenter-timer.md": {
       "sources": {
@@ -568,10 +568,10 @@ setup file, a theme file) next to the samples of the same page. Fragments that c
     },
     "references/port-a-slidev-deck.md": {
       "sources": {
-        "docs/PARITY.md": "c1eb9af996f0518de850224ff611d3ec2451ab506107ecd83bb23b08e4b5d804",
+        "docs/PARITY.md": "aa4047b4d1804e6d672331b6746594827ae381f22bd920c270236041ac3cf7f6",
         "docs/SYNTAX.md": "4910f369cdfa66e728cdc6af33be0be091a9ae1ed621647223b3c940d4c7a24e"
       },
-      "hash": "24effb052e7948e4596f44ba037d22e662951d8687add791ec6afb77d66cc6fe"
+      "hash": "b41cef9ee12415f29d4eaf0a89d54292c3fca1d8cff7d39dd908db6b8116731a"
     },
     "references/presenter-view.md": {
       "sources": {
