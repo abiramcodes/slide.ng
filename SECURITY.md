@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-slide.ng is young and not published to npm yet. Only the latest commit on the main branch is supported. There are no older lines to patch.
+Only the latest 1.x release of `@slide-ng/core` and the latest commit on the main branch are supported. There are no older lines to patch.
 
 ## Report a vulnerability
 
