@@ -317,7 +317,7 @@ t.ok(
 r = slideNg('export --with-toc --output starter', { entry: resolve('slides.md') });
 t.ok(
   'without --dist the command builds the deck itself and leaves no build folder behind',
-  pages(join(r.dir, 'starter.pdf')) === 10 && !existsSync(resolve('.slide-ng/export-build')),
+  pages(join(r.dir, 'starter.pdf')) === 11 && !existsSync(resolve('.slide-ng/export-build')),
   String(pages(join(r.dir, 'starter.pdf'))),
 );
 execFileSync(process.execPath, ['scripts/generate.mjs'], { stdio: 'ignore' });

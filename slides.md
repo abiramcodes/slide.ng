@@ -105,6 +105,16 @@ Some **bold** text and `inline code`.
 
 ---
 
+# **Title** renderer
+
+This slide: <slide-ng-title-renderer />
+
+Slide 1: <slide-ng-title-renderer no="1" />
+
+Slide 4: <slide-ng-title-renderer no="4" />
+
+---
+
 # The end
 
 <div id="x1" slide-ng-click>last-click-one</div>

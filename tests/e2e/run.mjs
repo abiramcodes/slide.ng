@@ -53,7 +53,7 @@ let page = await open('/');
 t.ok('/ redirects to /1', path_(page) === '/1', path_(page));
 t.ok(
   'hud on slide 1 (10 slides, hidden one skipped)',
-  (await hud(page)) === 'slide 1/10 clicks 0/0',
+  (await hud(page)) === 'slide 1/11 clicks 0/0',
   await hud(page),
 );
 t.ok(
@@ -115,7 +115,7 @@ t.ok(
 
 // ---- click variants (slide 7) -------------------------------------------------------
 await press(page, 'ArrowRight');
-t.ok('slide 7 has 4 clicks', (await hud(page)) === 'slide 7/10 clicks 0/4', await hud(page));
+t.ok('slide 7 has 4 clicks', (await hud(page)) === 'slide 7/11 clicks 0/4', await hud(page));
 const expected = ['h', 'a,h', 'a,b,af', 'a,b,r,af', 'a,b,af']; // range [3,4] is only visible at click 3
 for (let n = 0; n <= 4; n++) {
   if (n) await press(page, 'ArrowRight');
@@ -129,7 +129,7 @@ for (let n = 0; n <= 4; n++) {
 await press(page, 'ArrowRight');
 t.ok(
   'end of clicks goes to slide 8 at click 0',
-  path_(page) === '/8' && (await hud(page)) === 'slide 8/10 clicks 0/3',
+  path_(page) === '/8' && (await hud(page)) === 'slide 8/11 clicks 0/3',
   path_(page) + ' ' + (await hud(page)),
 );
 for (const [n, items] of [
@@ -161,7 +161,7 @@ t.ok(
 
 // ---- hidden slide, canvas -----------------------------------------------------------
 const titles = [];
-for (let n = 1; n <= 10; n++) {
+for (let n = 1; n <= 11; n++) {
   await page.goto(`${base}/${n}`);
   await page.waitForFunction(() =>
     /clicks \d+\/\d+/.test(document.querySelector('#hud')?.innerText ?? ''),
@@ -170,7 +170,7 @@ for (let n = 1; n <= 10; n++) {
 }
 t.ok(
   'hidden slide is not in the deck',
-  !titles.includes('Hidden slide') && titles.length === 10,
+  !titles.includes('Hidden slide') && titles.length === 11,
   titles.join(' | '),
 );
 await page.close();
@@ -215,17 +215,17 @@ t.ok(
   (await visibleItems(page)) === '110' && clicksParam(page) === '2',
 );
 await page.close();
-page = await open('/10?clicks=1');
+page = await open('/11?clicks=1');
 t.ok(
   'last slide at its last click',
-  (await hud(page)) === 'slide 10/10 clicks 1/1',
+  (await hud(page)) === 'slide 11/11 clicks 1/1',
   await hud(page),
 );
 await press(page, 'ArrowRight');
-t.ok('ArrowRight on the last slide stays', path_(page) === '/10' && clicksParam(page) === '1');
+t.ok('ArrowRight on the last slide stays', path_(page) === '/11' && clicksParam(page) === '1');
 await page.close();
 page = await open('/99');
-t.ok('/99 clamps to the last slide', (await hud(page)).startsWith('slide 10/10'), await hud(page));
+t.ok('/99 clamps to the last slide', (await hud(page)).startsWith('slide 11/11'), await hud(page));
 await page.close();
 
 // ---- the starter deck uses no heavy feature, so none of them is in the output ---------------

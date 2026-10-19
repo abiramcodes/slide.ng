@@ -27,7 +27,7 @@ function metaOf(slide, index) {
   const f = slide.frontmatter;
   return {
     title: slide.title == null ? null : plainTitle(slide.title),
-    titleHtml: titleHtml(slide.title), // only when the title has $math$
+    titleHtml: titleHtml(slide.title), // inline markdown of the title (and $math$) as HTML
     level: slide.level ?? null,
     layout: slide.layout ?? layoutName(f, index),
     note: slide.note ?? null,

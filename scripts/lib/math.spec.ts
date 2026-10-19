@@ -68,11 +68,18 @@ describe('hasMath (feature detection)', () => {
 });
 
 describe('titleHtml', () => {
-  it('draws the math of a title and escapes the rest, or gives null without math', () => {
-    const html = titleHtml('A <b> title $x^2$')!;
-    expect(html.startsWith('A &lt;b&gt; title ')).toBe(true);
+  it('renders inline markdown of a title, draws its math and gives null without a title', () => {
+    const html = titleHtml('A **bold** title $x^2$')!;
+    expect(html).toContain('<strong>bold</strong>');
     expect(html).toContain('class="katex"');
-    expect(titleHtml('Plain title, $5 and $10')).toBeNull();
+    expect(titleHtml('Plain title, $5 and $10')).toBe('Plain title, $5 and $10');
     expect(titleHtml(null)).toBeNull();
+  });
+  it('pairs markdown delimiters that wrap a formula', () => {
+    const html = titleHtml('**Area $\\pi r^2$ formula**')!;
+    expect(html).toContain('<strong>');
+    expect(html).toContain('</strong>');
+    expect(html).toContain('class="katex"');
+    expect(html).not.toContain('**');
   });
 });
